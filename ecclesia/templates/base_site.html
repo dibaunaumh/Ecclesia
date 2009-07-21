@@ -1,2 +1,11 @@
-base_site.html template here
-
+<html>
+ <head>
+  <title>Ecclesia {% block title %} {% endblock %} </title>
+  {% block head %}
+  {% endblock %}
+ </head>
+ <body {% block body_declaration %} {% endblock %} >
+  {% block content %}
+  {% endblock %}
+ </body>
+</html>
