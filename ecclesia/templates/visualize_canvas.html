@@ -11,9 +11,48 @@
     var iResults = 0;
     var canvasW = 0;
     var canvasH = 0;
-    var nodes = Array();
+    var graphics = Array();
+    var actionNodes = {};
+    var resultNodes = {};
+    var goalNode;
     var x0 = 0; // location of the canvas
     var y0 = 0; // location of the canvas
+var r2gArrows = {};
+var a2rArrows = {};
+
+    function Arrow(label,from,to,x1,y1,x2,y2){
+        this.label = label;
+        this.from = from; 
+        this.to = to;
+        this.x1 = x1;
+        this.y1 = y1;
+        this.x2 = x2;
+        this.y2 = y2;
+        this.toString = function(){
+            return "("+this.from.toString()+","+this.to.toString()+")";
+        }
+
+        this.draw = function(){
+            ctx.save();
+            ctx.beginPath();
+            ctx.lineWidth = 4;
+            ctx.strokeStyle="rgb(130,130,200)";
+            ctx.moveTo(this.x1,this.y1);
+            ctx.bezierCurveTo(this.x1 + (this.x2-this.x1)/5,this.y1,this.x2-(this.x2-this.x1)/5,this.y2,this.x2,this.y2);
+            ctx.stroke();
+            drawText(label,(this.x1+this.x2)/2, (this.y1+this.y2)/2, this.x2-this.x1,Math.atan2(this.y2-this.y1,this.x2-this.x1));
+            ctx.restore();
+        }
+
+        this.isInside = function(x,y){
+            if (! ( (x >= x1) & (x <= x2) & (y >= Math.min(y1,y2)-6) & (y <= Math.max(y1,y2)+6) ) ){ // check if x,y is in the bounding rectangle
+                return false;
+            }
+            alpha = (x - this.x1) / (this.x2 - this.x1);
+            return (Math.abs(y - (alpha * (this.y2-this.y1) + this.y1)) <= 12);
+
+        }
+    }
 
     function Node(type,label,objId,addNew){
         this.objId = objId;
@@ -56,9 +95,17 @@
             }
             roundedRect(this.x-this.w/2,this.y-this.h/2,this.w,this.h,5);
             ctx.fillStyle = "rgb(0,0,0)";
-            drawText(this.label, this.x-5, this.y, this.w);      
+            drawText(this.label, this.x-5, this.y, this.w, 0);      
 
-        };                
+        };     
+
+        this.isInside = function(x,y){ // return true if x,y is inside this node
+            return (x >= this.x - this.w/2) & (x <= this.x + this.w/2) & (y >= this.y - this.h/2) & (y <= this.y + this.h/2);
+        }           
+
+        this.toString = function(){
+            return this.label;
+        }
     }
 
     function roundedRect(x,y,width,height,radius){
@@ -77,10 +124,17 @@
 
     }
 
-    function drawText(text,x,y,maxWidth){
+
+
+    function drawText(text,x,y,maxWidth,rotation){
     // if text is short enough - put it in 1 line. if not, search for the middle space, and split it there (only splits to 2 lines).
+        
+        ctx.translate(x,y);
+        ctx.save();
+        ctx.rotate(rotation);        
         if (ctx.measureText(text).width <= maxWidth*0.8){ 
-            ctx.fillText(text,x,y);
+            
+            ctx.fillText(text,0,0);
         } else {
             var spl = text.split(' ');
             var len = Math.floor(spl.length/2);
@@ -90,9 +144,11 @@
             }            
             var text1 = text.substring(0,pos-1);
             var text2 = text.substring(pos);
-            ctx.fillText(text1,x,y+10);
-            ctx.fillText(text2,x,y-10);
+            ctx.fillText(text1,0,+10);
+            ctx.fillText(text2,0,-10);
         }
+        ctx.restore();
+        ctx.translate(-x,-y);
     }
 
     function init() {
@@ -112,49 +168,76 @@
       $.get("../json/", { 'a': 1, 'b': 2 }, json_cb );
       jQuery(document).ready(function(){
            $("#canvas").click(function(e){
-               // $('#status').html((e.pageX-x0).toString() +', '+ (e.pageY-y0).toString());
+                $("#popup").hide();
+                $("#popup").css('top',e.pageY-50 + 'px');
+                $("#popup").css('left',e.pageX-50 + 'px');
+
                 var x = e.pageX-x0;
                 var y = e.pageY-y0;
-                minDist = 99999;
-                I = -1;
-                for (i=0;i<nodes.length;i++){
-                    d = Math.abs(nodes[i].x - x)+Math.abs(nodes[i].y - y); 
-                    if(d < minDist) {
-                        I = i;
-                        minDist = d;
+                clicked = -1;
+                for (i=0;i<graphics.length;i++){
+                    
+                    if(graphics[i].isInside(x,y)) {
+                        clicked = i;
                     }
                 }
-                alert(nodes[I].label + ' clicked');
+                
+                if(clicked>=0){
+                    $("#popup").html(graphics[clicked].toString() + ' clicked').animate({ opacity: 'show' }, 'slow');
+                } else {
+                    $("#popup").html('background clicked').animate({ opacity: 'show' }, 'slow');
+                }
+
+        
            }); 
       })
     }
 
+    
 
     function json_cb(data, textStatus){
         // read the json we got from the server, and draw all nodes.
         res = eval('('+data+')');
         numActions = res.actions.length+1;
-        nodes = new Array();
+        graphics = new Array();
         for(i=0;i<numActions-1;i++){ // add a node for each action
             n = new Node('action', res.actions[i].name,res.actions[i].id, false);
-            nodes[nodes.length] = n;
+            graphics[graphics.length] = n;
+            actionNodes[n.objId] = n;
         }
         n = new Node('action','add new action',-1, true); // and a node for 'add new action'
-        nodes[nodes.length] = n;
+        graphics[graphics.length] = n;
         
         numResults = res.results.length+1;
         for(i=0;i<numResults-1;i++){ // add a node for each result
             n = new Node('result',res.results[i].name,res.results[i].id,false);
-            nodes[nodes.length] = n;
+            graphics[graphics.length] = n;
+            resultNodes[n.objId] = n;
         }
         n = new Node('result','add new result',0,true); // and for the 'add new result'
-        nodes[nodes.length] = n;
+        graphics[graphics.length] = n;
 
         n = new Node('goal',res.goal.name, res.goal.id, false); // add goal node
-        nodes[nodes.length] = n;
+        graphics[graphics.length] = n;
+        goalNode = n;
 
-        for(i=0;i<nodes.length;i++){ // draw all nodes
-            nodes[i].draw();
+        
+        for(i=0;i<res.a2r.length;i++){ // draw arrows from actions to results
+            n1 = actionNodes[res.a2r[i].from]; // from node
+            n2 = resultNodes[res.a2r[i].to];   // to node
+            a = new Arrow('causing',n1,n2,n1.x+n1.w/2,n1.y,n2.x-n2.w/2,n2.y);
+            a2rArrows[i] = a;
+            graphics[graphics.length] = a;
+        }
+        for(i=0;i<res.r2g.length;i++){ // draw arrows from results to goal
+            n1 = resultNodes[res.r2g[i].from]; // from node
+            a = new Arrow('leads to',n1,goalNode,n1.x+n1.w/2,n1.y,goalNode.x-goalNode.w/2,goalNode.y);
+            r2gArrows[i] = a;
+            graphics[graphics.length] = a; 
+        }
+        
+        for(i=0;i<graphics.length;i++){ // draw all graphics
+            graphics[i].draw();
         }
 
     }
@@ -166,5 +249,6 @@
 {% block content %}
 <h1>How to get to {{ context.goal.name }}?</h1><p>Click on an item to add your ideas and opinions regarding it.</p>
 <canvas id="canvas" width="800" height="400"></canvas>
-<div id=status></div>
+<div id="status"></div>
+<div id="popup" style="position:absolute; width:100px; height:100px; background-color: #CD5454;"></div>
 {% endblock content %}
