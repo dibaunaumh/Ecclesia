@@ -5,8 +5,6 @@ from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('',
-    # Example:
-    # (r'^ecclesia/', include('ecclesia.foo.urls')),
 
     (r'^goal/(?P<goal_id>\d+)/visualize/$', 'ecclesia.goals.views.visualize'),
     (r'^goal/(?P<goal_id>\d+)/json/$', 'ecclesia.goals.views.json'),
@@ -19,4 +17,5 @@ urlpatterns = patterns('',
     
     (r'^static/(?P<path>.*)$', 'django.views.static.serve', {'document_root': 'static'}), # serve static content. only for development.
 
+    (r'^', include('ecclesia.groups.urls')),
 )
