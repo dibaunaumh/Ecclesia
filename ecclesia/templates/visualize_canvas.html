@@ -1,9 +1,12 @@
 {% extends 'admin/base_site.html' %}
+{% load i18n %}
 
-{% block head %}
+{% block extrahead %}
   <script type="text/javascript" src="/static/js/jquery/jquery-1.3.2.js"></script>
   <script type="text/javascript" src="/static/js/canvas-text/canvas.text.js"></script>
   <script type="application/x-javascript">
+    window.onload=init;
+
     var ctx;
     var numActions = 0;
     var iActions = 0;
@@ -17,8 +20,8 @@
     var goalNode;
     var x0 = 0; // location of the canvas
     var y0 = 0; // location of the canvas
-var r2gArrows = {};
-var a2rArrows = {};
+    var r2gArrows = {};
+    var a2rArrows = {};
 
     function Arrow(label,from,to,x1,y1,x2,y2){
         this.label = label;
@@ -144,8 +147,8 @@ var a2rArrows = {};
             }            
             var text1 = text.substring(0,pos-1);
             var text2 = text.substring(pos);
-            ctx.fillText(text1,0,+10);
-            ctx.fillText(text2,0,-10);
+            ctx.fillText(text1,0,-10);
+            ctx.fillText(text2,0,+10);
         }
         ctx.restore();
         ctx.translate(-x,-y);
@@ -243,9 +246,8 @@ var a2rArrows = {};
     }
   </script>
 
-{% endblock head %}
-{% block title %} :: {{ context.goal.name }} {% endblock title %}
-{% block body_declaration %} onload="init();" {% endblock body_declaration %}
+{% endblock extrahead %}
+{% block title %} {{ title }} | {% trans 'Ecclesia' %} :: {{ context.goal.name }} {% endblock title %}
 {% block content %}
 <h1>How to get to {{ context.goal.name }}?</h1><p>Click on an item to add your ideas and opinions regarding it.</p>
 <canvas id="canvas" width="800" height="400"></canvas>
