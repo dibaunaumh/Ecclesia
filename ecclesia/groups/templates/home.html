@@ -1,0 +1,25 @@
+{% extends 'admin/base_site.html' %}
+{% load i18n %}
+
+
+{% block content %}
+
+
+<h3>
+	{% trans 'Welcome to Ecclesia' %}
+</h3>
+
+<p>
+{% blocktrans %}
+	   Ecclesia is a social/political platform for helping people organize and meet their common goals.
+{% endblocktrans %}   
+</p>
+
+<h3>Current groups</h3>
+<ul>
+{% for group in groups %}
+    <li><a href="{{ group.get_absolute_url }}">{{ group.name }}</a>
+{% endfor %}
+</ul>
+
+{% endblock content %}

@@ -74,6 +74,7 @@ TEMPLATE_DIRS = (
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
     '%s/templates' % base_dir, 
+    '%s/groups/templates' % base_dir,
 )
 
 INSTALLED_APPS = (
