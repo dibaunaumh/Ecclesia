@@ -228,13 +228,13 @@
         for(i=0;i<res.a2r.length;i++){ // draw arrows from actions to results
             n1 = actionNodes[res.a2r[i].from]; // from node
             n2 = resultNodes[res.a2r[i].to];   // to node
-            a = new Arrow('causing',n1,n2,n1.x+n1.w/2,n1.y,n2.x-n2.w/2,n2.y);
+            a = new Arrow('causing',n1,n2,n1.x+n1.w/2,n1.y*0.85+0.15*n2.y,n2.x-n2.w/2,n1.y*0.15+0.85*n2.y);
             a2rArrows[i] = a;
             graphics[graphics.length] = a;
         }
         for(i=0;i<res.r2g.length;i++){ // draw arrows from results to goal
             n1 = resultNodes[res.r2g[i].from]; // from node
-            a = new Arrow('leads to',n1,goalNode,n1.x+n1.w/2,n1.y,goalNode.x-goalNode.w/2,goalNode.y);
+            a = new Arrow('leads to',n1,goalNode,n1.x+n1.w/2,n1.y,goalNode.x-goalNode.w/2,goalNode.y*0.85+n1.y*0.15);
             r2gArrows[i] = a;
             graphics[graphics.length] = a; 
         }
