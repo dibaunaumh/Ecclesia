@@ -15,7 +15,7 @@ class GroupProfile(models.Model):
     description = models.TextField(_('description'), max_length=1000, null=True, blank=True, help_text=_("The group's description"))
     parent = models.ForeignKey('self', verbose_name=_('parent'), related_name='children', null=True, blank=True, help_text=_('The parent group containing this group'))
     forked_from = models.ForeignKey('self', verbose_name=_('forked from'), related_name='forks', null=True, blank=True, help_text=_('The group from which this group forked'))
-    location = models.CharField(_('location'), max_length="500", null=True, blank=True, help_text=_('Where is the group located'))
+    location = models.CharField(_('location'), max_length=500, null=True, blank=True, help_text=_('Where is the group located'))
     #geolocation
     #tags
     created_by = models.ForeignKey(User, verbose_name=_('created by'), null=True, blank=True, help_text=_('The user that created the group'))
