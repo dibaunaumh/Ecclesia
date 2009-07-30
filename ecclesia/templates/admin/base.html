@@ -8,7 +8,7 @@
 <!--[if lte IE 7]><link rel="stylesheet" type="text/css" href="{% block stylesheet_ie %}{% load adminmedia %}{% admin_media_prefix %}css/ie.css{% endblock %}" /><![endif]-->
 {% if LANGUAGE_BIDI %}<link rel="stylesheet" type="text/css" href="{% block stylesheet_rtl %}{% admin_media_prefix %}css/rtl.css{% endblock %}" />{% endif %}
 <![endif]>
-{% block extrahead %}{% endblock %}
+
 {% block blockbots %}<meta name="robots" content="NONE,NOARCHIVE" />{% endblock %}
 
 <link rel="stylesheet" href="/static/js/jquery/css/ui.all.css" type="text/css" />
@@ -17,7 +17,8 @@
 <script type="text/javascript" src="/static/js/jquery/ui/ui.dialog.js"></script>
 <script type="text/javascript" src="/static/js/jquery/ui/ui.draggable.js"></script>
 <script type="text/javascript" src="/static/js/jquery/ui/ui.resizable.js"></script>
-			
+{% block extrahead %}{% endblock %}			
+
 <script type="text/javascript">
 	URL = window.location.href;
 	if (URL.indexOf('admin/groups/groupprofile/') > 0 || (URL.indexOf('/group') > 0))

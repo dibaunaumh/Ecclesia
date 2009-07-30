@@ -15,9 +15,13 @@ def visualize(request,goal_id):
 
 def json(request,goal_id):
     g = get_object_or_404(Goal, pk=goal_id)
-    res = u"""{"goal": {"id": %d, "name": "%s","short_description": "%s"},     
-              "actions": [{"id":1,"name":"a1"},{"id":2,"name":"action2"},{"id":3,"name":"action with longer name"}],
-              "results": [{"id":1,"name":"r1"},{"id":2,"name":"r2"},{"id":3,"name":"r3"},{"id":4,"name":"r4"}],
-              "a2r": [{"from":1,"to":1},{"from":1,"to":1},{"from":2,"to":2},{"from":2,"to":3},{"from":3,"to":4}],
-              "r2g": [{"from":1},{"from":2},{"from":3},{"from":4}]  }""" % (g.id, g.name, g.short_description)
+    res = u"""{"goal": {"id": %d, "name": "%s","short_description": "%s", "storiesURL":"/goal/%d/stories/" },     
+              "actions": [{"id":1,"name":"a1","storiesURL":"/stories/"},{"id":2,"name":"action2","storiesURL":"/stories/"},{"id":3,"name":"action with longer name","storiesURL":"/stories/"}],
+              "results": [{"id":1,"name":"r1","storiesURL":"/stories/"},{"id":2,"name":"r2","storiesURL":"/stories/"},{"id":3,"name":"r3","storiesURL":"/stories/"},{"id":4,"name":"r4","storiesURL":"/stories/"}],
+              "a2r": [{"from":1,"to":1,"storiesURL":"/stories/"},{"from":1,"to":1,"storiesURL":"/stories/"},{"from":2,"to":2,"storiesURL":"/stories/"},{"from":2,"to":3,"storiesURL":"/stories/"},{"from":3,"to":4,"storiesURL":"/stories/"}],
+              "r2g": [{"from":1,"storiesURL":"/stories/"},{"from":2,"storiesURL":"/stories/"},{"from":3,"storiesURL":"/stories/"},{"from":4,"storiesURL":"/stories/"}]  }""" % (g.id, g.name, g.short_description, g.id)
     return HttpResponse(res)
+
+def stories(request,goal_id):
+    g = get_object_or_404(Goal, pk=goal_id)
+    return HttpResponse("stories not implemented yet :S")
