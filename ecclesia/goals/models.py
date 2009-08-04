@@ -73,11 +73,11 @@ class PossibleResult(models.Model):
     updated_at = models.DateTimeField(_('updated at'), auto_now=True, help_text=_('When was the goal last updated'))
     
     class Meta:
-        verbose_name = _('course of action')
-        verbose_name_plural = _('courses of action')
+        verbose_name = _('possible result')
+        verbose_name_plural = _('possible result')
     
     def get_absolute_url(self):
-        return "http://%s/admin/goals/courseofaction/%s/" % (get_domain(), self.name)
+        return "http://%s/admin/goals/possibleresult/%s/" % (get_domain(), self.name)
 
     def __unicode__(self):
         return self.name       
