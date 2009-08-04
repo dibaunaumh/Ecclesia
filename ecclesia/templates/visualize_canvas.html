@@ -27,7 +27,7 @@
 
 
             $("#dialog").dialog({ autoOpen: false, width: 150, height:100, resizable: false, draggable: false });
-            $("#original_dialog").hide();
+            $("#read_write_dialog").hide();
 
             $("#canvas").click(function(e){
                 var x = e.pageX-x0;
@@ -40,19 +40,22 @@
                     }
                 }
                 
-                if(clicked>=0){
-                    //$("#popup").animate({ opacity: 'show' }, 'slow');
+                if(clicked>=0){ // some graphic object was clicked
                     clearSelection();
                     graphics[clicked].draw(true);
                     selectedGraphic = clicked;
-                    html = $("#original_dialog").html();
-                    $("#dialog").html(html);
+                    if(graphics[selectedGraphic].addNew === true){ // this is a 'create new' button
+                        $("#dialog").html('please wait');                    
+                        $.ajax({type:"GET", url:"/goal/"+goalNode.objId+"/"+graphics[selectedGraphic].type+"/create", dataType:"html", success:put_html_in_dialog, error:put_error_html_in_dialog});
+                        
+                    } else { // this is a normal node. show the read/write stories dialog
+                        html = $("#read_write_dialog").html();
+                        $("#dialog").html(html);
+                    }
                     $("#dialog").dialog('option', 'position', [e.pageX - scrollX, e.pageY - scrollY]);
                     $("#dialog").dialog('option', 'title', graphics[clicked].toString());
                     $("#dialog").dialog('open');
-                } else {
-                    //$("#popup").html('background clicked').animate({ opacity: 'show' }, 'slow');
-                    //$("#popup").hide();
+                } else { // no graphic object was clicked. just bacground
                     clearSelection();
                     $("#dialog").dialog('close');
 
@@ -85,6 +88,7 @@
         this.y1 = y1;
         this.x2 = x2;
         this.y2 = y2;
+        this.storiesURL = storiesURL;    
         this.toString = function(){
             return "("+this.from.toString()+","+this.to.toString()+")";
         }
@@ -126,14 +130,14 @@
         this.w = 0; // width
         this.h = 0; // height
         switch (this.type){
-            case 'action':
+            case 'courseofaction':
                 iActions++;
                 this.x = 100;
                 this.y = 10+(canvasH-20)/(numActions+1)*iActions;
                 this.w = 100;
                 this.h = 60;
                 break;
-            case 'result':
+            case 'possibleresult':
                 iResults++;                
                 this.x = 350;
                 this.y = 10+(canvasH-20)/(numResults+1)*iResults;
@@ -187,7 +191,6 @@
       ctx.quadraticCurveTo(x,y,x,y+radius);
       ctx.fill();
       ctx.stroke();
-
     }
 
 
@@ -230,20 +233,20 @@
         numActions = res.actions.length+1;
         graphics = new Array();
         for(i=0;i<numActions-1;i++){ // add a node for each action
-            n = new Node('action', res.actions[i].name,res.actions[i].id, false, res.actions[i].storiesURL);
+            n = new Node('courseofaction', res.actions[i].name,res.actions[i].id, false, res.actions[i].storiesURL);
             graphics[graphics.length] = n;
             actionNodes[n.objId] = n;
         }
-        n = new Node('action','add new action',-1, true); // and a node for 'add new action'
+        n = new Node('courseofaction','add new action',-1, true); // and a node for 'add new action'
         graphics[graphics.length] = n;
         
         numResults = res.results.length+1;
         for(i=0;i<numResults-1;i++){ // add a node for each result
-            n = new Node('result',res.results[i].name,res.results[i].id,false, res.results[i].storiesURL);
+            n = new Node('possibleresult',res.results[i].name,res.results[i].id,false, res.results[i].storiesURL);
             graphics[graphics.length] = n;
             resultNodes[n.objId] = n;
         }
-        n = new Node('result','add new result',0,true); // and for the 'add new result'
+        n = new Node('possibleresult','add new result',0,true); // and for the 'add new result'
         graphics[graphics.length] = n;
 
         n = new Node('goal',res.goal.name, res.goal.id, false, res.goal.storiesURL); // add goal node
@@ -271,22 +274,29 @@
 
     }
 
-
-    function read_stories_cb(response){
+    function put_html_in_dialog(response){
         $("#dialog").html(response);
-        
     }
-    function read_stories_error(xhr, ajaxOptions, thrownError){
-        $("#dialog").html(xhr.responseText);
-    }
-    function read(){
-        $("#dialog").html("please wait")
-        $.ajax({type:"GET", url:graphics[selectedGraphic].storiesURL, dataType:"html", success:read_stories_cb, error:read_stories_error});
-//        $.get(graphics[selectedGraphic].storiesURL, {}, read_stories_cb );
+    function put_error_html_in_dialog(xhr, ajaxOptions, thrownError){
+        start = xhr.responseText.indexOf('<body>');
+        stop = xhr.responseText.indexOf('</body>');
+        if (start>=0 & stop>=0){
+            text = xhr.responseText.substring(start+7,stop);
+        } else {
+            text = xhr.responseText;
+        }
+
+        $("#dialog").html(text);
     }
 
-    function write(){
-        alert('write '+graphics[selectedGraphic].toString());
+    function get_read_stories(){
+        $("#dialog").html("please wait")
+        $.ajax({type:"GET", url:graphics[selectedGraphic].storiesURL, dataType:"html", success:put_html_in_dialog, error:put_error_html_in_dialog});
+    }
+
+    function get_write_story(){
+        $("#dialog").html("please wait")
+        $.ajax({type:"GET", url: graphics[selectedGraphic].storiesURL+"/write", dataType:"html", success:put_html_in_dialog, error:put_error_html_in_dialog});
     }
 
   </script>
@@ -301,7 +311,7 @@
 <div id="status"></div>
 <div id="dialog">
 </div>
-<div id="original_dialog">
-	<p><a href="javascript:read();">Read X stories</a></p><p><a href="javascript:write();">Write new story</a></p>
+<div id="read_write_dialog">
+	<p><a href="javascript:get_read_stories();">Read X stories</a></p><p><a href="javascript:get_write_story();">Write new story</a></p>
 </div>
 {% endblock content %}

@@ -25,3 +25,13 @@ def json(request,goal_id):
 def stories(request,goal_id):
     g = get_object_or_404(Goal, pk=goal_id)
     return HttpResponse("stories not implemented yet :S")
+
+def create_possible_result(request,goal_id):
+# return a form used to create possible result
+    g = get_object_or_404(Goal, pk=goal_id)
+    return HttpResponse("create possible result not implemented yet :S")
+
+def create_course_of_action(request,goal_id):
+# return a form used to create course of action
+    g = get_object_or_404(Goal, pk=goal_id)
+    return HttpResponse("create course of action not implemented yet :S")
