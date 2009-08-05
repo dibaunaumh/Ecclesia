@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from django.utils.translation import gettext_lazy as _
-from common.utils import get_domain
+from django.core import urlresolvers
 
 class SpeechAct(models.Model):
     """
@@ -16,7 +16,7 @@ class SpeechAct(models.Model):
         verbose_name_plural = _('speech acts')
     
     def get_absolute_url(self):
-        return "http://%s/admin/discussion/speechact/%s/" % (get_domain(), self.id)
+        return urlresolvers.reverse('admin:discussion_speechact_change', args=(self.id,))
     
     def __unicode__(self):
         return self.name
@@ -41,7 +41,7 @@ class Story(models.Model):
         verbose_name_plural = _('stories')
     
     def get_absolute_url(self):
-        return "http://%s/admin/discussion/story/%s/" % (get_domain(), self.id)
+        return urlresolvers.reverse('admin:discussion_story_change', args=(self.id,))
     
     def __unicode__(self):
         return _('Story #%s') % (self.id)
