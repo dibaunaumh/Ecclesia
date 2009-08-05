@@ -3,6 +3,8 @@ from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
 from common.utils import get_domain
 from groups.models import GroupProfile
+from django.contrib.contenttypes import generic
+from discussion.models import Story
 
 
 class Goal(models.Model):
@@ -19,6 +21,7 @@ class Goal(models.Model):
     created_at = models.DateTimeField(_('created at'), auto_now_add=True, help_text=_('When was the goal created'))
     updated_at = models.DateTimeField(_('updated at'), auto_now=True, help_text=_('When was the goal last updated'))
     
+    stories = generic.GenericRelation(Story, verbose_name=_('stories'))
     
     class Meta:
         verbose_name = _('goal')
