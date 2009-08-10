@@ -5,28 +5,20 @@ from django.contrib.contenttypes import generic
 from django.utils.translation import gettext_lazy as _
 from django.core import urlresolvers
 
-class SpeechAct(models.Model):
-    """
-    A type of speech act
-    """
-    name = models.CharField(_('action type'), max_length=100)
-    
-    class Meta:
-        verbose_name = _('speech act')
-        verbose_name_plural = _('speech acts')
-    
-    def get_absolute_url(self):
-        return urlresolvers.reverse('admin:discussion_speechact_change', args=(self.id,))
-    
-    def __unicode__(self):
-        return self.name
+SPEECH_ACT_CHOICES = (
+                      # These are the types of speech acts available in the system:
+                      (0, _('opinion')),
+                      (1, _('support')),
+                      (2, _('contradiction'))
+                      #TODO: think of good items to put here and revise the list
+                      )
 
 class Story(models.Model):
     """
     A user story attached to some object
     """
     content = models.TextField(_('content'), help_text=_("The user content"))
-    speech_act = models.ForeignKey(SpeechAct, verbose_name=_('speech act'), null=True, blank=True, help_text=_("The speech act of the story"))
+    speech_act = models.SmallIntegerField(choices=SPEECH_ACT_CHOICES, verbose_name=_('speech act'), null=True, blank=True, help_text=_("The speech act of the story"))
     created_by = models.ForeignKey(User, verbose_name=_('created by'), null=True, blank=True, help_text=_('The user that made the speech'))
     created_at = models.DateTimeField(_('created at'), auto_now_add=True, help_text=_('When the speech was made'))
     updated_at = models.DateTimeField(_('updated at'), auto_now=True, help_text=_('When the speech was last updated'))

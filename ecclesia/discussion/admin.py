@@ -8,8 +8,3 @@ class StoryAdmin(admin.ModelAdmin):
     ordering = ('created_at',)
 
 admin.site.register(Story, StoryAdmin)
-
-class SpeechActAdmin(admin.ModelAdmin):
-    pass
-
-admin.site.register(SpeechAct, SpeechActAdmin)
