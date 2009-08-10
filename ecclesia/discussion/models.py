@@ -36,4 +36,4 @@ class Story(models.Model):
         return urlresolvers.reverse('admin:discussion_story_change', args=(self.id,))
     
     def __unicode__(self):
-        return _('Story #%s') % (self.id)
+        return _("%(user)s's %(speechact)s (#%(id)s)") % {'user':self.created_by.get_full_name(), 'speechact':self.get_speech_act_display(), 'id':self.id}
