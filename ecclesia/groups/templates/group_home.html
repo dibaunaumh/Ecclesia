@@ -1,0 +1,38 @@
+{% extends 'admin/base_site.html' %}
+{% load i18n %}
+{% block breadcrumbs %}<div class="breadcrumbs"><a href="/">{% trans 'Home' %}</a> &rsaquo; {{ group.name }}{% trans "'s Home" %}</div>{% endblock %}
+{% block userlinks %}<a href="/admin/password_change/">{% trans 'Change password' %}</a> / <a href="/admin/logout/">{% trans 'Log out' %}</a>{% endblock %}
+{% block title %}{{ group.name }}{% trans "'s Home" %}{% endblock %}
+{% block coltype %}diagram{% endblock %}
+
+{% block content %}
+
+
+<h2>
+    {{ group.name }}{% trans "'s Home" %}
+</h2>
+
+<p>
+	{{ mission_statement }}
+</p>
+
+<hr/>
+
+<h3>Current goals</h3>
+<ul>
+{% for goal in goals %}
+    <li><a href="{{ goal.get_absolute_url }}">{{ goal.name }}</a>
+{% endfor %}
+</ul>
+
+<hr/>
+
+<h3>Current members</h3>
+<ul>
+{% for member in members %}
+    <li><a href="{{ member.get_absolute_url }}">{{ member.username }}</a>
+{% endfor %}
+</ul>
+
+
+{% endblock content %}

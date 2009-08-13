@@ -8,10 +8,9 @@ from django.http import HttpResponse
 
 
 def visualize(request,goal_id):
-    g = get_object_or_404(Goal, pk=goal_id)
-    context = dict()
-    context['goal'] = g
-    return render_to_response('visualize_canvas.html', {'context':context})
+    goal = get_object_or_404(Goal, pk=goal_id)
+    group = goal.group_profile
+    return render_to_response('visualize_canvas.html', locals())
 
 def json(request,goal_id):
     g = get_object_or_404(Goal, pk=goal_id)

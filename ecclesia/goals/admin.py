@@ -16,4 +16,23 @@ class GoalAdmin(admin.ModelAdmin):
     inlines = (StoryInline,)
     
     
+class CourseOfActionAdmin(admin.ModelAdmin):
+    pass
+
+
+class PossibleResultAdmin(admin.ModelAdmin):
+    pass
+
+
+class CausingRelationAdmin(admin.ModelAdmin):
+    pass
+
+
+class LeadingRelationAdmin(admin.ModelAdmin):
+    pass
+    
 admin.site.register(Goal, GoalAdmin)
+admin.site.register(CourseOfAction, CourseOfActionAdmin)
+admin.site.register(PossibleResult, PossibleResultAdmin)
+admin.site.register(CausingRelation, CausingRelationAdmin)
+admin.site.register(LeadingRelation, LeadingRelationAdmin)

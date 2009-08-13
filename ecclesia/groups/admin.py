@@ -1,5 +1,12 @@
+from models import *
 from django.contrib import admin
-from groups.models import *
+from django.contrib.contenttypes import generic
+
+
+
+class MissionStatementInline(admin.TabularInline):
+    model = MissionStatement
+    extra = 1
 
 
 
@@ -8,9 +15,7 @@ class GroupProfileAdmin(admin.ModelAdmin):
     list_filter = ('location', 'created_by',)
     search_fields = ('name', 'group', 'description', 'location',)
     ordering = ('name',)
-    
-    
-
+    inlines = (MissionStatementInline,)
     
 
 admin.site.register(GroupProfile, GroupProfileAdmin)
