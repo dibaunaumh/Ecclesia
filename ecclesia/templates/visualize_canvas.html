@@ -299,7 +299,7 @@
 
     function get_write_story(){
         $("#dialog").html("please wait")
-        $.ajax({type:"GET", url: graphics[selectedGraphic].storiesURL+"/write", dataType:"html", success:put_html_in_dialog, error:put_error_html_in_dialog});
+        $.ajax({type:"GET", url: graphics[selectedGraphic].storiesURL+"write/", dataType:"html", success:put_html_in_dialog, error:put_error_html_in_dialog});
     }
 
   </script>
@@ -315,6 +315,6 @@
 <div id="dialog">
 </div>
 <div id="read_write_dialog">
-	<p><a href="javascript:get_read_stories();">Read X stories</a></p><p><a href="javascript:get_write_story();">Write new story</a></p>
+	<p><a href="javascript:get_read_stories();">Read stories</a></p><p><a href="javascript:get_write_story();">Write new story</a></p>
 </div>
 {% endblock content %}

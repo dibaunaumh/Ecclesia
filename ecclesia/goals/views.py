@@ -23,7 +23,14 @@ def json(request,goal_id):
 
 def stories(request,goal_id):
     g = get_object_or_404(Goal, pk=goal_id)
-    return HttpResponse("stories not implemented yet :S")
+    stories = g.stories.all()
+    return render_to_response('goal_stories_miniform.html', locals())
+
+def write_story(request, goal_id):
+    g = get_object_or_404(Goal, pk=goal_id)
+    g.stories.create(content = 'new', created_by = request.user);
+    return HttpResponse("Done!")
+    
 
 def create_possible_result(request,goal_id):
 # return a form used to create possible result
