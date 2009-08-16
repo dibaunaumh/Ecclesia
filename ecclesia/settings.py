@@ -75,6 +75,7 @@ TEMPLATE_DIRS = (
     # Don't forget to use absolute paths, not relative paths.
     '%s/templates' % base_dir, 
     '%s/groups/templates' % base_dir,
+    '%s/goals/templates' % base_dir,
 )
 
 INSTALLED_APPS = (

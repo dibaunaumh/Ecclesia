@@ -5,6 +5,7 @@ Test suite for the groups app business logic & views.
 from django.test import TestCase, Client
 from django.contrib.auth.models import Group, User
 from models import *
+from factory import *
 from goals.models import Goal
 
 
@@ -22,62 +23,25 @@ class GroupsTest(TestCase):
         because of the dependency on contrib.auth.models.Group.
         """
         # create 2 groups
-        self.users.append(self.create_user("__user1__", "Joe", "Smith"))
-        self.users.append(self.create_user("__user2__", "Alice", "Jones"))
-        self.users.append(self.create_user("__user3__", "Mary", "Willson"))
-        self.users.append(self.create_user("__user4__", "Mary", "Willson"))
-        self.users.append(self.create_user("__user5__", "Mary", "Willson"))
-        self.users.append(self.create_user("__user6__", "Mary", "Willson"))
+        self.users.append(create_user("__user1__", "Joe", "Smith"))
+        self.users.append(create_user("__user2__", "Alice", "Jones"))
+        self.users.append(create_user("__user3__", "Mary", "Willson"))
+        self.users.append(create_user("__user4__", "Mary", "Willson"))
+        self.users.append(create_user("__user5__", "Mary", "Willson"))
+        self.users.append(create_user("__user6__", "Mary", "Willson"))
         self.members["__group1__"] = [self.users[0], self.users[3],]
         self.members["__group2__"] = [self.users[1], self.users[2], self.users[3], self.users[4],]
-        self.groups.append(self.create_group("__group1__", self.users[0], self.members["__group1__"]))
-        self.groups.append(self.create_group("__group2__", self.users[1], self.members["__group2__"]))
+        self.groups.append(create_group("__group1__", self.users[0], self.members["__group1__"]))
+        self.groups.append(create_group("__group2__", self.users[1], self.members["__group2__"]))
         # create 3 goals
-        self.goals["__group1__"] = [self.create_goal("__goal1.1__", self.groups[0], self.users[0]),
-                                    self.create_goal("__goal1.2__", self.groups[0], self.users[0]),
-                                    self.create_goal("__goal1.3__", self.groups[0], self.users[2]),
+        self.goals["__group1__"] = [create_goal("__goal1.1__", self.groups[0], self.users[0]),
+                                    create_goal("__goal1.2__", self.groups[0], self.users[0]),
+                                    create_goal("__goal1.3__", self.groups[0], self.users[2]),
                                     ]
-        self.goals["__group2__"] = [self.create_goal("__goal2.1__", self.groups[1], self.users[1]),
-                                    self.create_goal("__goal2.2__", self.groups[1], self.users[2]),
+        self.goals["__group2__"] = [create_goal("__goal2.1__", self.groups[1], self.users[1]),
+                                    create_goal("__goal2.2__", self.groups[1], self.users[2]),
                                     ]
 
-
-    def create_user(self, username, first_name, last_name):
-        user = User(username=username)
-        user.first_name = first_name
-        user.last_name = last_name
-        user.save()
-        return user
-
-
-    def create_group(self, name, created_by, members):
-        group = Group(name=name)
-        group.save()
-        group_profile = GroupProfile()
-        group_profile.group = group
-        group_profile.name = group.name
-        group_profile.description = "A test group"
-        group_profile.location = "Israel"
-        group_profile.created_by = created_by
-        group_profile.save()
-        for member in members:
-            self.join_group(group, member)
-        return group_profile
-    
-    
-    def join_group(self, group, member):
-        member.groups.add(group)
-        member.save()
-
-
-    def create_goal(self, name, group, created_by):
-        goal = Goal()
-        goal.name = name
-        goal.short_description = "Test goal %s" % name
-        goal.group_profile = group
-        goal.created_by = created_by
-        goal.save()
-        return goal
     
 
     def test_home_page(self):

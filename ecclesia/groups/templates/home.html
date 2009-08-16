@@ -15,11 +15,19 @@
 {% endblocktrans %}   
 </p>
 
+<hr/>
+
 <h3>Current groups</h3>
 <ul>
 {% for group in groups %}
     <li><a href="{{ group.get_absolute_url }}">{{ group.name }}</a>
 {% endfor %}
 </ul>
+
+
+<hr/>
+
+<input type="button" value="{% trans 'Create Group' %}" onclick="document.location.href='/admin/groups/groupprofile/add/'"/>
+
 
 {% endblock content %}

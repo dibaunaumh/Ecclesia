@@ -8,3 +8,7 @@ def get_domain():
     """
     site = Site.objects.get(pk=settings.SITE_ID)
     return site.domain
+
+
+def clear_whitespaces(s):
+    return s.replace("\n", "").replace(" ", "")

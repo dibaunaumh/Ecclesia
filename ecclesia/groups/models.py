@@ -10,7 +10,7 @@ class GroupProfile(models.Model):
     common goals. Uses a django.contrib.auth Group to manage
     the actual group membership.
     """
-    group = models.ForeignKey(Group, verbose_name=_('group'), related_name='profile', help_text=_('The internal Group entity'))
+    group = models.ForeignKey(Group, verbose_name=_('group'), related_name='profile', help_text=_("The internal Group entity. If you are adding a Profile Group, please create a new Group & don't select an existing one"))
     name = models.SlugField(_('name'), help_text=_('The name of the group. No whitespaces allowed - use hyphen to separate words.'))
     description = models.TextField(_('description'), max_length=1000, null=True, blank=True, help_text=_("The group's description"))
     parent = models.ForeignKey('self', verbose_name=_('parent'), related_name='children', null=True, blank=True, help_text=_('The parent group containing this group'))
