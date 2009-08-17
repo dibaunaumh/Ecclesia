@@ -11,7 +11,7 @@ class Goal(models.Model):
     """
     An agreed goal of a group.
     """
-    group_profile = models.ForeignKey(GroupProfile, verbose_name=_('group profile'), help_text=_("The goal's group"))
+    group_profile = models.ForeignKey(GroupProfile, verbose_name=_('group profile'), related_name='goals', help_text=_("The goal's group"))
     name = models.SlugField(_('name'), help_text=_('The name of the goal. No whitespaces allowed - use hyphen to separate words.'))
     short_description = models.CharField(_('short description'), max_length=500, help_text=_('A short description of the goal.'))
     parent = models.ForeignKey('self', verbose_name=_('parent'), related_name='children', null=True, blank=True, help_text=_('The parent goal containing this goal'))
@@ -29,7 +29,7 @@ class Goal(models.Model):
         
     
     def get_absolute_url(self):
-        return "http://%s/admin/goals/goal/%s/" % (get_domain(), self.name)
+        return "http://%s/goal/%d/visualize" % (get_domain(), self.id)
     
     
     def __unicode__(self):

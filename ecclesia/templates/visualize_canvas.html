@@ -1,5 +1,8 @@
 {% extends 'admin/base_site.html' %}
 {% load i18n %}
+{% block breadcrumbs %}<div class="breadcrumbs"><a href="/">{% trans 'Home' %}</a> &rsaquo; <a href="{{ group.get_absolute_url }}">{{ group.name }}{% trans "'s Home" %}</a> &rsaquo; {{ goal.name }} {% trans 'path resolution' %}</div>{% endblock %}
+{% block userlinks %}<a href="/admin/password_change/">{% trans 'Change password' %}</a> / <a href="/admin/logout/">{% trans 'Log out' %}</a>{% endblock %}
+{% block coltype %}diagram{% endblock %}
 
 {% block extrahead %}
     
@@ -23,7 +26,7 @@
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillStyle = "rgb(230,0,0)";
-            $.get("../json/", { 'a': 1, 'b': 2 }, json_cb );
+            $.get("../data/", { 'a': 1, 'b': 2 }, json_cb );
 
 
             $("#dialog").dialog({ autoOpen: false, width: 150, height:100, resizable: false, draggable: false });
@@ -296,13 +299,13 @@
 
     function get_write_story(){
         $("#dialog").html("please wait")
-        $.ajax({type:"GET", url: graphics[selectedGraphic].storiesURL+"/write", dataType:"html", success:put_html_in_dialog, error:put_error_html_in_dialog});
+        $.ajax({type:"GET", url: graphics[selectedGraphic].storiesURL+"write/", dataType:"html", success:put_html_in_dialog, error:put_error_html_in_dialog});
     }
 
   </script>
 
 {% endblock extrahead %}
-{% block title %} {{ title }} | {% trans 'Ecclesia' %} :: {{ context.goal.name }} {% endblock title %}
+{% block title %} {{ title }} | {% trans 'Ecclesia' %} :: {{ goal.name }} {% endblock title %}
 {% block content %}
 <h1>How to get to {{ context.goal.name }}?</h1><p>Click on an item to add your ideas and opinions regarding it.</p>
 <div id="myDiv">
@@ -312,6 +315,6 @@
 <div id="dialog">
 </div>
 <div id="read_write_dialog">
-	<p><a href="javascript:get_read_stories();">Read X stories</a></p><p><a href="javascript:get_write_story();">Write new story</a></p>
+	<p><a href="javascript:get_read_stories();">Read stories</a></p><p><a href="javascript:get_write_story();">Write new story</a></p>
 </div>
 {% endblock content %}
