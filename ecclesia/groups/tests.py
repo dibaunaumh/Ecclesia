@@ -7,6 +7,7 @@ from django.contrib.auth.models import Group, User
 from models import *
 from factory import *
 from goals.models import Goal
+import sys
 
 
 class GroupsTest(TestCase):

@@ -23,13 +23,18 @@ def group_home(request, group_name):
         raise Http404("Can't find group named: %s" % group_name)
     else:
         group = query[0]
-    query = group.mission_statements.all()
+    query = group.mission_statements.all().order_by("-created_at")
     if query.count() > 0:
         mission_statement = query[0].mission_statement
     else:
         mission_statement = ""
     goals = group.goals.all()
     members = User.objects.filter(groups=group.group)
+    user_in_group = False
+    try:
+        user_in_group = request.user.groups.filter(id=group.group.id).count() > 0
+    except:
+        pass
     return render_to_response('group_home.html', locals())
 
 

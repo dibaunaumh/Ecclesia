@@ -15,6 +15,9 @@
 <p>
 	{{ mission_statement }}
 </p>
+{% if user_in_group %}
+    <input type="button" value="{% trans 'Add Mission Statement' %}" onclick="document.location.href='/admin/groups/missionstatement/add/?group_profile={{ group.id }}'"/>
+{% endif %}
 
 <hr/>
 
@@ -23,6 +26,9 @@
 {% for goal in goals %}
     <li><a href="{{ goal.get_absolute_url }}">{{ goal.name }}</a>
 {% endfor %}
+{% if user_in_group %}
+    <li><input type="button" value="{% trans 'Create Goal' %}" onclick="document.location.href='/admin/goals/goal/add/?group_profile={{ group.id }}'"/>
+{% endif %}
 </ul>
 
 <hr/>
