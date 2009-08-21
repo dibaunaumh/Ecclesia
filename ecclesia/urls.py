@@ -18,6 +18,8 @@ urlpatterns = patterns('',
     (r'^static/(?P<path>.*)$', 'django.views.static.serve', {'document_root': 'static'}), # serve static content. only for development.
 
     (r'^goal/', include('ecclesia.goals.urls')),
+    
+    (r'^story/', include('ecclesia.discussion.urls')),
 
     (r'^', include('ecclesia.groups.urls')),
 )

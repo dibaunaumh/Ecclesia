@@ -19,7 +19,7 @@ class Story(models.Model):
     """
     content = models.TextField(_('content'), help_text=_("The user content"))
     speech_act = models.SmallIntegerField(choices=SPEECH_ACT_CHOICES, verbose_name=_('speech act'), null=True, blank=True, help_text=_("The speech act of the story"))
-    created_by = models.ForeignKey(User, verbose_name=_('created by'), null=True, blank=True, help_text=_('The user that made the speech'))
+    created_by = models.ForeignKey(User, editable=False, verbose_name=_('created by'), null=True, blank=True, help_text=_('The user that made the speech'))
     created_at = models.DateTimeField(_('created at'), auto_now_add=True, help_text=_('When the speech was made'))
     updated_at = models.DateTimeField(_('updated at'), auto_now=True, help_text=_('When the speech was last updated'))
     
