@@ -299,7 +299,19 @@
 
     function get_write_story(){
         $("#dialog").html("please wait")
-        $.ajax({type:"GET", url: graphics[selectedGraphic].storiesURL+"write/", dataType:"html", success:put_html_in_dialog, error:put_error_html_in_dialog});
+        $.ajax({type:"GET", url: graphics[selectedGraphic].storiesURL+"write/", dataType:"html", success:put_form_in_dialog, error:put_error_html_in_dialog});
+    }
+
+    function put_form_in_dialog(response){
+        put_html_in_dialog(response);
+        $("#miniform").ajaxForm({ success:handle_submit_response });
+    }
+    function handle_submit_response(response,status){
+        if (response == "OK") {
+            put_html_in_dialog("{% trans "Thank you!" %}");
+        } else {
+            put_form_in_dialog(response);
+        }
     }
 
   </script>

@@ -1,6 +1,7 @@
 # This Python file uses the following encoding: utf-8
 from ecclesia.goals.models import *
 from ecclesia.operations.models import *
+from ecclesia.discussion.forms import get_story_form_for_object
 
 from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponseRedirect
@@ -54,8 +55,8 @@ def stories(request,goal_id):
 
 def write_story(request, goal_id):
     g = get_object_or_404(Goal, pk=goal_id)
-    g.stories.create(content = 'new', created_by = request.user);
-    return HttpResponse("Done!")
+    form = get_story_form_for_object(g)
+    return render_to_response('write_story_miniform.html', {'form':form})
     
 
 def create_possible_result(request,goal_id):
