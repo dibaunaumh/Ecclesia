@@ -49,11 +49,12 @@
                     selectedGraphic = clicked;
                     if(graphics[selectedGraphic].addNew === true){ // this is a 'create new' button
                         $("#dialog").html('please wait');                    
-                        $.ajax({type:"GET", url:"/goal/"+goalNode.objId+"/"+graphics[selectedGraphic].type+"/create", dataType:"html", success:put_html_in_dialog, error:put_error_html_in_dialog});
+                        $.ajax({type:"GET", url:"/goal/"+goalNode.objId+"/"+graphics[selectedGraphic].type+"/create/", dataType:"html", success:put_html_in_dialog, error:put_error_html_in_dialog});
                         
                     } else { // this is a normal node. show the read/write stories dialog
                         html = $("#read_write_dialog").html();
                         $("#dialog").html(html);
+                        $.ajax({type:"GET", url: graphics[selectedGraphic].storiesURL+"count/", dataType:"html", success:update_num_stories, error:put_error_html_in_dialog});
                     }
                     $("#dialog").dialog('option', 'position', [e.pageX - scrollX, e.pageY - scrollY]);
                     $("#dialog").dialog('option', 'title', graphics[clicked].toString());
@@ -279,10 +280,16 @@
 
     }
 
+    function update_num_stories(response){
+        html = $("#dialog").html();        
+        pos = html.indexOf('Read stories') + 5; // 5 is the length of 'Read '
+        html = html.substring(0,pos) + response + html.substring(pos-1);
+        $("#dialog").html(html);
+    }
+
+
     function put_html_in_dialog(response){
         $("#dialog").html(response);
-        //$("#dialog").resizable();
-
     }
     function put_error_html_in_dialog(xhr, ajaxOptions, thrownError){
         start = xhr.responseText.indexOf('<body>');

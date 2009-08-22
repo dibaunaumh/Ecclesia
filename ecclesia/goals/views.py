@@ -36,6 +36,12 @@ def get_path_resolution_data(request,goal_id):
     return render_to_response('path_resolution_data.json', locals())
 
 
+def get_number_of_stories(request,goal_id):
+    g = get_object_or_404(Goal, pk=goal_id)
+    num_stories = g.stories.count()
+    return HttpResponse('%d' % num_stories)
+
+
 def stories(request,goal_id):
     g = get_object_or_404(Goal, pk=goal_id)
     stories = g.stories.all()
