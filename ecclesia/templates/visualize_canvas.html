@@ -29,7 +29,7 @@
             $.get("../data/", { 'a': 1, 'b': 2 }, json_cb );
 
 
-            $("#dialog").dialog({ autoOpen: false, width: 150, height:100, resizable: false, draggable: false });
+            $("#dialog").dialog({ autoOpen: false, width: 250, height:200 });
             $("#read_write_dialog").hide();
 
             $("#canvas").click(function(e){
@@ -57,6 +57,8 @@
                     }
                     $("#dialog").dialog('option', 'position', [e.pageX - scrollX, e.pageY - scrollY]);
                     $("#dialog").dialog('option', 'title', graphics[clicked].toString());
+                    $("#dialog").dialog('option', 'draggable', true);
+                    $("#dialog").dialog('option', 'resizable', true);
                     $("#dialog").dialog('open');
                 } else { // no graphic object was clicked. just bacground
                     clearSelection();
@@ -279,6 +281,8 @@
 
     function put_html_in_dialog(response){
         $("#dialog").html(response);
+        //$("#dialog").resizable();
+
     }
     function put_error_html_in_dialog(xhr, ajaxOptions, thrownError){
         start = xhr.responseText.indexOf('<body>');

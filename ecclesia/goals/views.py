@@ -35,18 +35,6 @@ def get_path_resolution_data(request,goal_id):
     leading_relations_list = ",".join(['{"from":%d,"storiesURL":"/stories/"}' % lr.possible_result.id for lr in leading_relations])
     return render_to_response('path_resolution_data.json', locals())
 
-def stories(request,goal_id):
-    g = get_object_or_404(Goal, pk=goal_id)
-    return HttpResponse("stories not implemented yet :S")
-def create_possible_result(request,goal_id):
-# return a form used to create possible result
-    g = get_object_or_404(Goal, pk=goal_id)
-    return HttpResponse("create possible result not implemented yet :S")
-def create_course_of_action(request,goal_id):
-# return a form used to create course of action
-    g = get_object_or_404(Goal, pk=goal_id)
-    return HttpResponse("create course of action not implemented yet :S")
-
 
 def stories(request,goal_id):
     g = get_object_or_404(Goal, pk=goal_id)
