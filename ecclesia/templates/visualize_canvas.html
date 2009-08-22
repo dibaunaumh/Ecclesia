@@ -210,13 +210,13 @@
             
             ctx.fillText(text,0,0);
         } else {
-            var spl = text.split(' ');
+            var spl = text.split('-');
             var len = Math.floor(spl.length/2);
             var pos = 0;
             for (var i=0; i<len; i++){
-                pos = text.indexOf(' ',pos)+1;
+                pos = text.indexOf('-',pos)+1;
             }            
-            var text1 = text.substring(0,pos-1);
+            var text1 = text.substring(0,pos);
             var text2 = text.substring(pos);
             ctx.fillText(text1,0,-10);
             ctx.fillText(text2,0,+10);
