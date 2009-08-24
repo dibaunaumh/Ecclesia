@@ -1,6 +1,6 @@
 {% extends 'admin/base_site.html' %}
 {% load i18n %}
-{% block breadcrumbs %}<div class="breadcrumbs"><a href="/">{% trans 'Home' %}</a> &rsaquo; <a href="{{ group.get_absolute_url }}">{{ group.name }}{% trans "'s Home" %}</a> &rsaquo; {{ goal.name }} {% trans 'path resolution' %}</div>{% endblock %}
+{% block breadcrumbs %}<div class="breadcrumbs"><a href="/">{% trans 'Home' %}</a> &rsaquo; <a href="{{ group.get_absolute_url }}">{% blocktrans with group.name as group_name %}{{ group_name }}'s Home{% endblocktrans %}</a> &rsaquo; {% blocktrans with goal.name as goal_name %}{{ goal_name }} path resolution{% endblocktrans %}</div>{% endblock %}
 {% block userlinks %}<a href="/admin/password_change/">{% trans 'Change password' %}</a> / <a href="/admin/logout/">{% trans 'Log out' %}</a>{% endblock %}
 {% block coltype %}diagram{% endblock %}
 
@@ -48,7 +48,7 @@
                     graphics[clicked].draw(true);
                     selectedGraphic = clicked;
                     if(graphics[selectedGraphic].addNew === true){ // this is a 'create new' button
-                        $("#dialog").html('please wait');                    
+                        $("#dialog").html('{% trans "Please wait" %}');
                         $.ajax({type:"GET", url:"/goal/"+goalNode.objId+"/"+graphics[selectedGraphic].type+"/create/", dataType:"html", success:put_form_in_dialog, error:put_error_html_in_dialog});
                         
                     } else { // this is a normal node. show the read/write stories dialog
@@ -248,7 +248,7 @@
             graphics[graphics.length] = n;
             actionNodes[n.objId] = n;
         }
-        n = new Node('courseofaction','add new action',-1, true, '', numActions-1); // and a node for 'add new action'
+        n = new Node('courseofaction','{% trans "Add new action" %}',-1, true, '', numActions-1); // and a node for 'add new action'
         graphics[graphics.length] = n;
         
         numResults = res.results.length+1;
@@ -258,7 +258,7 @@
             graphics[graphics.length] = n;
             resultNodes[n.objId] = n;
         }
-        n = new Node('possibleresult','add new result',0,true, '', numResults-1); // and for the 'add new result'
+        n = new Node('possibleresult','{% trans "Add new result" %}',0,true, '', numResults-1); // and for the 'add new result'
         graphics[graphics.length] = n;
 
         n = new Node('goal',res.goal.name, res.goal.id, false, res.goal.storiesURL, 0); // add goal node
@@ -289,8 +289,8 @@
 
     function update_num_stories(response){
         html = $("#dialog").html();        
-        pos = html.indexOf('Read stories') + 5; // 5 is the length of 'Read '
-        html = html.substring(0,pos) + response + html.substring(pos-1);
+        pos = html.indexOf('##num_stories##');
+        html = html.substring(0,pos) + response + html.substring(pos+15); // 15 is the length of '##num_stories##'
         $("#dialog").html(html);
     }
 
@@ -311,12 +311,12 @@
     }
 
     function get_read_stories(){
-        $("#dialog").html("please wait")
+        $("#dialog").html("{% trans "Please wait" %}")
         $.ajax({type:"GET", url:graphics[selectedGraphic].storiesURL, dataType:"html", success:put_html_in_dialog, error:put_error_html_in_dialog});
     }
 
     function get_write_story(){
-        $("#dialog").html("please wait")
+        $("#dialog").html("{% trans "Please wait" %}")
         $.ajax({type:"GET", url: graphics[selectedGraphic].storiesURL+"write/", dataType:"html", success:put_form_in_dialog, error:put_error_html_in_dialog});
     }
 
@@ -340,7 +340,7 @@
 {% endblock extrahead %}
 {% block title %} {{ title }} | {% trans 'Ecclesia' %} :: {{ goal.name }} {% endblock title %}
 {% block content %}
-<h1>How to get to {{ context.goal.name }}?</h1><p>Click on an item to add your ideas and opinions regarding it.</p>
+<h1>{% blocktrans with context.goal.name as goal_name %}How to get to {{ goal_name }}?{% endblocktrans %}</h1><p>{% trans "Click on an item to add your ideas and opinions regarding it." %}</p>
 <div id="myDiv">
 <canvas id="canvas" width="800" height="400"></canvas>
 </div>
@@ -348,6 +348,6 @@
 <div id="dialog">
 </div>
 <div id="read_write_dialog">
-	<p><a href="javascript:get_read_stories();">Read stories</a></p><p><a href="javascript:get_write_story();">Write new story</a></p>
+    <p><a href="javascript:get_read_stories();">{% blocktrans with "##num_stories##" as num_stories %}Read {{ num_stories }} stories{% endblocktrans %}</a></p><p><a href="javascript:get_write_story();">{% trans "Write new story" %}</a></p>
 </div>
 {% endblock content %}
