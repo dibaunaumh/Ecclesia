@@ -1,7 +1,9 @@
 # This Python file uses the following encoding: utf-8
 from ecclesia.goals.models import *
 from ecclesia.operations.models import *
+from ecclesia.goals.forms import *
 from ecclesia.discussion.forms import get_story_form_for_object
+
 
 from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponseRedirect
@@ -20,9 +22,9 @@ def get_path_resolution_data(request,goal_id):
     """
     goal = get_object_or_404(Goal, pk=goal_id)
     actions = CourseOfAction.objects.filter(goal=goal)
-    actions_list = ",".join(['{"id":%d,"name":"%s","storiesURL":"/stories/"}' % (action.id, action.name) for action in actions]) 
+    actions_list = ",".join(['{"id":%d,"name":"%s","storiesURL":"/goal/%d/courseofaction/%d/stories/"}' % (action.id, action.name, goal.id, action.id) for action in actions]) 
     results = PossibleResult.objects.filter(goal=goal)
-    results_list = ",".join(['{"id":%d,"name":"%s","storiesURL":"/stories/"}' % (result.id, result.name) for result in results]) 
+    results_list = ",".join(['{"id":%d,"name":"%s","storiesURL":"/goal/%d/possibleresult/%d/stories/"}' % (result.id, result.name, goal.id, result.id) for result in results]) 
     causing_relations = []
     for action in actions:
         for cr in CausingRelation.objects.filter(course_of_action=action):
@@ -55,10 +57,42 @@ def write_story(request, goal_id):
 
 def create_possible_result(request,goal_id):
 # return a form used to create possible result
-    g = get_object_or_404(Goal, pk=goal_id)
-    return HttpResponse("create possible result not implemented yet :S")
+    if request.method=='GET':
+        g = get_object_or_404(Goal, pk=goal_id)
+        form = get_possible_result_form(g)
+        return render_to_response('create_course_of_action_miniform.html', {'form':form, 'action':request.path}) # TODO: make another form, or generic form
+    else:
+        possible_result = PossibleResult()
+        form = PossibleResultForm(request.POST)
+        if form.is_valid():
+            possible_result.goal = form.cleaned_data['goal']
+            possible_result.name = form.cleaned_data['name']
+            possible_result.short_description = form.cleaned_data['short_description']
+            possible_result.created_by = request.user
+            possible_result.save()
+        else:
+            return render_to_response('create_course_of_action_miniform.html', {'form':form, 'action':request.path}) # TODO: make another form, or generic form
+    return HttpResponse('REFRESH')  
 
 def create_course_of_action(request,goal_id):
 # return a form used to create course of action
-    g = get_object_or_404(Goal, pk=goal_id)
-    return HttpResponse("create course of action not implemented yet :S")
+    if request.method=='GET':
+        g = get_object_or_404(Goal, pk=goal_id)
+        form = get_course_of_action_form(g)
+        return render_to_response('create_course_of_action_miniform.html', {'form':form, 'action':request.path})
+    else:
+        course_of_action = CourseOfAction()
+        form = CourseOfActionForm(request.POST)
+        if form.is_valid():
+            course_of_action.goal = form.cleaned_data['goal']
+            course_of_action.name = form.cleaned_data['name']
+            course_of_action.short_description = form.cleaned_data['short_description']
+            course_of_action.created_by = request.user
+            course_of_action.save()
+        else:
+            return render_to_response('create_course_of_action_miniform.html', {'form':form, 'action':request.path})
+    return HttpResponse('REFRESH')        
+
+
+
+

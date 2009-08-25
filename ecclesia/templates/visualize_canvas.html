@@ -26,7 +26,7 @@
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillStyle = "rgb(230,0,0)";
-            $.get("../data/", { 'a': 1, 'b': 2 }, json_cb );
+            $.get("../data/", { }, json_cb );
 
 
             $("#dialog").dialog({ autoOpen: false, width: 250, height:200 });
@@ -49,7 +49,7 @@
                     selectedGraphic = clicked;
                     if(graphics[selectedGraphic].addNew === true){ // this is a 'create new' button
                         $("#dialog").html('please wait');                    
-                        $.ajax({type:"GET", url:"/goal/"+goalNode.objId+"/"+graphics[selectedGraphic].type+"/create/", dataType:"html", success:put_html_in_dialog, error:put_error_html_in_dialog});
+                        $.ajax({type:"GET", url:"/goal/"+goalNode.objId+"/"+graphics[selectedGraphic].type+"/create/", dataType:"html", success:put_form_in_dialog, error:put_error_html_in_dialog});
                         
                     } else { // this is a normal node. show the read/write stories dialog
                         html = $("#read_write_dialog").html();
@@ -69,11 +69,11 @@
            }); 
       });
 
+
+
     var ctx;
     var numActions = 0;
-    var iActions = 0;
     var numResults = 0;
-    var iResults = 0;
     var canvasW = 0;
     var canvasH = 0;
     var graphics = Array();
@@ -125,28 +125,27 @@
         }
     }
 
-    function Node(type,label,objId,addNew,storiesURL){
+    function Node(type,label,objId,addNew,storiesURL,index){
         this.objId = objId;
         this.type = type;
         this.label = label;
         this.addNew = addNew;
-        this.storiesURL = storiesURL;        
+        this.storiesURL = storiesURL; 
+        this.index = index;       
         this.x = 0;
         this.y = 0;
         this.w = 0; // width
         this.h = 0; // height
         switch (this.type){
             case 'courseofaction':
-                iActions++;
                 this.x = 100;
-                this.y = 10+(canvasH-20)/(numActions+1)*iActions;
+                this.y = 10+(canvasH-20)/(numActions+1)*(this.index+1);
                 this.w = 100;
                 this.h = 60;
                 break;
-            case 'possibleresult':
-                iResults++;                
+            case 'possibleresult':               
                 this.x = 350;
-                this.y = 10+(canvasH-20)/(numResults+1)*iResults;
+                this.y = 10+(canvasH-20)/(numResults+1)*(this.index+1);
                 this.w = 100;
                 this.h = 60;
                 break;
@@ -234,32 +233,39 @@
     }
 
     function json_cb(data, textStatus){
+
+        // clear current canvas
+        ctx.fillStyle = "rgb(230,230,230)";
+        ctx.fillRect(0,0,canvasW,canvasH);        
+        
         // read the json we got from the server, and draw all nodes.
         res = eval('('+data+')');
         numActions = res.actions.length+1;
         graphics = new Array();
+        actionNodes =  {};
         for(i=0;i<numActions-1;i++){ // add a node for each action
-            n = new Node('courseofaction', res.actions[i].name,res.actions[i].id, false, res.actions[i].storiesURL);
+            n = new Node('courseofaction', res.actions[i].name,res.actions[i].id, false, res.actions[i].storiesURL, i);
             graphics[graphics.length] = n;
             actionNodes[n.objId] = n;
         }
-        n = new Node('courseofaction','add new action',-1, true); // and a node for 'add new action'
+        n = new Node('courseofaction','add new action',-1, true, '', numActions-1); // and a node for 'add new action'
         graphics[graphics.length] = n;
         
         numResults = res.results.length+1;
+        resultNodes =  {};
         for(i=0;i<numResults-1;i++){ // add a node for each result
-            n = new Node('possibleresult',res.results[i].name,res.results[i].id,false, res.results[i].storiesURL);
+            n = new Node('possibleresult',res.results[i].name,res.results[i].id,false, res.results[i].storiesURL, i);
             graphics[graphics.length] = n;
             resultNodes[n.objId] = n;
         }
-        n = new Node('possibleresult','add new result',0,true); // and for the 'add new result'
+        n = new Node('possibleresult','add new result',0,true, '', numResults-1); // and for the 'add new result'
         graphics[graphics.length] = n;
 
-        n = new Node('goal',res.goal.name, res.goal.id, false, res.goal.storiesURL); // add goal node
+        n = new Node('goal',res.goal.name, res.goal.id, false, res.goal.storiesURL, 0); // add goal node
         graphics[graphics.length] = n;
         goalNode = n;
 
-        
+        a2rArrows =  {};
         for(i=0;i<res.a2r.length;i++){ // draw arrows from actions to results
             n1 = actionNodes[res.a2r[i].from]; // from node
             n2 = resultNodes[res.a2r[i].to];   // to node
@@ -267,6 +273,7 @@
             a2rArrows[i] = a;
             graphics[graphics.length] = a;
         }
+        r2gArrows =  {};
         for(i=0;i<res.r2g.length;i++){ // draw arrows from results to goal
             n1 = resultNodes[res.r2g[i].from]; // from node
             a = new Arrow('leads to',n1,goalNode,n1.x+n1.w/2,n1.y,goalNode.x-goalNode.w/2,goalNode.y*0.85+n1.y*0.15,res.r2g[i].storiesURL);
@@ -320,6 +327,9 @@
     function handle_submit_response(response,status){
         if (response == "OK") {
             put_html_in_dialog("{% trans "Thank you!" %}");
+        } else if (response == "REFRESH") {
+            $.get("../data/", { }, json_cb );
+            put_html_in_dialog("{% trans "Added!" %}");
         } else {
             put_form_in_dialog(response);
         }

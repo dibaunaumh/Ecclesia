@@ -44,7 +44,7 @@ class CourseOfAction(models.Model):
     short_description = models.CharField(_('short description'), max_length=500, help_text=_('A short description of the goal.'))
     parent = models.ForeignKey('self', verbose_name=_('parent'), related_name='children', null=True, blank=True, help_text=_('The parent goal containing this goal'))
     forked_from = models.ForeignKey('self', verbose_name=_('forked from'), related_name='forks', null=True, blank=True, help_text=_('The goal from which this goal forked'))
-    possible_results = models.ManyToManyField('PossibleResult', verbose_name=_('possible results'), related_name='courses_of_action', through='CausingRelation')
+    possible_results = models.ManyToManyField('PossibleResult', verbose_name=_('possible results'), related_name='courses_of_action', through='CausingRelation', blank=True, null=True)
     #tags
     created_by = models.ForeignKey(User, verbose_name=_('created by'), null=True, blank=True, help_text=_('The user that created the goal'))
     created_at = models.DateTimeField(_('created at'), auto_now_add=True, help_text=_('When was the goal created'))
