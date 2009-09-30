@@ -13,6 +13,7 @@ from django.http import HttpResponse
 def visualize(request,goal_id):
     goal = get_object_or_404(Goal, pk=goal_id)
     group = goal.group_profile
+    user = request.user
     return render_to_response('visualize_canvas.html', locals())
 
 def get_path_resolution_data(request,goal_id):

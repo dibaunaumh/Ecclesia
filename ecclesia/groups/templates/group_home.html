@@ -7,7 +7,6 @@
 
 {% block content %}
 
-
 <h2>
     {{ group.name }}{% trans "'s Home" %}
 </h2>
@@ -15,9 +14,13 @@
 <p>
 	{{ mission_statement }}
 </p>
+
 {% if user_in_group %}
-    <input type="button" value="{% trans 'Add Mission Statement' %}" onclick="document.location.href='/admin/groups/missionstatement/add/?group_profile={{ group.id }}'"/>
+    <input id="add_mission" type="button" value="{% trans 'Add Mission Statement' %}" onclick="document.location.href='/admin/groups/missionstatement/add/?group_profile={{ group.id }}'"/>
+{% else %}
+	<input id="add_mission" type="hidden" value="{% trans 'Add Mission Statement' %}" onclick="document.location.href='/admin/groups/missionstatement/add/?group_profile={{ group.id }}'"/>
 {% endif %}
+
 
 <hr/>
 
@@ -26,9 +29,13 @@
 {% for goal in goals %}
     <li><a href="{{ goal.get_absolute_url }}">{{ goal.name }}</a>
 {% endfor %}
+
 {% if user_in_group %}
-    <li><input type="button" value="{% trans 'Create Goal' %}" onclick="document.location.href='/admin/goals/goal/add/?group_profile={{ group.id }}'"/>
+    <br/>&nbsp;&nbsp;&nbsp;<input id="create_goal" type="button" value="{% trans 'Create Goal' %}" onclick="document.location.href='/admin/goals/goal/add/?group_profile={{ group.id }}'"/>
+{% else %}
+	<br/>&nbsp;&nbsp;&nbsp;<input id="create_goal" type="hidden" value="{% trans 'Create Goal' %}" onclick="document.location.href='/admin/goals/goal/add/?group_profile={{ group.id }}'"/>
 {% endif %}
+
 </ul>
 
 <hr/>

@@ -22,10 +22,15 @@
 
 <script type="text/javascript">
 	URL = window.location.href;
-	if (URL.indexOf('admin/groups/groupprofile/') > 0 || (URL.indexOf('/group') > 0))
+	$(document).ready(function() {
+	if ((URL.indexOf('login') > 0) || (URL.indexOf('logout') > 0))
+	{
+		document.getElementById('user-tools').style.display="none";
+	}
+	if (URL.indexOf('/group') > 0)
 	{
 		$.get("/group/is_in_group/",
-			 {group_id: URL.split("/").reverse()[1]},
+			 {group_name: URL.split("/").reverse()[1]},
 	         function(returned_data)
 	         {
 	         	if (returned_data=="True")
@@ -40,10 +45,13 @@
 				}
 	         });
 	}
+	});
 	function join_group(){
-		$.post("/group/join_group/", {group_id: URL.split("/").reverse()[1]});
+		$.post("/group/join_group/", {group_name: URL.split("/").reverse()[1]});
 		document.getElementById('join_group').style.display='none';
 		document.getElementById('leave_group').style.display='block';
+		document.getElementById('add_mission').type='button';
+		document.getElementById('create_goal').type='button';
 	}
 	function leave_group(){
 		$("#leave_group_confirmation").dialog({
@@ -60,10 +68,12 @@
 					$(this).dialog('close');
 				},
 				OK : function() {
-					$.post("/group/leave_group/", {group_id: URL.split("/").reverse()[1]});
+					$.post("/group/leave_group/", {group_name: URL.split("/").reverse()[1]});
 					$(this).dialog('close');
 					document.getElementById('leave_group').style.display='none';
 					document.getElementById('join_group').style.display='block';
+					document.getElementById('add_mission').type='hidden';
+					document.getElementById('create_goal').type='hidden';
 				}
 			}
 		});
@@ -75,10 +85,8 @@
 {% load i18n %}
 
 <body class="{% if is_popup %}popup {% endif %}{% block bodyclass %}{% endblock %}">
-
 <!-- Container -->
 <div id="container">
-
     {% if not is_popup %}
     <!-- Header -->
     <div id="header">
@@ -86,9 +94,25 @@
         {% block branding %}{% endblock %}
         </div>
         {% if user.is_authenticated and user.is_staff %}
-        <div id="user-tools">{% trans 'Welcome,' %} <strong>{% firstof user.first_name user.username %}</strong>. {% block userlinks %}{% url django-admindocs-docroot as docsroot %}{% if docsroot %}<a href="{{ docsroot }}">{% trans 'Documentation' %}</a> / {% endif %}<a href="/admin/password_change/">{% trans 'Change password' %}</a> / <a href="/admin/logout/">{% trans 'Log out' %}</a>{% endblock %}</div>
-        <div id="join_group" style="display:none" align="right"> <input type="button" value="Join Group" onclick="javascript:join_group();" /></div>
-		<div id="leave_group" style="display:none" align="right"> <input type="button" value="Leave Group" onclick="javascript:leave_group();" /></div>
+	        <div id="user-tools">{% trans 'Welcome,' %} <strong>{% firstof user.first_name user.username %}</strong>. {% block userlinks %}{% url django-admindocs-docroot as docsroot %}{% if docsroot %}<a href="{{ docsroot }}">{% trans 'Documentation' %}</a> / {% endif %}<a href="/admin/password_change/">{% trans 'Change password' %}</a> / <a href="/admin/logout/">{% trans 'Log out' %}</a>{% endblock %}</div>
+	        <div id="join_group" style="display:none" align="right"> <input type="button" value="Join Group" onclick="javascript:join_group();" /></div>
+			<div id="leave_group" style="display:none" align="right"> <input type="button" value="Leave Group" onclick="javascript:leave_group();" /></div>
+		{% else %}
+			<form action="/login/" method="post">
+				<div align="right" id="user-tools">
+	                <input id="path" type="hidden" name="path"/>
+	                <input type="submit" value="Login" onmouseover="document.getElementById('path').value=document.URL;"/> 
+				</div>
+            </form>
+		<!--
+			<div id="user-tools" align="right">
+				<form action="/login/" method="post" accept-charset="utf-8">
+					<label for="username">Username</label><input type="text" name="username" value="" id="username" />
+					<label for="password">Password</label><input type="password" name="password" value="" id="password" />
+					<input type="submit" value="Login →">
+				</form>
+			</div>
+		-->
 		{% endif %}
         {% block nav-global %}{% endblock %}
     </div>
