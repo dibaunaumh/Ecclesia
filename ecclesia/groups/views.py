@@ -3,8 +3,12 @@ from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.contrib.auth.decorators import login_required
 from groups.models import *
 from goals.models import *
-from django.contrib.auth.models import Group, User
 
+#imports for search, filter and pagination
+from django.contrib.auth.models import Group, User
+from utils import get_query
+from django.core.paginator import Paginator, InvalidPage, EmptyPage
+from forms import GroupProfileFilter
 
 def home(request):
     """
@@ -39,7 +43,46 @@ def group_home(request, group_name):
         pass
     return render_to_response('group_home.html', locals())
 
+def groups_list(request):
+    groups = GroupProfile.objects.all()
+    
+    #search
+    search_string = ""
+    items_search = groups
+    i = None
+    if 'search' in request.GET and request.GET['search'].strip() != '':
+        search_string = request.GET['search'].strip()
+        i = get_query(request.GET['search'].strip(), ['name', 'description'])
+        items_search = GroupProfile.objects.filter(i)
+    
+    #filter
+    f = GroupProfileFilter(request.GET, queryset=items_search)
+    
+    #pagination
+    items_list = f.qs  
+    paginator = Paginator(items_list, 20) # Show 25 contacts per page
+    # Make sure page request is an int. If not, deliver first page.
+    try:
+        page = int(request.GET.get('page', '1'))
+    except ValueError:
+        page = 1
+    # If page request (9999) is out of range, deliver last page of results.
+    try:
+        my_items = paginator.page(page)
+    except (EmptyPage, InvalidPage):
+        my_items = paginator.page(paginator.num_pages)
 
+    get_parameters = "?"
+    if 'parent' in request.GET:
+        get_parameters = "?parent=%s&location=%s&created_by=%s&" % \
+        (request.GET['parent'], request.GET['location'], request.GET['created_by'])
+    if 'search' in request.GET:
+        if get_parameters == "?":
+            get_parameters = "?search=%s" % request.GET['search']
+        else:
+            get_parameters = "%s&search=%s" % (get_parameters, request.GET['search'])
+            
+    return render_to_response('groups_list.html', locals())
 
 def user_home(request, user_name):
     """

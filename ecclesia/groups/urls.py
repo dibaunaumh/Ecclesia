@@ -8,6 +8,7 @@ urlpatterns = patterns('',
     (r'^group/(?P<group_name>.*)/$', 'groups.views.group_home'),
     (r'^users/(?P<user_name>.*)/$', 'groups.views.user_home'),
     (r'^$', 'groups.views.home'),
+    (r'^groupslist/$', 'groups.views.groups_list'),
     #(r'^login/$', 'groups.views.login'),
     (r'^login/$', 'django.contrib.auth.views.login', {'template_name': 'admin/login.html'}),
 )
