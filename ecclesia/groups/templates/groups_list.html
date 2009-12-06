@@ -38,7 +38,7 @@
 				{% for obj in my_items.object_list %}
 				<tr class="ref_{{forloop.counter|divisibleby:"2"}}">
 					<td align="left">{{ obj.pk }}</td>
-					<td>{{obj.name}}</td>
+					<td><a href="{{ obj.get_absolute_url }}">{{ obj.name }}</a></td>
 					<td>{{obj.description}}</td>
 					<td>{{obj.parent}}</td>
 					<td>{{obj.forked_from}}</td>
