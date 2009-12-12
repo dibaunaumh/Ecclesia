@@ -119,3 +119,5 @@ def leave_group(request):
 def login(request):
     path = request.POST['path']
     return render_to_response('admin/login.html', locals())
+    
+    

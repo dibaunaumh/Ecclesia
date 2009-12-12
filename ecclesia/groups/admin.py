@@ -22,4 +22,5 @@ class GroupProfileAdmin(admin.ModelAdmin):
     
 
 admin.site.register(GroupProfile, GroupProfileAdmin)
+admin.site.register(GroupPermission)
 admin.site.register(MissionStatement, MissionStatementAdmin)
