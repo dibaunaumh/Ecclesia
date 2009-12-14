@@ -29,13 +29,17 @@ def group_home(request, group_name):
         raise Http404("Can't find group named: %s" % group_name)
     else:
         group = query[0]
+        if str(user) != 'AnonymousUser':
+            if GroupPermission.objects.filter(group=group).filter(user=user):
+                permission = GroupPermission.objects.filter(group=group).filter(user=user)[0]
+                user_permission_type = permission.permission_type
     query = group.mission_statements.all().order_by("-created_at")
     if query.count() > 0:
         mission_statement = query[0].mission_statement
     else:
         mission_statement = ""
     goals = group.goals.all()
-    members = User.objects.filter(groups=group.group)
+    members = User.objects.filter(groups=group.group)   
     user_in_group = False
     try:
         user_in_group = request.user.groups.filter(id=group.group.id).count() > 0
@@ -99,25 +103,59 @@ def user_home(request, user_name):
 
 def is_in_group(request):
     if 'group_name' in request.GET:
-        group = Group.objects.get(name=request.GET['group_name'])
-        if request.user.groups.filter(id=group.id):
+        group = GroupProfile.objects.get(name=request.GET['group_name'])
+        if request.user.groups.filter(id=group.group.id):
             return HttpResponse("True")
     return HttpResponse("False")
     
 def join_group(request):
     if 'group_name' in request.POST:
-        group = Group.objects.get(name=request.POST['group_name'])
-        request.user.groups.add(group)
+        group = GroupProfile.objects.get(name=request.POST['group_name'])
+        request.user.groups.add(group.group)
+        GroupPermission(group=group, user=request.user, permission_type=2).save()
     return HttpResponse("")
     
 def leave_group(request):
     if 'group_name' in request.POST:
-        group = Group.objects.get(name=request.POST['group_name'])
-        request.user.groups.remove(group)
+        group = GroupProfile.objects.get(name=request.POST['group_name'])
+        GroupPermission.object.filter(group=group).filter(user=request.user).delete()
+        request.user.groups.remove(group.group)
     return HttpResponse("")
 
 def login(request):
     path = request.POST['path']
     return render_to_response('admin/login.html', locals())
     
-    
+def delete_group(request, group_pk):
+    group_profile = GroupProfile.objects.get(pk=group_pk)
+    group = group_profile.group
+    group_profile.delete()
+    group.delete()
+    return HttpResponseRedirect('/')
+
+def delete_member(request, group_pk, member_pk):
+    group = GroupProfile.objects.get(pk=group_pk)
+    member = User.objects.get(pk=member_pk)
+    member.groups.remove(group.group)
+    GroupPermission.objects.filter(group=group).filter(user=member).delete()
+    return HttpResponseRedirect('/group/%s/' % group.name)
+
+def promote_member(request, group_pk, member_pk):
+    group = GroupProfile.objects.get(pk=group_pk)
+    member = User.objects.get(pk=member_pk)
+    if GroupPermission.objects.filter(group=group).filter(user=member):
+        permission = GroupPermission.objects.filter(group=group).filter(user=member)[0]
+        if permission.permission_type > 1:
+            permission.permission_type = permission.permission_type - 1
+            permission.save()
+    return HttpResponseRedirect('/group/%s/' % group.name)
+
+def demote_member(request, group_pk, member_pk):
+    group = GroupProfile.objects.get(pk=group_pk)
+    member = User.objects.get(pk=member_pk)
+    if GroupPermission.objects.filter(group=group).filter(user=member):
+        permission = GroupPermission.objects.filter(group=group).filter(user=member)[0]
+        if permission.permission_type < 3:
+            permission.permission_type = permission.permission_type + 1
+            permission.save()
+    return HttpResponseRedirect('/group/%s/' % group.name)
