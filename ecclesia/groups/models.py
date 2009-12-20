@@ -21,6 +21,8 @@ class GroupProfile(models.Model):
     created_by = models.ForeignKey(User, verbose_name=_('created by'), null=True, blank=True, help_text=_('The user that created the group'))
     created_at = models.DateTimeField(_('created at'), auto_now_add=True, help_text=_('When was the group created'))
     updated_at = models.DateTimeField(_('updated at'), auto_now=True, help_text=_('When was the group last updated'))
+    x_pos = models.IntegerField(default=0)
+    y_pos = models.IntegerField(default=0)
     
     
     class Meta:

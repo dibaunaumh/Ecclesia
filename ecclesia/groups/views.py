@@ -3,6 +3,7 @@ from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.contrib.auth.decorators import login_required
 from groups.models import *
 from goals.models import *
+import sys
 
 #imports for search, filter and pagination
 from django.contrib.auth.models import Group, User
@@ -84,6 +85,22 @@ def groups_list(request):
             
     return render_to_response('groups_list.html', locals())
 
+def update_coords(request):
+    """
+    Update groups x and y positions on the featured view
+    """
+    groups = GroupProfile.objects.all()
+    msg = "Coordinates updated successfully."
+    for group in groups:
+        pos_x = 'x_%s' % group.id
+        pos_y = 'y_%s' % group.id
+        group.x_pos = int(request.POST.get(pos_x, group.x_pos))
+        group.y_pos = int(request.POST.get(pos_y, group.y_pos))
+        group.save()
+        print request.POST[pos_x]
+
+    return HttpResponse(msg)
+	
 def user_home(request, user_name):
     """
     Homepage of a user, displaying the user's description & active content.

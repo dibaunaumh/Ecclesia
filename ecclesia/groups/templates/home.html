@@ -18,13 +18,147 @@
 <hr/>
 
 <h3>Current groups</h3>
-<ul>
+<div id="canvasContainer"></div>
+<style type="text/css">
+#buttons_container {float: left; padding-left: 15px}
+#canvasContainer {position: relative; margin: 0; padding: 0; float: left}
+#groupsvu {margin: 0; padding: 0; border: thin solid #933}
+.group{position: absolute; width: 150px; height: 100px; margin: 0; padding: 0; font-size: 12pt; font-weight: bold; overflow: hidden; border: thin solid #000; cursor: move}
+.group a {display: block; float: left; padding: 10px; color: #000}
+.group a:hover {color: #033; text-decoration: underline}
+.dragon { border: thin solid #033; background: url(static/img/cork_board.jpg) left top no-repeat;opacity:.6; -moz-opacity:.6}
+.selecton { border: 2px solid #033 }
+img {width: 150px; height: 100px}
+</style>
+<script type="text/javascript">
+var i = 0;
+GroupsVU = function(vuW, vuH) {
+	this.W = vuW;
+	this.H = vuH;
+	
+	this.groups = new Array();
+	this.coords = new Array();
+	this.element = new Object();
+	this.drag = {};
+	this.ctx = null;
+	this.img = new Image();
+	this.data = {
+	{% for group in groups %}
+		x_{{ group.id }} : {{ group.x_pos }}, y_{{ group.id }} : {{ group.y_pos }},
+	{% endfor %}
+	};
+	{% for group in groups %}
+	this.groups[i] = new Array();
+	this.groups[i]['id'] = {{ group.id }};
+	this.groups[i]['name'] = '{{ group.name }}';
+	this.groups[i]['url'] = '{{ group.get_absolute_url }}';
+	this.coords[i++] = { left : {{ group.x_pos }}, top : {{ group.y_pos }} };
+	{% endfor %}
+	this.init();
+};
+GroupsVU.prototype = {
+	init		: function() {
+		if(this.initCanvas()) {
+			this.img.src = 'static/img/cork_board.jpg';
+			var this_ = this;
+			$.each(this.groups, function(id, grp) {
+				$('#canvasContainer').append('<div class="group" id="group_'+id+'"><a href="'+grp['url']+'">'+grp['name']+'</a></div>');
+				this_.drag = id;
+				this_.position();
+				$('#group_'+id).draggable({
+					containment: 'parent',
+					start: function(e, ui) {
+						this_.setDrag(this);
+						this_.grip();
+					},
+					stop : function(e, ui) {
+						this_.coords[this_.drag] = $(this).position();
+						this_.drop();
+					}
+				});
+			});
+			this.draw();
+		} else {
+			alert('No canvas context.');
+		}
+	},
+	initCanvas	: function() {
+		$('#canvasContainer').empty();
+		$('#canvasContainer').append('<canvas id="groupsvu" width="'+this.W+'" height="'+this.H+'"></canvas>');
+		this.ctx = document.getElementById('groupsvu').getContext('2d');
+		return (this.ctx != null);
+	},
+	position	: function() {
+		var w = this.coords[this.drag].left;
+		var h = this.coords[this.drag].top;
+		$('#group_'+this.drag).css('left', w+'px');
+		$('#group_'+this.drag).css('top', h+'px');
+	},
+	setDrag		: function(el) {
+		this.drag = el.id.substr(6); // removing the 'group_'
+	},
+	draw		: function(isGrip) {
+		var this_ = this;
+		if(this.img) {
+			this.ctx.clearRect(0, 0, this.W, this.H);
+			$.each(this.groups, function(id, grp) {
+				if(isGrip) {
+					if(id != this_.drag) {
+						var h = $('#group_'+id).height();
+						var w = $('#group_'+id).width();
+						this_.ctx.drawImage(this_.img, this_.coords[id].left, this_.coords[id].top, w,  h);
+					}
+				} else {
+					var h = $('#group_'+id).height();
+					var w = $('#group_'+id).width();
+					this_.ctx.drawImage(this_.img, this_.coords[id].left, this_.coords[id].top, w,  h);
+				}
+			});
+		}
+	},
+	grip		: function() {
+		$('#group_'+this.drag).addClass('dragon');
+		this.draw(true);
+	},
+	drop		: function() {
+		$('#group_'+this.drag).removeClass('dragon');
+		this.draw();
+	},
+	updateCoords: function() {
+		var this_ = this;
+		$.each(this.groups, function(id, grp){
+			if(this_.coords[id].left != '') {
+				var x = 'x_'+grp['id'];
+				var y = 'y_'+grp['id'];
+				this_.data[x] = parseInt(this_.coords[id].left);
+				this_.data[y] = parseInt(this_.coords[id].top);
+			}
+		});
+		
+		$.ajax({
+			type		: "POST",
+			url			: "/update_coords/",
+			data		: this_.data,
+			success		: function(msg){
+				alert(msg);
+			}
+		});
+	}
+};
+var GVU = new GroupsVU(900, 600);
+</script>
+<p id="log"></p>
+<!--ul>
 {% for group in groups %}
     <li><a href="{{ group.get_absolute_url }}">{{ group.name }}</a>
 {% endfor %}
     <li><input type="button" value="{% trans 'Create Group' %}" onclick="document.location.href='/admin/groups/groupprofile/add/'"/>
-</ul>
-<input type="button" value="{% trans 'Groups List' %}" onclick="document.location.href='/groupslist/'"/>
+</ul-->
+<div id="buttons_container">
+	<input type="button" value="{% trans 'Update Groups Positions' %}" onclick="GVU.updateCoords();"/><br clear="all"/>
+	<input type="button" value="{% trans 'Create Group' %}" onclick="document.location.href='/admin/groups/groupprofile/add/'"/><br clear="all"/>
+	<input type="button" value="{% trans 'Groups List' %}" onclick="document.location.href='/groupslist/'"/>
+</div>
 
 <hr/>
 
