@@ -1,0 +1,7 @@
+{% load i18n %}
+<form name="group_profile_miniform" id="miniform" method="POST" action="/group/create/">
+<ul>
+{{ form.as_ul }}
+</ul>
+<input type="submit" value="{% trans "Create Group" %}" />
+</form>

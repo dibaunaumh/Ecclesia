@@ -23,7 +23,8 @@
 <script type="text/javascript">
 	URL = window.location.href;
 	$(document).ready(function() {
-	if ((URL.indexOf('login') > 0) || (URL.indexOf('logout') > 0))
+		alert(URL);
+	if ((URL.indexOf('login') > 0) || (URL.indexOf('logout') > 0 || (URL.indexOf('register') > 0)))
 	{
 		document.getElementById('user-tools').style.display="none";
 	}
@@ -93,17 +94,18 @@
         <div id="branding">
         {% block branding %}{% endblock %}
         </div>
-        {% if user.is_authenticated and user.is_staff %}
+        {% if user.is_authenticated %}
 	        <div id="user-tools">{% trans 'Welcome,' %} <strong>{% firstof user.first_name user.username %}</strong>. {% block userlinks %}{% url django-admindocs-docroot as docsroot %}{% if docsroot %}<a href="{{ docsroot }}">{% trans 'Documentation' %}</a> / {% endif %}<a href="/admin/password_change/">{% trans 'Change password' %}</a> / <a href="/admin/logout/">{% trans 'Log out' %}</a>{% endblock %}</div>
 	        <div id="join_group" style="display:none" align="right"> <input type="button" value="Join Group" onclick="javascript:join_group();" /></div>
 			<div id="leave_group" style="display:none" align="right"> <input type="button" value="Leave Group" onclick="javascript:leave_group();" /></div>
 		{% else %}
-			<form action="/login/" method="post">
 				<div align="right" id="user-tools">
-	                <input id="path" type="hidden" name="path"/>
-	                <input type="submit" value="Login" onmouseover="document.getElementById('path').value=document.URL;"/> 
+	        		<form action="/login/" method="post">
+			        	<input id="path" type="hidden" name="path"/>
+	                	<input type="submit" value="{% trans 'Login' %}" onmouseover="document.getElementById('path').value=document.URL;"/> 
+						<input type="button" value="{% trans 'Sign-up' %}" onclick="document.location='/accounts/register'"/>
+					</form>
 				</div>
-            </form>
 		{% endif %}
         {% block nav-global %}{% endblock %}
     </div>

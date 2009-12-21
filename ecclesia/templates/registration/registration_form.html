@@ -1,0 +1,13 @@
+{% extends 'admin/base_site.html' %}
+{% load i18n %}
+{% block breadcrumbs %}<div class="breadcrumbs"><a href="/">{% trans 'Home' %}</a></div>{% endblock %}
+{% block coltype %}diagram{% endblock %}
+
+
+{% block content %}
+<form method="post" action=".">
+  {{ form.as_p }}
+
+  <input type="submit" value="{% trans 'Submit' %}" />
+</form>
+{% endblock %}
