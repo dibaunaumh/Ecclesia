@@ -33,7 +33,12 @@ class GroupProfile(models.Model):
     def get_absolute_url(self):
         return "http://%s/group/%s/" % (get_domain(), self.name)
     
-    
+    def save(self):
+        super(GroupProfile, self).save()
+        if self.created_by:
+            group_permission = GroupPermission(group=self, user=self.created_by, permission_type=1)
+            group_permission.save()
+        
     def __unicode__(self):
         return u"%s's %s" % (self.group.name, _('group profile'))
 
@@ -74,3 +79,20 @@ class MissionStatement(models.Model):
     
     def __unicode__(self):
         return u"%s's %s" % (self.group_profile.group.name, _('mission statement'))
+    
+class GroupPermission(models.Model):
+    """
+    Group permissions. Only the manager of the group has the permission to delete a group,
+    delete a discussion, kick member out from the group, promote member to manager and 
+    demote member from being a manager.
+    """
+    group = models.ForeignKey(GroupProfile, verbose_name=_('group'), related_name='permission', help_text=_("GroupProfile entity"))
+    user = models.ForeignKey(User, verbose_name=_('user'), help_text=_('The user that has the permissions'))
+    permission_type = models.IntegerField(choices = ((1, "Manager"), (2, "Editor"), (3, "Reader")))
+    
+    class Meta:
+        verbose_name = _("group permission")
+        verbose_name_plural = _("group permissions")
+    
+    def __unicode__(self):
+        return u"%s's permission for %s" % (self.user, self.group)

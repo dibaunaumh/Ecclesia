@@ -85,8 +85,15 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.admin',
+    'registration',
     'groups',
     'goals',
     'discussion',
     'operations',
 )
+
+
+ACCOUNT_ACTIVATION_DAYS = 7 # One-week activation window
+EMAIL_HOST = 'localhost'
+DEFAULT_FROM_EMAIL = 'support@ekkli.com'
+LOGIN_REDIRECT_URL = '/'
