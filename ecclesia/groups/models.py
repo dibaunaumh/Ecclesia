@@ -36,8 +36,9 @@ class GroupProfile(models.Model):
     def save(self):
         super(GroupProfile, self).save()
         if self.created_by:
-            group_permission = GroupPermission(group=self, user=self.created_by, permission_type=1)
-            group_permission.save()
+            if not GroupPermission.objects.filter(group=self).filter(user=self.created_by):
+                group_permission = GroupPermission(group=self, user=self.created_by, permission_type=1)
+                group_permission.save()
         
     def __unicode__(self):
         return u"%s's %s" % (self.group.name, _('group profile'))
