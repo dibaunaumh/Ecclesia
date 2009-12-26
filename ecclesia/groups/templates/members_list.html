@@ -1,0 +1,80 @@
+{% extends 'admin/base_site.html' %}
+{% load i18n %}
+{% block breadcrumbs %}<div class="breadcrumbs"><a href="/">{% trans 'Home' %}</a> &rsaquo; {% trans "Groups List" %}</div>{% endblock %}
+{% block userlinks %}<a href="/admin/password_change/">{% trans 'Change password' %}</a> / <a href="/admin/logout/">{% trans 'Log out' %}</a>{% endblock %}
+{% block title %}{% trans "Groups List" %}{% endblock %}
+{% block coltype %}diagram{% endblock %}
+
+{% block head %}
+{% endblock %}
+
+{% block content %}
+
+<script type="text/javascript" src="/static/js/jquery/sorttable.js"></script>
+
+<h2>
+    {% trans "Members List" %}
+</h2>
+<table border="0" cellpadding="0" cellspacing="0">
+	<tr>
+		<td>
+			<table border="0" cellpadding="0" cellspacing="0" class="sortable">
+				<thead>
+				<tr>
+					<th width="20">ID</th>	
+					<th width="100">First Name</th>	
+					<th width="100">Last Name</th>	
+					<th width="100">Is Active</th>	
+					<th width="100">Is Authenticated</th>
+					<th width="100">Is Staff</th>
+					<th width="100">Is Superuser</th>
+					<th width="100">Last Login</th>
+				</tr>
+				</thead>
+				<tbody>
+				
+				{% for obj in my_items.object_list %}
+				<tr class="ref_{{forloop.counter|divisibleby:"2"}}">
+					<td align="left">{{ obj.pk }}</td>
+					<td><a href="{{ obj.get_absolute_url }}">{{ obj.first_name }}</a></td>
+					<td>{{obj.last_name}}</td>
+					<td>{{obj.is_active}}</td>
+					<td>{{obj.is_authenticated}}</td>
+					<td>{{obj.is_staff}}</td>
+					<td>{{obj.is_superuser}}</td>
+					<td>{{obj.last_login|date:"d/m/Y"}}</td>
+				</tr>
+				{% endfor %}
+				</tbody>
+			</table>
+		</td>
+		<td width="300" class="sorttable_nosort">
+			<form action="" method="get">
+		        <input type="text" name="search" value="{{search_string}}"/>
+				<input type="submit" value="Search"/>
+				<h2>Filters</h2>
+				{{ f.form.as_p }}
+				<input type="submit" value="Filter"/>
+		    </form>
+		</td>
+	</tr>
+</table>
+
+<div class="pagination">
+    <span class="step-links">
+        {% if my_items.has_previous %}
+            <a href="{{ get_parameters }}page={{ my_items.previous_page_number }}">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ my_items.number }} of {{ my_items.paginator.num_pages }}.
+        </span>
+
+        {% if my_items.has_next %}
+            <a href="{{ get_parameters }}page={{ my_items.next_page_number }}">next</a>
+        {% endif %}
+    </span>
+</div>
+
+
+{% endblock content %}
