@@ -10,20 +10,15 @@
 
 
 <h2>
-    {{ user.username }}{% trans "'s Home" %}
+    {% trans "Edit profile" %}
 </h2>
 
-<p>
-	Name: 
-	<strong>
-		{{ user.first_name }} {{ user.last_name }} 
-	</strong>
-<br/>
-	Email: 
-	<strong>
-		<a href="mailto:{{ user.email }}">{{ user.email }}</a>
-	</strong>
-</p>
+<form method="post" action=".">
+<table>
+  {{ form }}
+</table>
+  <input type="submit" value="{% trans 'Submit' %}" />
+</form>
 
 <hr/>
 

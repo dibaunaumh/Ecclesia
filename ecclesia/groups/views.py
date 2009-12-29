@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from groups.models import *
 from goals.models import *
 import sys
+from forms import *
 
 from django.contrib.auth.models import User
 from services.search_filter_pagination import search_filter_paginate
@@ -87,6 +88,26 @@ def user_home(request, user_name):
         user = query[0]
     groups = get_user_groups(user)
     return render_to_response('user_home.html', locals())
+
+
+def edit_user_profile(request, user_name):
+    """
+    Allows a user to edit her profile.
+    """
+    user = request.user
+    if request.method == 'POST':
+        form = MemberProfileForm(request.POST)
+        if form.is_valid():
+            cd = form.cleaned_data
+            user.first_name = cd['first_name']
+            user.last_name = cd['last_name']
+            user.email = cd['email']
+            user.save()
+            return HttpResponseRedirect('/')
+    else:
+        
+        form = MemberProfileForm({"first_name": user.first_name})
+    return render_to_response('edit_profile.html', {'form': form})
 
 
 def is_in_group(request):

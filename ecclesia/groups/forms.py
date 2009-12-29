@@ -1,5 +1,5 @@
 import django_filters
-
+from django import forms
 from models import GroupProfile
 from django.contrib.auth.models import User
 
@@ -12,3 +12,13 @@ class MemberProfileFilter(django_filters.FilterSet):
     class Meta:
         model = User
         fields = ['is_active', 'is_staff', 'is_superuser']
+        
+
+class MemberProfileForm(forms.Form):
+    first_name = forms.CharField()
+    last_name = forms.CharField()
+    email = forms.CharField()
+    
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email']
