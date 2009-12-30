@@ -40,3 +40,4 @@ class Story(models.Model):
 
     def name_with_link(self):
         return _('<a href="%(url)s">%(user)s\'s %(speechact)s (#%(id)s)</a>') % {'user':self.created_by.get_full_name(), 'speechact':self.get_speech_act_display(), 'id':self.id, 'url':self.get_absolute_url()}
+

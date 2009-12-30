@@ -105,8 +105,7 @@ def edit_user_profile(request, user_name):
             user.save()
             return HttpResponseRedirect('/')
     else:
-        
-        form = MemberProfileForm({"first_name": user.first_name})
+        form = MemberProfileForm(instance=request.user)
     return render_to_response('edit_profile.html', {'form': form})
 
 
