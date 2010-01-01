@@ -37,13 +37,8 @@ def group_home(request, group_slug):
         mission_statement = query[0].mission_statement
     else:
         mission_statement = ""
-<<<<<<< HEAD
     discussions = group.discussions.all()
     members = User.objects.filter(groups=group.group)
-=======
-    goals = group.goals.all()
-    members = User.objects.filter(groups=group.group)  
->>>>>>> origin/master
     user_in_group = False
     try:
         user_in_group = request.user.groups.filter(id=group.group.id).count() > 0
