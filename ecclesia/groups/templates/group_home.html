@@ -170,6 +170,7 @@ var VUC = new VUController(900, 600);
 <h3>Current members</h3>
 <ul>
 <div id="ddd">
+<input type="button" value="{% trans 'Members List' %}" onclick="document.location.href='/memberslist/{{group.name}}/'"/>
 {% for member in members %}
     <li><a href="{{ member.get_absolute_url }}">{{ member.username }}</a>
 	{% ifequal user_permission_type 1 %}

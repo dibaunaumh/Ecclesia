@@ -58,7 +58,7 @@ class GroupsTest(TestCase):
             self.assertEquals(self.groups[i].name, received_groups[i].name, "Expected to receive some other group name")
         
         
-    def test_home_page(self):
+    def test_group_home_page(self):
         """
         Tests that the group home page presents a correct mission statement & lists of goals & members.
         """

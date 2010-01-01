@@ -4,12 +4,10 @@ from django.contrib.auth.decorators import login_required
 from groups.models import *
 from discussions.models import *
 import sys
+from forms import *
 
-#imports for search, filter and pagination
-from django.contrib.auth.models import Group, User
-from utils import get_query
-from django.core.paginator import Paginator, InvalidPage, EmptyPage
-from forms import GroupProfileFilter
+from django.contrib.auth.models import User
+from services.search_filter_pagination import search_filter_paginate
 
 def home(request):
     """
@@ -39,8 +37,13 @@ def group_home(request, group_slug):
         mission_statement = query[0].mission_statement
     else:
         mission_statement = ""
+<<<<<<< HEAD
     discussions = group.discussions.all()
     members = User.objects.filter(groups=group.group)
+=======
+    goals = group.goals.all()
+    members = User.objects.filter(groups=group.group)  
+>>>>>>> origin/master
     user_in_group = False
     try:
         user_in_group = request.user.groups.filter(id=group.group.id).count() > 0
@@ -50,44 +53,18 @@ def group_home(request, group_slug):
 
 def groups_list(request):
     groups = GroupProfile.objects.all()
-    
-    #search
-    search_string = ""
-    items_search = groups
-    i = None
-    if 'search' in request.GET and request.GET['search'].strip() != '':
-        search_string = request.GET['search'].strip()
-        i = get_query(request.GET['search'].strip(), ['name', 'description'])
-        items_search = GroupProfile.objects.filter(i)
-    
-    #filter
-    f = GroupProfileFilter(request.GET, queryset=items_search)
-    
-    #pagination
-    items_list = f.qs  
-    paginator = Paginator(items_list, 20) # Show 25 contacts per page
-    # Make sure page request is an int. If not, deliver first page.
-    try:
-        page = int(request.GET.get('page', '1'))
-    except ValueError:
-        page = 1
-    # If page request (9999) is out of range, deliver last page of results.
-    try:
-        my_items = paginator.page(page)
-    except (EmptyPage, InvalidPage):
-        my_items = paginator.page(paginator.num_pages)
-
-    get_parameters = "?"
-    if 'parent' in request.GET:
-        get_parameters = "?parent=%s&location=%s&created_by=%s&" % \
-        (request.GET['parent'], request.GET['location'], request.GET['created_by'])
-    if 'search' in request.GET:
-        if get_parameters == "?":
-            get_parameters = "?search=%s" % request.GET['search']
-        else:
-            get_parameters = "%s&search=%s" % (get_parameters, request.GET['search'])
-            
+    (my_items, get_parameters, f) = search_filter_paginate('group', groups, request)
     return render_to_response('groups_list.html', locals())
+
+def members_list(request, group_name):
+    query = GroupProfile.objects.filter(name=group_name)
+    if query.count() == 0:
+        raise Http404("Can't find group named: %s" % group_name)
+    else:
+        group = query[0]
+    members = User.objects.filter(groups=group.group)
+    (my_items, get_parameters, f) = search_filter_paginate('member', members, request)
+    return render_to_response('members_list.html', locals())
 
 def update_coords(request):
     """
@@ -115,6 +92,25 @@ def user_home(request, user_name):
         user = query[0]
     groups = get_user_groups(user)
     return render_to_response('user_home.html', locals())
+
+
+def edit_user_profile(request, user_name):
+    """
+    Allows a user to edit her profile.
+    """
+    user = request.user
+    if request.method == 'POST':
+        form = MemberProfileForm(request.POST)
+        if form.is_valid():
+            cd = form.cleaned_data
+            user.first_name = cd['first_name']
+            user.last_name = cd['last_name']
+            user.email = cd['email']
+            user.save()
+            return HttpResponseRedirect('/')
+    else:
+        form = MemberProfileForm(instance=request.user)
+    return render_to_response('edit_profile.html', {'form': form})
 
 
 def is_in_group(request):

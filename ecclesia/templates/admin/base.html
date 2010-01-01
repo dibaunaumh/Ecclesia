@@ -94,8 +94,8 @@
         {% block branding %}{% endblock %}
         </div>
         {% if user.is_authenticated %}
-	        <div id="user-tools">{% trans 'Welcome,' %} <strong>{% firstof user.first_name user.username %}</strong>. {% block userlinks %}{% url django-admindocs-docroot as docsroot %}{% if docsroot %}<a href="{{ docsroot }}">{% trans 'Documentation' %}</a> / {% endif %}<a href="/admin/password_change/">{% trans 'Change password' %}</a> / <a href="/admin/logout/">{% trans 'Log out' %}</a>{% endblock %}</div>
-	        <div id="join_group" style="display:none" align="right"> <input type="button" value="Join Group" onclick="javascript:join_group();" /></div>
+	        <div id="user-tools">{% trans 'Welcome,' %} <strong>{% firstof user.first_name user.username %}</strong>. {% block userlinks %}{% url django-admindocs-docroot as docsroot %}{% if docsroot %}<a href="{{ docsroot }}">{% trans 'Documentation' %}</a> / {% endif %}<a href="/user-profile/{{ request.user.username }}/">{% trans 'Edit profile' %}</a> / <a href="/admin/password_change/">{% trans 'Change password' %}</a> / <a href="/admin/logout/">{% trans 'Log out' %}</a>{% endblock %}</div>
+			<div id="join_group" style="display:none" align="right"> <input type="button" value="Join Group" onclick="javascript:join_group();" /></div>
 			<div id="leave_group" style="display:none" align="right"> <input type="button" value="Leave Group" onclick="javascript:leave_group();" /></div>
 		{% else %}
 				<div align="right" id="user-tools">

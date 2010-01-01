@@ -9,24 +9,20 @@
 {% block content %}
 
 
-<h2>
-    {% trans "Edit profile" %}
-</h2>
+    <h1>{% trans 'Edit profile' %}</h1>
 
-<form method="post" action=".">
-<table>
-  {{ form }}
-</table>
-  <input type="submit" value="{% trans 'Submit' %}" />
-</form>
+    {% if form.errors %}
+        <p style="color: red;">
+            {% blocktrans %}Please correct the error{{ form.errors|pluralize }} below.{% endblocktrans %}
+        </p>
+    {% endif %}
 
-<hr/>
-
-<h3>Current groups</h3>
-<ul>
-{% for group in groups %}
-    <li><a href="{{ group.get_absolute_url }}">{{ group.name }}</a>
-{% endfor %}
-</ul>
+    <form action="" method="post">
+        <table>
+            {{ form.as_table }}
+        </table>
+        <input type="submit" value="Submit">
+    </form>
+	<a href="/admin/password_change/">{% trans 'To change your password' %}</a>
 
 {% endblock content %}
