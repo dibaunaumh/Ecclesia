@@ -88,8 +88,9 @@ INSTALLED_APPS = (
     'registration',
     'groups',
     'goals',
-    'discussion',
+    'discussions',
     'operations',
+    'common',
 )
 
 

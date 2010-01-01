@@ -20,7 +20,9 @@ urlpatterns = patterns('',
 
     (r'^goal/', include('ecclesia.goals.urls')),
     
-    (r'^story/', include('ecclesia.discussion.urls')),
+    #(r'^story/', include('ecclesia.discussions.urls')),
+
+    (r'^discussions/', include('ecclesia.discussions.urls')),
     
     #(r'^accounts/', include('registration.urls')),
     (r'accounts/', include('registration.urls')),

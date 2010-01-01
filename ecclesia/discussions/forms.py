@@ -1,4 +1,4 @@
-from ecclesia.discussion.models import Story
+from ecclesia.discussions.models import Story
 
 from django import forms
 

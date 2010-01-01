@@ -2,5 +2,5 @@ from django.conf.urls.defaults import *
 
 
 urlpatterns = patterns('',
-    (r'^submit/$', 'ecclesia.discussion.views.submit_story'),
+    (r'^submit/$', 'ecclesia.discussions.views.submit_story'),
 )

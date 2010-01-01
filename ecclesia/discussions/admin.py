@@ -1,5 +1,6 @@
 from models import *
 from django.contrib import admin
+from django.utils.translation import gettext_lazy as __unicode__
 from django.utils.translation import gettext_lazy as _
 
 class StoryAdmin(admin.ModelAdmin):
@@ -18,4 +19,15 @@ class StoryAdmin(admin.ModelAdmin):
     search_fields = ('content',)
     ordering = ('created_at',)
 
+class DiscussionTypeAdmin(admin.ModelAdmin):
+    pass
+
+class DiscussionAdmin(admin.ModelAdmin):
+    list_display = ('name', 'type', 'group', 'description', 'created_by')
+    list_filter = ('group', 'type')
+    search_fields = ('name', 'group')
+    ordering = ('name', 'group', 'type')
+	
 admin.site.register(Story, StoryAdmin)
+admin.site.register(DiscussionType, DiscussionTypeAdmin)
+admin.site.register(Discussion, DiscussionAdmin)

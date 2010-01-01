@@ -1,7 +1,7 @@
 from models import *
 from django.contrib import admin
 from django.contrib.contenttypes import generic
-from discussion.models import Story
+from discussions.models import Story
 
 
 class StoryInline(generic.GenericTabularInline):

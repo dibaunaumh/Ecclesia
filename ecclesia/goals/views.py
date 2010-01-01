@@ -2,7 +2,7 @@
 from ecclesia.goals.models import *
 from ecclesia.operations.models import *
 from ecclesia.goals.forms import *
-from ecclesia.discussion.forms import get_story_form_for_object
+from ecclesia.discussions.forms import get_story_form_for_object
 
 
 from django.shortcuts import render_to_response, get_object_or_404
