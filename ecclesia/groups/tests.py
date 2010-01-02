@@ -85,8 +85,77 @@ class GroupsTest(TestCase):
             self.assertEquals(len(expected_members), len(received_members), "Expected a different number of members, got %d" % len(received_members))
             for j in range(len(received_members)):
                 self.assertEquals(expected_members[j].username, received_members[j].username, "Expected to find a different member name, found %s" % received_members[j].username)
+                
+    def test_groups_list(self):
+        """
+        Tests that the groups list presents a correct number of groups depending on the search and filters.
+        """
+        client = Client()
+        response = client.get("/groupslist/?search=Earth&parent=&location=&created_by=2")
+        self.assertEquals(len(response.context[-1]['my_items'].object_list), 1, "Expected a different number of groups after search and filters")
+      
+    def test_members_list(self):
+        """
+        Tests that the members list presents a correct number of members depending on the search and filters.
+        """
+        client = Client()
+        response = client.get("/memberslist/Free_Democracy/?search=Arshavski&is_active=2&is_staff=2&is_superuser=1")
+        self.assertEquals(len(response.context[-1]['my_items'].object_list), 1, "Expected a different number of members after search and filters")
+        
+    def test_is_in_group(self):
+        """
+        Tests if the user is in group or not.
+        """
+        client = Client()
+        client.login(username='alexarsh', password='z5fgmeca')
+        response = client.get("/group/is_in_group/?group_name=%s" % self.groups[0].name)
+        self.assertEquals(response.content, "False", "The user is not expected to be in group")
+        response = client.get("/group/is_in_group/?group_name=%s" % self.groups[1].name)
+        self.assertEquals(response.content, "True", "The user is expected to be in group")
+        
+    #def test_join_group(self):
+        #todo
+    
+    #def test_leave_group(self):
+        #todo
+        
+    #def test_login(self):
+        #todo
+        
+    def test_delete_group(self):
+        """
+        Tests that the group is deleted.
+        """
+        client = Client()
+        before_delete_number = self.groups.count()
+        response = client.get("/group-delete/1/")
+        self.assertNotEquals(before_delete_number, self.groups.count(), "The group is not deleted")
+      
+    def test_delete_member(self):
+        """
+        Tests that the group member is deleted.
+        """ 
+        client = Client()
+        member = self.members[self.groups[0].name][0]
+        before_delete_number = self.members[self.groups[0].name].count()
+        response = client.get("/member-delete/%s/%s/" % (self.groups[0].pk, member.pk))
+        self.assertNotEquals(before_delete_number, self.members[self.groups[0].name].count(), "The group member is not deleted")
+        
+    def test_promote_and_demote_member(self):
+        """
+        Tests that the user is demoted and promoted.
+        """
+        client = Client()
+        permission = GroupPermission.objects.filter(group=self.groups[1])[0]
+        member = permission.user
+        initial_permission_number = permission.permission_type
+        response = client.get("/member-demote/%s/%s/" % (self.groups[1].pk, member.pk))
+        permission = GroupPermission.objects.filter(group=self.groups[1])[0]
+        self.assertEquals(initial_permission_number, permission.permission_type - 1, "The group member is not demoted")
+        response = client.get("/member-promote/%s/%s/" % (self.groups[1].pk, member.pk))
+        permission = GroupPermission.objects.filter(group=self.groups[1])[0]
+        self.assertEquals(initial_permission_number, permission.permission_type, "The group member is not promoted")
+        
+        
         
                 
-        
-
-        
