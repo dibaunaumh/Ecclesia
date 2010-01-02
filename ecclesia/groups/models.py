@@ -2,16 +2,18 @@ from django.db import models
 from django.contrib.auth.models import Group, User
 from django.utils.translation import gettext_lazy as _
 from common.utils import get_domain
+from common.models import Presentable
 
 
-class GroupProfile(models.Model):
+class GroupProfile(Presentable):
     """
     Represents an organization of people trying to meet some 
     common goals. Uses a django.contrib.auth Group to manage
     the actual group membership.
     """
     group = models.ForeignKey(Group, verbose_name=_('group'), related_name='profile', help_text=_("The internal Group entity. If you are adding a Profile Group, please create a new Group & don't select an existing one"))
-    name = models.SlugField(_('name'), help_text=_('The name of the group. No whitespaces allowed - use hyphen to separate words.'))
+    name = models.CharField(_('name'), max_length=50, help_text=_('The name of the group.'))
+    slug = models.SlugField(_('slug'), unique=True, help_text=_("The url representation of the group's name. No whitespaces allowed - use hyphen/underscore to separate words."))
     description = models.TextField(_('description'), max_length=1000, null=True, blank=True, help_text=_("The group's description"))
     parent = models.ForeignKey('self', verbose_name=_('parent'), related_name='children', null=True, blank=True, help_text=_('The parent group containing this group'))
     forked_from = models.ForeignKey('self', verbose_name=_('forked from'), related_name='forks', null=True, blank=True, help_text=_('The group from which this group forked'))
@@ -21,9 +23,6 @@ class GroupProfile(models.Model):
     created_by = models.ForeignKey(User, verbose_name=_('created by'), null=True, blank=True, help_text=_('The user that created the group'))
     created_at = models.DateTimeField(_('created at'), auto_now_add=True, help_text=_('When was the group created'))
     updated_at = models.DateTimeField(_('updated at'), auto_now=True, help_text=_('When was the group last updated'))
-    x_pos = models.IntegerField(default=0)
-    y_pos = models.IntegerField(default=0)
-    
     
     class Meta:
         verbose_name = _("group profile")
@@ -31,7 +30,7 @@ class GroupProfile(models.Model):
         
     
     def get_absolute_url(self):
-        return "http://%s/group/%s/" % (get_domain(), self.name)
+        return "http://%s/group/%s/" % (get_domain(), self.slug)
     
     def save(self):
         super(GroupProfile, self).save()
@@ -41,7 +40,7 @@ class GroupProfile(models.Model):
                 group_permission.save()
         
     def __unicode__(self):
-        return u"%s's %s" % (self.group.name, _('group profile'))
+        return self.name
 
 
 def get_user_groups(user):
@@ -79,7 +78,7 @@ class MissionStatement(models.Model):
     
     
     def __unicode__(self):
-        return u"%s's %s" % (self.group_profile.group.name, _('mission statement'))
+        return u"%s's %s" % (self.group_profile.name, _('mission statement'))
     
 class GroupPermission(models.Model):
     """

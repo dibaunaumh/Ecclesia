@@ -30,7 +30,7 @@
 	if (URL.indexOf('/group') > 0)
 	{
 		$.get("/group/is_in_group/",
-			 {group_name: URL.split("/").reverse()[1]},
+			 {group_slug: URL.split("/").reverse()[1]},
 	         function(returned_data)
 	         {
 	         	if (returned_data=="True")
@@ -47,11 +47,11 @@
 	}
 	});
 	function join_group(){
-		$.post("/group/join_group/", {group_name: URL.split("/").reverse()[1]});
+		$.post("/group/join_group/", {group_slug: URL.split("/").reverse()[1]});
 		document.getElementById('join_group').style.display='none';
 		document.getElementById('leave_group').style.display='block';
 		document.getElementById('add_mission').type='button';
-		document.getElementById('create_goal').type='button';
+		document.getElementById('create_discussion').type='button';
 	}
 	function leave_group(){
 		$("#leave_group_confirmation").dialog({
@@ -68,12 +68,12 @@
 					$(this).dialog('close');
 				},
 				OK : function() {
-					$.post("/group/leave_group/", {group_name: URL.split("/").reverse()[1]});
+					$.post("/group/leave_group/", {group_slug: URL.split("/").reverse()[1]});
 					$(this).dialog('close');
 					document.getElementById('leave_group').style.display='none';
 					document.getElementById('join_group').style.display='block';
 					document.getElementById('add_mission').type='hidden';
-					document.getElementById('create_goal').type='hidden';
+					document.getElementById('create_discussion').type='hidden';
 				}
 			}
 		});

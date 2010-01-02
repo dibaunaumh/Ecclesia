@@ -1,0 +1,28 @@
+{% extends 'admin/base_site.html' %}
+{% load i18n %}
+{% load i18n %}
+{% block breadcrumbs %}<div class="breadcrumbs"><a href="/">{% trans 'Home' %}</a> &rsaquo; {{ user.username }}{% trans "'s Home" %}</div>{% endblock %}
+{% block userlinks %}<a href="/admin/password_change/">{% trans 'Change password' %}</a> / <a href="/admin/logout/">{% trans 'Log out' %}</a>{% endblock %}
+{% block title %}{{ user.username }}{% trans "'s Home" %}{% endblock %}
+{% block coltype %}diagram{% endblock %}
+
+{% block content %}
+
+
+    <h1>{% trans 'Edit profile' %}</h1>
+
+    {% if form.errors %}
+        <p style="color: red;">
+            {% blocktrans %}Please correct the error{{ form.errors|pluralize }} below.{% endblocktrans %}
+        </p>
+    {% endif %}
+
+    <form action="" method="post">
+        <table>
+            {{ form.as_table }}
+        </table>
+        <input type="submit" value="Submit">
+    </form>
+	<a href="/admin/password_change/">{% trans 'To change your password' %}</a>
+
+{% endblock content %}

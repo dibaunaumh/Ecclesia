@@ -1,5 +1,5 @@
-from ecclesia.discussion.models import Story
-from ecclesia.discussion.forms import StoryForm
+from ecclesia.discussions.models import Story
+from ecclesia.discussions.forms import StoryForm
 from django.shortcuts import render_to_response
 from django.http import HttpResponse
 

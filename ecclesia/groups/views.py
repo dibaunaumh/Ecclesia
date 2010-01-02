@@ -2,7 +2,7 @@ from django.shortcuts import get_object_or_404, render_to_response
 from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.contrib.auth.decorators import login_required
 from groups.models import *
-from goals.models import *
+from discussions.models import *
 import sys
 from forms import *
 
@@ -18,14 +18,14 @@ def home(request):
     return render_to_response('home.html', locals())
 
 
-def group_home(request, group_name):
+def group_home(request, group_slug):
     """
     Homepage of a group, displaying the group's description & active content.
     """
     user=request.user
-    query = GroupProfile.objects.filter(name=group_name)
+    query = GroupProfile.objects.filter(slug=group_slug)
     if query.count() == 0:
-        raise Http404("Can't find group named: %s" % group_name)
+        raise Http404("Can't find a group with the slug: %s" % group_slug)
     else:
         group = query[0]
         if str(user) != 'AnonymousUser':
@@ -37,8 +37,8 @@ def group_home(request, group_name):
         mission_statement = query[0].mission_statement
     else:
         mission_statement = ""
-    goals = group.goals.all()
-    members = User.objects.filter(groups=group.group)  
+    discussions = group.discussions.all()
+    members = User.objects.filter(groups=group.group)
     user_in_group = False
     try:
         user_in_group = request.user.groups.filter(id=group.group.id).count() > 0
@@ -73,8 +73,7 @@ def update_coords(request):
         group.x_pos = int(request.POST.get(pos_x, group.x_pos))
         group.y_pos = int(request.POST.get(pos_y, group.y_pos))
         group.save()
-        print request.POST[pos_x]
-
+       
     return HttpResponse(msg)
 	
 def user_home(request, user_name):
@@ -105,28 +104,27 @@ def edit_user_profile(request, user_name):
             user.save()
             return HttpResponseRedirect('/')
     else:
-        
-        form = MemberProfileForm({"first_name": user.first_name})
+        form = MemberProfileForm(instance=request.user)
     return render_to_response('edit_profile.html', {'form': form})
 
 
 def is_in_group(request):
-    if 'group_name' in request.GET:
-        group = GroupProfile.objects.get(name=request.GET['group_name'])
+    if 'group_slug' in request.GET:
+        group = GroupProfile.objects.get(slug=request.GET['group_slug'])
         if request.user.groups.filter(id=group.group.id):
             return HttpResponse("True")
     return HttpResponse("False")
     
 def join_group(request):
-    if 'group_name' in request.POST:
-        group = GroupProfile.objects.get(name=request.POST['group_name'])
+    if 'group_slug' in request.POST:
+        group = GroupProfile.objects.get(slug=request.POST['group_slug'])
         request.user.groups.add(group.group)
         GroupPermission(group=group, user=request.user, permission_type=2).save()
     return HttpResponse("")
     
 def leave_group(request):
-    if 'group_name' in request.POST:
-        group = GroupProfile.objects.get(name=request.POST['group_name'])
+    if 'group_slug' in request.POST:
+        group = GroupProfile.objects.get(slug=request.POST['group_slug'])
         GroupPermission.object.filter(group=group).filter(user=request.user).delete()
         request.user.groups.remove(group.group)
     return HttpResponse("")
@@ -147,7 +145,7 @@ def delete_member(request, group_pk, member_pk):
     member = User.objects.get(pk=member_pk)
     member.groups.remove(group.group)
     GroupPermission.objects.filter(group=group).filter(user=member).delete()
-    return HttpResponseRedirect('/group/%s/' % group.name)
+    return HttpResponseRedirect('/group/%s/' % group.slug)
 
 def promote_member(request, group_pk, member_pk):
     group = GroupProfile.objects.get(pk=group_pk)
@@ -157,7 +155,7 @@ def promote_member(request, group_pk, member_pk):
         if permission.permission_type > 1:
             permission.permission_type = permission.permission_type - 1
             permission.save()
-    return HttpResponseRedirect('/group/%s/' % group.name)
+    return HttpResponseRedirect('/group/%s/' % group.slug)
 
 def demote_member(request, group_pk, member_pk):
     group = GroupProfile.objects.get(pk=group_pk)
@@ -167,4 +165,4 @@ def demote_member(request, group_pk, member_pk):
         if permission.permission_type < 3:
             permission.permission_type = permission.permission_type + 1
             permission.save()
-    return HttpResponseRedirect('/group/%s/' % group.name)
+    return HttpResponseRedirect('/group/%s/' % group.slug)

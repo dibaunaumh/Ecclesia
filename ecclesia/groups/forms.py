@@ -14,11 +14,7 @@ class MemberProfileFilter(django_filters.FilterSet):
         fields = ['is_active', 'is_staff', 'is_superuser']
         
 
-class MemberProfileForm(forms.Form):
-    first_name = forms.CharField()
-    last_name = forms.CharField()
-    email = forms.CharField()
-    
+class MemberProfileForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email']
+        fields = ['first_name', 'last_name', 'email',]

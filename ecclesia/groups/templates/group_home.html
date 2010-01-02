@@ -30,19 +30,140 @@
 
 <hr/>
 
-<h3>Current goals</h3>
-<ul>
-{% for goal in goals %}
-    <li><a href="{{ goal.get_absolute_url }}">{{ goal.name }}</a>
-{% endfor %}
-
+<h3>Featured Discussions</h3>
+<div id="canvasContainer"></div>
+<style type="text/css">
+#canvasContainer {position: relative; margin: 0; padding: 0; float: left}
+#discsvu {margin: 0; padding: 0; border: thin solid #933}
+.discussion {position: absolute; width: 150px; height: 100px; margin: 0; padding: 0; font-size: 12pt; font-weight: bold; overflow: hidden; border: thin solid #000; cursor: move}
+.discussion a {display: block; float: left; padding: 10px; color: #000}
+.discussion a:hover {color: #033; text-decoration: underline}
+.dragon { border: thin solid #033; background: url(static/img/cork_board.jpg) left top no-repeat;opacity:.6; -moz-opacity:.6}
+.selecton { border: 2px solid #033 }
+img {width: 150px; height: 100px}
+</style>
+<script type="text/javascript">
+var i = 0;
+VUController = function(vuW, vuH) {
+	this.W = vuW;
+	this.H = vuH;
+	
+	this.elems = new Array();
+	this.coords = new Array();
+	this.drag = {};
+	this.ctx = null;
+	this.img = new Image();
+	this.data = {
+	{% for discussion in discussions %}
+		x_{{ discussion.id }} : {{ discussion.x_pos }}, y_{{ discussion.id }} : {{ discussion.y_pos }},
+	{% endfor %}
+	};
+	{% for discussion in discussions %}
+	this.elems[i] = new Array();
+	this.elems[i]['id'] = {{ discussion.id }};
+	this.elems[i]['name'] = '{{ discussion.name }}';
+	this.elems[i]['url'] = '{{ discussion.get_absolute_url }}';
+	this.coords[i++] = { left : {{ discussion.x_pos }}, top : {{ discussion.y_pos }} };
+	{% endfor %}
+	this.init();
+};
+VUController.prototype = {
+	init		: function() {
+		if(this.initCanvas()) {
+			this.img.src = 'static/img/cork_board.jpg';
+			var this_ = this;
+			$.each(this.elems, function(id, el) {
+				$('#canvasContainer').append('<div class="discussion" id="disc_'+id+'"><a href="'+el['url']+'">'+el['name']+'</a></div>');
+				this_.drag = id;
+				this_.position();
+				$('#disc_'+id).draggable({
+					containment: 'parent',
+					start: function(e, ui) {
+						this_.setDrag(this);
+						this_.grip();
+					},
+					stop : function(e, ui) {
+						this_.coords[this_.drag] = $(this).position();
+						this_.drop();
+					}
+				});
+			});
+			this.draw();
+		} else {
+			alert('No canvas context.');
+		}
+	},
+	initCanvas	: function() {
+		$('#canvasContainer').empty();
+		$('#canvasContainer').append('<canvas id="discsvu" width="'+this.W+'" height="'+this.H+'"></canvas>');
+		this.ctx = document.getElementById('discsvu').getContext('2d');
+		return (this.ctx != null);
+	},
+	position	: function() {
+		var w = this.coords[this.drag].left;
+		var h = this.coords[this.drag].top;
+		$('#disc_'+this.drag).css('left', w+'px');
+		$('#disc_'+this.drag).css('top', h+'px');
+	},
+	setDrag		: function(el) {
+		this.drag = el.id.substr(5); // removing the 'disc_'
+	},
+	draw		: function(isGrip) {
+		var this_ = this;
+		if(this.img) {
+			this.ctx.clearRect(0, 0, this.W, this.H);
+			$.each(this.elems, function(id, el) {
+				if(isGrip) {
+					if(id != this_.drag) {
+						var h = $('#disc_'+id).height();
+						var w = $('#disc_'+id).width();
+						this_.ctx.drawImage(this_.img, this_.coords[id].left, this_.coords[id].top, w,  h);
+					}
+				} else {
+					var h = $('#disc_'+id).height();
+					var w = $('#disc_'+id).width();
+					this_.ctx.drawImage(this_.img, this_.coords[id].left, this_.coords[id].top, w,  h);
+				}
+			});
+		}
+	},
+	grip		: function() {
+		$('#disc_'+this.drag).addClass('dragon');
+		this.draw(true);
+	},
+	drop		: function() {
+		$('#disc_'+this.drag).removeClass('dragon');
+		this.draw();
+	},
+	updateCoords: function() {
+		var this_ = this;
+		$.each(this.elems, function(id, el){
+			if(this_.coords[id].left != '') {
+				var x = 'x_'+el['id'];
+				var y = 'y_'+el['id'];
+				this_.data[x] = parseInt(this_.coords[id].left);
+				this_.data[y] = parseInt(this_.coords[id].top);
+			}
+		});
+		
+		$.ajax({
+			type		: "POST",
+			url			: "/update_coords/",
+			data		: this_.data,
+			success		: function(msg){
+				alert(msg);
+			}
+		});
+	}
+};
+var VUC = new VUController(900, 600);
+</script>
+<p id="log"></p>
 {% if user_in_group %}
-    <br/>&nbsp;&nbsp;&nbsp;<input id="create_goal" type="button" value="{% trans 'Create Goal' %}" onclick="document.location.href='/admin/goals/goal/add/?group_profile={{ group.id }}'"/>
+    <br/>&nbsp;&nbsp;&nbsp;<input id="create_discussion" type="button" value="{% trans 'Create Discussion' %}" onclick="document.location.href='/admin/discussions/discussion/add/?group_profile={{ group.id }}'"/>
 {% else %}
-	<br/>&nbsp;&nbsp;&nbsp;<input id="create_goal" type="hidden" value="{% trans 'Create Goal' %}" onclick="document.location.href='/admin/goals/goal/add/?group_profile={{ group.id }}'"/>
+	<br/>&nbsp;&nbsp;&nbsp;<input id="create_discussion" type="hidden" value="{% trans 'Create Discussion' %}" onclick="document.location.href='/admin/discussions/discussion/add/?group_profile={{ group.id }}'"/>
 {% endif %}
-
-</ul>
 
 <hr/>
 

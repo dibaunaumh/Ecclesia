@@ -6,7 +6,7 @@ from django.test import TestCase, Client
 from django.contrib.auth.models import Group, User
 from models import *
 from factory import *
-from goals.models import Goal
+from discussions.models import Discussion
 import sys
 
 
@@ -15,7 +15,7 @@ class GroupsTest(TestCase):
     users = []
     members = {}
     groups = []
-    goals = {}
+    discussions = {}
     
     
     def setUp(self):
@@ -46,8 +46,6 @@ class GroupsTest(TestCase):
         #                            create_goal("__goal2.2__", self.groups[1], self.users[2]),
         #                            ]
 
-    
-
     def test_home_page(self):
         """
         Tests that the home page presents a correct list of groups.
@@ -68,7 +66,7 @@ class GroupsTest(TestCase):
         client = Client()
         # todo use reverse
         for i in range(len(self.groups)):
-            response = client.get("/group/%s/" % self.groups[i].name)
+            response = client.get("/group/%s/" % self.groups[i].slug)
             group = response.context[-1]['group']
             self.assertEquals(self.groups[i].name, group.name, "Expected to receive some other group name")
             
@@ -78,6 +76,7 @@ class GroupsTest(TestCase):
             #self.assertEquals(len(expected_goals), len(received_goals), "Expected to see a different number of goals, found %d" % len(received_goals))
             #for j in range(len(expected_goals)):
             #    self.assertEquals(expected_goals[j].name, received_goals[j].name, "Expected to find a different goal name, found %s" % received_goals[j].name)
+
             # test members
             
             received_members = response.context[-1]['members']

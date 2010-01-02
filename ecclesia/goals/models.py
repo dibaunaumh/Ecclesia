@@ -4,7 +4,7 @@ from django.utils.translation import gettext_lazy as _
 from common.utils import get_domain
 from groups.models import GroupProfile
 from django.contrib.contenttypes import generic
-from discussion.models import Story
+from discussions.models import Story
 
 
 class Goal(models.Model):
