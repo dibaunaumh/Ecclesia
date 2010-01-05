@@ -165,6 +165,10 @@ var VUC = new VUController(900, 600);
 	<br/>&nbsp;&nbsp;&nbsp;<input id="create_discussion" type="hidden" value="{% trans 'Create Discussion' %}" onclick="document.location.href='/admin/discussions/discussion/add/?group_profile={{ group.id }}'"/>
 {% endif %}
 
+<div id="buttons_container">
+	<input type="button" value="{% trans 'Discussions List' %}" onclick="document.location.href='/group/{{group.slug}}/discussions_list/'"/>
+</div>
+
 <hr/>
 
 <h3>Current members</h3>
@@ -186,6 +190,7 @@ var VUC = new VUController(900, 600);
 	{% endifequal %}
 {% endfor %}
 </div>
+
 </ul>
 
 

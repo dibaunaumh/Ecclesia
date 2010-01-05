@@ -90,7 +90,7 @@ class GroupsTest(TestCase):
         Tests that the groups list presents a correct number of groups depending on the search and filters.
         """
         client = Client()
-        response = client.get("/groupslist/?search=Earth&parent=&location=&created_by=2")
+        response = client.get("/groups_list/?search=Earth&parent=&location=&created_by=2")
         self.assertEquals(len(response.context[-1]['my_items'].object_list), 1, "Expected a different number of groups after search and filters")
       
     def test_members_list(self):
