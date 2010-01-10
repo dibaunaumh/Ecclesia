@@ -57,6 +57,11 @@ def members_list(request, group_name):
         raise Http404("Can't find group named: %s" % group_name)
     else:
         group = query[0]
+        user=request.user
+        if str(user) != 'AnonymousUser':
+            if GroupPermission.objects.filter(group=group).filter(user=user):
+                permission = GroupPermission.objects.filter(group=group).filter(user=user)[0]
+                user_permission_type = permission.permission_type
     members = User.objects.filter(groups=group.group)
     (my_items, get_parameters, f) = search_filter_paginate('member', members, request)
     return render_to_response('members_list.html', locals())
@@ -145,7 +150,7 @@ def delete_member(request, group_pk, member_pk):
     member = User.objects.get(pk=member_pk)
     member.groups.remove(group.group)
     GroupPermission.objects.filter(group=group).filter(user=member).delete()
-    return HttpResponseRedirect('/group/%s/' % group.slug)
+    return HttpResponseRedirect('/members_list/%s/' % group.name)
 
 def promote_member(request, group_pk, member_pk):
     group = GroupProfile.objects.get(pk=group_pk)
@@ -155,7 +160,7 @@ def promote_member(request, group_pk, member_pk):
         if permission.permission_type > 1:
             permission.permission_type = permission.permission_type - 1
             permission.save()
-    return HttpResponseRedirect('/group/%s/' % group.slug)
+    return HttpResponseRedirect('/members_list/%s/' % group.name)
 
 def demote_member(request, group_pk, member_pk):
     group = GroupProfile.objects.get(pk=group_pk)
@@ -165,4 +170,4 @@ def demote_member(request, group_pk, member_pk):
         if permission.permission_type < 3:
             permission.permission_type = permission.permission_type + 1
             permission.save()
-    return HttpResponseRedirect('/group/%s/' % group.slug)
+    return HttpResponseRedirect('/members_list/%s/' % group.name)
