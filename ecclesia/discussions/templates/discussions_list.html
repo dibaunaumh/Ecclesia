@@ -13,7 +13,7 @@
 <script type="text/javascript" src="/static/js/jquery/sorttable.js"></script>
 
 <h2>
-    {% trans "Members List" %}
+    {% trans "Discussions List" %}
 </h2>
 <table border="0" cellpadding="0" cellspacing="0">
 	<tr>
@@ -22,13 +22,12 @@
 				<thead>
 				<tr>
 					<th width="20">ID</th>	
-					<th width="100">First Name</th>	
-					<th width="100">Last Name</th>	
-					<th width="100">Is Active</th>	
-					<th width="100">Is Authenticated</th>
-					<th width="100">Is Staff</th>
-					<th width="100">Is Superuser</th>
-					<th width="100">Last Login</th>
+					<th width="100">Name</th>	
+					<th width="100">Description</th>	
+					<th width="100">Type</th>	
+					<th width="100">Created by</th>
+					<th width="100">Created at</th>
+					<th width="100">Updated at</th>
 					<th>Operations</th>
 				</tr>
 				</thead>
@@ -37,23 +36,16 @@
 				{% for obj in my_items.object_list %}
 				<tr class="ref_{{forloop.counter|divisibleby:"2"}}">
 					<td align="left">{{ obj.pk }}</td>
-					<td><a href="{{ obj.get_absolute_url }}">{{ obj.first_name }}</a></td>
-					<td>{{obj.last_name}}</td>
-					<td>{{obj.is_active}}</td>
-					<td>{{obj.is_authenticated}}</td>
-					<td>{{obj.is_staff}}</td>
-					<td>{{obj.is_superuser}}</td>
-					<td>{{obj.last_login|date:"d/m/Y"}}</td>
+					<td><a href="{{ obj.get_absolute_url }}">{{ obj.name }}</a></td>
+					<td>{{obj.description}}</td>
+					<td>{{obj.type}}</td>
+					<td>{{obj.created_by}}</td>
+					<td>{{obj.created_at}}</td>
+					<td>{{obj.updated_at}}</td>
 					{% ifequal user_permission_type 1 %}
 						<td>
-							<form action="/member-delete/{{group.pk}}/{{obj.pk}}/" method="post">      
-						        <input type="image" onclick="if(confirm('Are you sure you want to kick this member?')) {this.form.submit();} else { return false; }" src="/static/icons/delete.png">Kick member</input>
-						    </form>
-							<form action="/member-promote/{{group.pk}}/{{obj.pk}}/" method="post">      
-						        <input type="image" onclick="if(confirm('Are you sure you want to promote this member?')) {this.form.submit();} else { return false; }" src="/static/icons/plus.gif">Promote member</input>
-						    </form>
-							<form action="/member-demote/{{group.pk}}/{{obj.pk}}/" method="post">      
-						        <input type="image" onclick="if(confirm('Are you sure you want to demote this member?')) {this.form.submit();} else { return false; }" src="/static/icons/minus.gif">Demote member</input>
+							<form action="/discussion-delete/{{obj.pk}}/" method="post">      
+						        <input type="image" onclick="if(confirm('Are you sure you want to delete discussion?')) {this.form.submit();} else { return false; }" src="/static/icons/delete.png">Delete Discussion</input>
 						    </form>
 						</td>
 					{% endifequal %}

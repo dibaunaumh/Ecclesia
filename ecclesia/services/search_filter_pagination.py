@@ -1,5 +1,6 @@
 from utils import get_query
 from groups.forms import GroupProfileFilter, MemberProfileFilter
+from discussions.forms import DiscussionFilter
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 
 def search_filter_paginate(entity_name, all_objects, request):
@@ -14,6 +15,8 @@ def search_filter_paginate(entity_name, all_objects, request):
             i = get_query(request.GET['search'].strip(), ['name', 'description'])
         if entity_name == 'member':
             i = get_query(request.GET['search'].strip(), ['first_name', 'last_name', 'email'])
+        if entity_name == 'discussion':
+            i = get_query(request.GET['search'].strip(), ['name', 'description', 'type'])
         items_search = all_objects.filter(i)
     
     #filter
@@ -21,6 +24,8 @@ def search_filter_paginate(entity_name, all_objects, request):
         f = GroupProfileFilter(request.GET, queryset=items_search)
     if entity_name == 'member':
         f = MemberProfileFilter(request.GET, queryset=items_search)
+    if entity_name == 'discussion':
+        f = DiscussionFilter(request.GET, queryset=items_search)
     
     #pagination
     items_list = f.qs  
@@ -53,7 +58,11 @@ def analyze_filters_parameters(entity_name, request):
             get_parameters = "?parent=%s&location=%s&created_by=%s&" % \
             (request.GET['parent'], request.GET['location'], request.GET['created_by'])
     if entity_name == 'member':
-        if 'is_authenticated' in request.GET:
-            get_parameters = "?is_active=%s&is_stuff=%s&is_superuser=%s&" % \
-            (request.GET['is_active'], request.GET['is_stuff'], request.GET['is_superuser'])
+        if 'is_active' in request.GET:
+            get_parameters = "?is_active=%s&is_staff=%s&is_superuser=%s&" % \
+            (request.GET['is_active'], request.GET['is_staff'], request.GET['is_superuser'])
+    if entity_name == 'discussion':
+        if 'type' in request.GET:
+            get_parameters = "?type=%s&created_by=%s&" % \
+            (request.GET['type'], request.GET['created_by'])
     return get_parameters

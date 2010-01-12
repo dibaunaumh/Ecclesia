@@ -184,6 +184,10 @@ var VUC = new VUController(config);
 	<input type="button" value="{% trans 'Update Groups Positions' %}" onclick="VUC.updateCoords();"/>
 {% endif %}
 
+<div id="buttons_container">
+	<input type="button" value="{% trans 'Discussions List' %}" onclick="document.location.href='/discussions_list/{{group.slug}}/'"/>
+</div>
+
 <hr/>
 
 <h3>Current members</h3>
@@ -194,23 +198,11 @@ var VUC = new VUController(config);
 </div>
 <!--ul>
 <div id="ddd">
-<input type="button" value="{% trans 'Members List' %}" onclick="document.location.href='/memberslist/{{group.name}}/'"/>
+<input type="button" value="{% trans 'Members List' %}" onclick="document.location.href='/members_list/{{group.name}}/'"/>
 {% for member in members %}
     <li><a href="{{ member.get_absolute_url }}">{{ member.username }}</a>
-	{% ifequal user_permission_type 1 %}
-		<form action="/member-delete/{{group.pk}}/{{member.pk}}/" method="post">      
-	        <input type="image" onclick="if(confirm('Are you sure you want to kick this member?')) {this.form.submit();} else { return false; }" src="/static/icons/delete.png">Kick member</input>
-	    </form>
-		<form action="/member-promote/{{group.pk}}/{{member.pk}}/" method="post">      
-	        <input type="image" onclick="if(confirm('Are you sure you want to promote this member?')) {this.form.submit();} else { return false; }" src="/static/icons/plus.gif">Promote member</input>
-	    </form>
-		<form action="/member-demote/{{group.pk}}/{{member.pk}}/" method="post">      
-	        <input type="image" onclick="if(confirm('Are you sure you want to demote this member?')) {this.form.submit();} else { return false; }" src="/static/icons/minus.gif">Demote member</input>
-	    </form>
-	{% endifequal %}
 {% endfor %}
 </div>
 </ul-->
-
 
 {% endblock content %}
