@@ -32,40 +32,53 @@ img {width: 150px; height: 100px}
 </style>
 <script type="text/javascript">
 var i = 0;
-GroupsVU = function(vuW, vuH) {
-	this.W = vuW;
-	this.H = vuH;
+VUController = function(options) {
+	this.options = {
+		width		: 900,
+		height		: 600,
+		alias		: 'group',
+		bg_url		: '/static/img/cork_board.jpg',
+		update_url	: '/common/update_coords/?entity_type='
+	}
+	if(options != null && $(options).length) {
+		$.extend(this.options, options);
+	}
+	if(!options.update_url != null) {
+		this.options.update_url = this.options.update_url + this.options.alias;
+	}
 	
-	this.groups = new Array();
+	this.elems = new Array();
 	this.coords = new Array();
-	this.element = new Object();
 	this.drag = {};
 	this.ctx = null;
 	this.img = new Image();
+	this.img.src = this.options.bg_url;
 	this.data = {
 	{% for group in groups %}
 		x_{{ group.id }} : {{ group.x_pos }}, y_{{ group.id }} : {{ group.y_pos }},
 	{% endfor %}
 	};
 	{% for group in groups %}
-	this.groups[i] = new Array();
-	this.groups[i]['id'] = {{ group.id }};
-	this.groups[i]['name'] = '{{ group.name }}';
-	this.groups[i]['url'] = '{{ group.get_absolute_url }}';
+	this.elems[i] = new Array();
+	this.elems[i]['id'] = {{ group.id }};
+	this.elems[i]['name'] = '{{ group.group.name }}';
+	this.elems[i]['url'] = '{{ group.get_absolute_url }}';
 	this.coords[i++] = { left : {{ group.x_pos }}, top : {{ group.y_pos }} };
 	{% endfor %}
-	this.init();
+	var this_ = this;
+	$(this.img).load(function(){
+		this_.init();
+	});
 };
-GroupsVU.prototype = {
+VUController.prototype = {
 	init		: function() {
 		if(this.initCanvas()) {
-			this.img.src = 'static/img/cork_board.jpg';
 			var this_ = this;
-			$.each(this.groups, function(id, grp) {
-				$('#canvasContainer').append('<div class="group" id="group_'+id+'"><a href="'+grp['url']+'">'+grp['name']+'</a></div>');
+			$.each(this.elems, function(id, el) {
+				$('#canvasContainer').append('<div class="'+this_.options.alias+'" id="'+this_.options.alias+'_'+id+'"><a href="'+el['url']+'">'+el['name']+'</a></div>');
 				this_.drag = id;
 				this_.position();
-				$('#group_'+id).draggable({
+				$('#'+this_.options.alias+'_'+id).draggable({
 					containment: 'parent',
 					start: function(e, ui) {
 						this_.setDrag(this);
@@ -84,52 +97,56 @@ GroupsVU.prototype = {
 	},
 	initCanvas	: function() {
 		$('#canvasContainer').empty();
-		$('#canvasContainer').append('<canvas id="groupsvu" width="'+this.W+'" height="'+this.H+'"></canvas>');
-		this.ctx = document.getElementById('groupsvu').getContext('2d');
+		$('#canvasContainer').append('<canvas id="'+this.options.alias+'svu" width="'+this.options.width+'" height="'+this.options.height+'"></canvas>');
+		this.ctx = document.getElementById(this.options.alias+'svu').getContext('2d');
 		return (this.ctx != null);
 	},
 	position	: function() {
 		var w = this.coords[this.drag].left;
 		var h = this.coords[this.drag].top;
-		$('#group_'+this.drag).css('left', w+'px');
-		$('#group_'+this.drag).css('top', h+'px');
+		$('#'+this.options.alias+'_'+this.drag).css('left', w+'px');
+		$('#'+this.options.alias+'_'+this.drag).css('top', h+'px');
 	},
 	setDrag		: function(el) {
-		this.drag = el.id.substr(6); // removing the 'group_'
+		var len = this.options.alias.length + 1;
+		this.drag = el.id.substr(len); // removing the this.options.alias+'_'
+	},
+	_draw		: function(id) {
+		var h = $('#'+this.options.alias+'_'+id).height();
+		var w = $('#'+this.options.alias+'_'+id).width();
+		try {
+			this.ctx.drawImage(this.img, this.coords[id].left, this.coords[id].top, w,  h);
+		} catch(e) {}
 	},
 	draw		: function(isGrip) {
 		var this_ = this;
 		if(this.img) {
-			this.ctx.clearRect(0, 0, this.W, this.H);
-			$.each(this.groups, function(id, grp) {
+			this.ctx.clearRect(0, 0, this.options.width, this.options.height);
+			$.each(this.elems, function(id, el) {
 				if(isGrip) {
 					if(id != this_.drag) {
-						var h = $('#group_'+id).height();
-						var w = $('#group_'+id).width();
-						this_.ctx.drawImage(this_.img, this_.coords[id].left, this_.coords[id].top, w,  h);
+						this_._draw(id);
 					}
 				} else {
-					var h = $('#group_'+id).height();
-					var w = $('#group_'+id).width();
-					this_.ctx.drawImage(this_.img, this_.coords[id].left, this_.coords[id].top, w,  h);
+					this_._draw(id);
 				}
 			});
 		}
 	},
 	grip		: function() {
-		$('#group_'+this.drag).addClass('dragon');
+		$('#'+this.options.alias+'_'+this.drag).addClass('dragon');
 		this.draw(true);
 	},
 	drop		: function() {
-		$('#group_'+this.drag).removeClass('dragon');
+		$('#'+this.options.alias+'_'+this.drag).removeClass('dragon');
 		this.draw();
 	},
 	updateCoords: function() {
 		var this_ = this;
-		$.each(this.groups, function(id, grp){
+		$.each(this.elems, function(id, el){
 			if(this_.coords[id].left != '') {
-				var x = 'x_'+grp['id'];
-				var y = 'y_'+grp['id'];
+				var x = 'x_'+el['id'];
+				var y = 'y_'+el['id'];
 				this_.data[x] = parseInt(this_.coords[id].left);
 				this_.data[y] = parseInt(this_.coords[id].top);
 			}
@@ -137,7 +154,7 @@ GroupsVU.prototype = {
 		
 		$.ajax({
 			type		: "POST",
-			url			: "/update_coords/",
+			url			: this_.options.update_url,
 			data		: this_.data,
 			success		: function(msg){
 				alert(msg);
@@ -145,16 +162,10 @@ GroupsVU.prototype = {
 		});
 	}
 };
-var GVU = new GroupsVU(900, 600);
+var VUC = new VUController();
 </script>
-<!--ul>
-{% for group in groups %}
-    <li><a href="{{ group.get_absolute_url }}">{{ group.name }}</a>
-{% endfor %}
-    <li><input type="button" value="{% trans 'Create Group' %}" onclick="document.location.href='/admin/groups/groupprofile/add/'"/>
-</ul-->
 <div id="buttons_container">
-	<input type="button" value="{% trans 'Update Groups Positions' %}" onclick="GVU.updateCoords();"/><br clear="all"/>
+	<input type="button" value="{% trans 'Update Groups Positions' %}" onclick="VUC.updateCoords();"/><br clear="all"/>
 	<input type="button" value="{% trans 'Create Group' %}" onclick="document.location.href='/admin/groups/groupprofile/add/'"/><br clear="all"/>
 	<input type="button" value="{% trans 'Groups List' %}" onclick="document.location.href='/groupslist/'"/>
 </div>

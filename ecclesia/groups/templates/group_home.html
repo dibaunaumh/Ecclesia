@@ -1,14 +1,14 @@
 {% extends 'admin/base_site.html' %}
 {% load i18n %}
-{% block breadcrumbs %}<div class="breadcrumbs"><a href="/">{% trans 'Home' %}</a> &rsaquo; {{ group.name }}{% trans "'s Home" %}</div>{% endblock %}
+{% block breadcrumbs %}<div class="breadcrumbs"><a href="/">{% trans 'Home' %}</a> &rsaquo; {{ group.group.name }}{% trans "'s Home" %}</div>{% endblock %}
 {% block userlinks %}<a href="/admin/password_change/">{% trans 'Change password' %}</a> / <a href="/admin/logout/">{% trans 'Log out' %}</a>{% endblock %}
-{% block title %}{{ group.name }}{% trans "'s Home" %}{% endblock %}
+{% block title %}{{ group.group.name }}{% trans "'s Home" %}{% endblock %}
 {% block coltype %}diagram{% endblock %}
 
 {% block content %}
 
 <h2>
-    {{ group.name }}{% trans "'s Home" %}
+    {{ group.group.name }}{% trans "'s Home" %}
 </h2>
 {% ifequal user_permission_type 1 %}
 	<form action="/group-delete/{{group.pk}}/" method="post">      
@@ -35,24 +35,36 @@
 <style type="text/css">
 #canvasContainer {position: relative; margin: 0; padding: 0; float: left}
 #discsvu {margin: 0; padding: 0; border: thin solid #933}
-.discussion {position: absolute; width: 150px; height: 100px; margin: 0; padding: 0; font-size: 12pt; font-weight: bold; overflow: hidden; border: thin solid #000; cursor: move}
-.discussion a {display: block; float: left; padding: 10px; color: #000}
-.discussion a:hover {color: #033; text-decoration: underline}
+.disc {position: absolute; width: 150px; height: 100px; margin: 0; padding: 0; font-size: 12pt; font-weight: bold; overflow: hidden; border: thin solid #000; cursor: move}
+.disc a {display: block; float: left; padding: 10px; color: #000}
+.disc a:hover {color: #033; text-decoration: underline}
 .dragon { border: thin solid #033; background: url(static/img/cork_board.jpg) left top no-repeat;opacity:.6; -moz-opacity:.6}
 .selecton { border: 2px solid #033 }
 img {width: 150px; height: 100px}
 </style>
 <script type="text/javascript">
 var i = 0;
-VUController = function(vuW, vuH) {
-	this.W = vuW;
-	this.H = vuH;
+VUController = function(options) {
+	this.options = {
+		width		: 900,
+		height		: 600,
+		alias		: 'group',
+		bg_url		: '/static/img/cork_board.jpg',
+		update_url	: '/common/update_coords/?entity_type='
+	}
+	if(options != null && $(options).length) {
+		$.extend(this.options, options);
+	}
+	if(!options.update_url != null) {
+		this.options.update_url = this.options.update_url + this.options.alias;
+	}
 	
 	this.elems = new Array();
 	this.coords = new Array();
 	this.drag = {};
 	this.ctx = null;
 	this.img = new Image();
+	this.img.src = this.options.bg_url;
 	this.data = {
 	{% for discussion in discussions %}
 		x_{{ discussion.id }} : {{ discussion.x_pos }}, y_{{ discussion.id }} : {{ discussion.y_pos }},
@@ -65,18 +77,20 @@ VUController = function(vuW, vuH) {
 	this.elems[i]['url'] = '{{ discussion.get_absolute_url }}';
 	this.coords[i++] = { left : {{ discussion.x_pos }}, top : {{ discussion.y_pos }} };
 	{% endfor %}
-	this.init();
+	var this_ = this;
+	$(this.img).load(function(){
+		this_.init();
+	});
 };
 VUController.prototype = {
 	init		: function() {
 		if(this.initCanvas()) {
-			this.img.src = 'static/img/cork_board.jpg';
 			var this_ = this;
 			$.each(this.elems, function(id, el) {
-				$('#canvasContainer').append('<div class="discussion" id="disc_'+id+'"><a href="'+el['url']+'">'+el['name']+'</a></div>');
+				$('#canvasContainer').append('<div class="'+this_.options.alias+'" id="'+this_.options.alias+'_'+id+'"><a href="'+el['url']+'">'+el['name']+'</a></div>');
 				this_.drag = id;
 				this_.position();
-				$('#disc_'+id).draggable({
+				$('#'+this_.options.alias+'_'+id).draggable({
 					containment: 'parent',
 					start: function(e, ui) {
 						this_.setDrag(this);
@@ -95,44 +109,48 @@ VUController.prototype = {
 	},
 	initCanvas	: function() {
 		$('#canvasContainer').empty();
-		$('#canvasContainer').append('<canvas id="discsvu" width="'+this.W+'" height="'+this.H+'"></canvas>');
-		this.ctx = document.getElementById('discsvu').getContext('2d');
+		$('#canvasContainer').append('<canvas id="'+this.options.alias+'svu" width="'+this.options.width+'" height="'+this.options.height+'"></canvas>');
+		this.ctx = document.getElementById(this.options.alias+'svu').getContext('2d');
 		return (this.ctx != null);
 	},
 	position	: function() {
 		var w = this.coords[this.drag].left;
 		var h = this.coords[this.drag].top;
-		$('#disc_'+this.drag).css('left', w+'px');
-		$('#disc_'+this.drag).css('top', h+'px');
+		$('#'+this.options.alias+'_'+this.drag).css('left', w+'px');
+		$('#'+this.options.alias+'_'+this.drag).css('top', h+'px');
 	},
 	setDrag		: function(el) {
-		this.drag = el.id.substr(5); // removing the 'disc_'
+		var len = this.options.alias.length + 1;
+		this.drag = el.id.substr(len); // removing the this.options.alias+'_'
+	},
+	_draw		: function(id) {
+		var h = $('#'+this.options.alias+'_'+id).height();
+		var w = $('#'+this.options.alias+'_'+id).width();
+		try {
+			this.ctx.drawImage(this.img, this.coords[id].left, this.coords[id].top, w,  h);
+		} catch(e) {}
 	},
 	draw		: function(isGrip) {
 		var this_ = this;
 		if(this.img) {
-			this.ctx.clearRect(0, 0, this.W, this.H);
+			this.ctx.clearRect(0, 0, this.options.width, this.options.height);
 			$.each(this.elems, function(id, el) {
 				if(isGrip) {
 					if(id != this_.drag) {
-						var h = $('#disc_'+id).height();
-						var w = $('#disc_'+id).width();
-						this_.ctx.drawImage(this_.img, this_.coords[id].left, this_.coords[id].top, w,  h);
+						this_._draw(id);
 					}
 				} else {
-					var h = $('#disc_'+id).height();
-					var w = $('#disc_'+id).width();
-					this_.ctx.drawImage(this_.img, this_.coords[id].left, this_.coords[id].top, w,  h);
+					this_._draw(id);
 				}
 			});
 		}
 	},
 	grip		: function() {
-		$('#disc_'+this.drag).addClass('dragon');
+		$('#'+this.options.alias+'_'+this.drag).addClass('dragon');
 		this.draw(true);
 	},
 	drop		: function() {
-		$('#disc_'+this.drag).removeClass('dragon');
+		$('#'+this.options.alias+'_'+this.drag).removeClass('dragon');
 		this.draw();
 	},
 	updateCoords: function() {
@@ -148,7 +166,7 @@ VUController.prototype = {
 		
 		$.ajax({
 			type		: "POST",
-			url			: "/update_coords/",
+			url			: this_.options.update_url,
 			data		: this_.data,
 			success		: function(msg){
 				alert(msg);
@@ -156,19 +174,25 @@ VUController.prototype = {
 		});
 	}
 };
-var VUC = new VUController(900, 600);
+var config = {
+	alias		: 'disc'
+}
+var VUC = new VUController(config);
 </script>
-<p id="log"></p>
 {% if user_in_group %}
-    <br/>&nbsp;&nbsp;&nbsp;<input id="create_discussion" type="button" value="{% trans 'Create Discussion' %}" onclick="document.location.href='/admin/discussions/discussion/add/?group_profile={{ group.id }}'"/>
-{% else %}
-	<br/>&nbsp;&nbsp;&nbsp;<input id="create_discussion" type="hidden" value="{% trans 'Create Discussion' %}" onclick="document.location.href='/admin/discussions/discussion/add/?group_profile={{ group.id }}'"/>
+    <br/>&nbsp;&nbsp;&nbsp;<input id="create_discussion" type="button" value="{% trans 'Create Discussion' %}" onclick="document.location.href='/admin/discussions/discussion/add/?group_profile={{ group.id }}'"/><br/>
+	<input type="button" value="{% trans 'Update Groups Positions' %}" onclick="VUC.updateCoords();"/>
 {% endif %}
 
 <hr/>
 
 <h3>Current members</h3>
-<ul>
+<div id="members_container">
+{% for member in members %}
+	<a href="{{ member.get_absolute_url }}" class="member" title="{{ member.username }}" alt=""></a>
+{% endfor %}
+</div>
+<!--ul>
 <div id="ddd">
 <input type="button" value="{% trans 'Members List' %}" onclick="document.location.href='/memberslist/{{group.name}}/'"/>
 {% for member in members %}
@@ -186,7 +210,7 @@ var VUC = new VUController(900, 600);
 	{% endifequal %}
 {% endfor %}
 </div>
-</ul>
+</ul-->
 
 
 {% endblock content %}

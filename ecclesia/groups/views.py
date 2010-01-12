@@ -29,16 +29,16 @@ def group_home(request, group_slug):
     else:
         group = query[0]
         if str(user) != 'AnonymousUser':
-            if GroupPermission.objects.filter(group=group).filter(user=user):
-                permission = GroupPermission.objects.filter(group=group).filter(user=user)[0]
+            if GroupPermission.objects.filter(group=group.group).filter(user=user):
+                permission = GroupPermission.objects.filter(group=group.group).filter(user=user)[0]
                 user_permission_type = permission.permission_type
     query = group.mission_statements.all().order_by("-created_at")
     if query.count() > 0:
         mission_statement = query[0].mission_statement
     else:
         mission_statement = ""
-    discussions = group.discussions.all()
-    members = User.objects.filter(groups=group.group)
+    discussions = group.group.discussions.all()
+    members = group.get_group_members()
     user_in_group = False
     try:
         user_in_group = request.user.groups.filter(id=group.group.id).count() > 0
@@ -51,13 +51,13 @@ def groups_list(request):
     (my_items, get_parameters, f) = search_filter_paginate('group', groups, request)
     return render_to_response('groups_list.html', locals())
 
-def members_list(request, group_name):
-    query = GroupProfile.objects.filter(name=group_name)
+def members_list(request, group_slug):
+    query = GroupProfile.objects.filter(slug=group_slug)
     if query.count() == 0:
-        raise Http404("Can't find group named: %s" % group_name)
+        raise Http404("Can't find group named: %s" % group_slug)
     else:
         group = query[0]
-    members = User.objects.filter(groups=group.group)
+    members = group.get_group_members()
     (my_items, get_parameters, f) = search_filter_paginate('member', members, request)
     return render_to_response('members_list.html', locals())
 
@@ -119,14 +119,14 @@ def join_group(request):
     if 'group_slug' in request.POST:
         group = GroupProfile.objects.get(slug=request.POST['group_slug'])
         request.user.groups.add(group.group)
-        GroupPermission(group=group, user=request.user, permission_type=2).save()
+        GroupPermission(group=group.group, user=request.user, permission_type=2).save()
     return HttpResponse("")
     
 def leave_group(request):
     if 'group_slug' in request.POST:
         group = GroupProfile.objects.get(slug=request.POST['group_slug'])
-        GroupPermission.object.filter(group=group).filter(user=request.user).delete()
-        request.user.groups.remove(group.group)
+        GroupPermission.object.filter(group=group.group).filter(user=request.user).delete()
+        request.user.groups.remove(group.group.group)
     return HttpResponse("")
 
 def login(request):
@@ -144,14 +144,14 @@ def delete_member(request, group_pk, member_pk):
     group = GroupProfile.objects.get(pk=group_pk)
     member = User.objects.get(pk=member_pk)
     member.groups.remove(group.group)
-    GroupPermission.objects.filter(group=group).filter(user=member).delete()
+    GroupPermission.objects.filter(group=group.group).filter(user=member).delete()
     return HttpResponseRedirect('/group/%s/' % group.slug)
 
 def promote_member(request, group_pk, member_pk):
     group = GroupProfile.objects.get(pk=group_pk)
     member = User.objects.get(pk=member_pk)
-    if GroupPermission.objects.filter(group=group).filter(user=member):
-        permission = GroupPermission.objects.filter(group=group).filter(user=member)[0]
+    if GroupPermission.objects.filter(group=group.group).filter(user=member):
+        permission = GroupPermission.objects.filter(group=group.group).filter(user=member)[0]
         if permission.permission_type > 1:
             permission.permission_type = permission.permission_type - 1
             permission.save()
@@ -160,8 +160,8 @@ def promote_member(request, group_pk, member_pk):
 def demote_member(request, group_pk, member_pk):
     group = GroupProfile.objects.get(pk=group_pk)
     member = User.objects.get(pk=member_pk)
-    if GroupPermission.objects.filter(group=group).filter(user=member):
-        permission = GroupPermission.objects.filter(group=group).filter(user=member)[0]
+    if GroupPermission.objects.filter(group=group.group).filter(user=member):
+        permission = GroupPermission.objects.filter(group=group.group).filter(user=member)[0]
         if permission.permission_type < 3:
             permission.permission_type = permission.permission_type + 1
             permission.save()

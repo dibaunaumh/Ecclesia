@@ -6,3 +6,6 @@ class Presentable(models.Model):
     y_pos = models.IntegerField(default=0, help_text=_('Initial vertical posinition in view from top border.'))
     width = models.IntegerField(default=150, help_text=_('Initial object width.'))
     height = models.IntegerField(default=100, help_text=_('Initial object height.'))
+
+    class Meta:
+        abstract = True

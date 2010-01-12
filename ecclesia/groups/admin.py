@@ -13,12 +13,17 @@ class MissionStatementAdmin(admin.ModelAdmin):
 
 
 class GroupProfileAdmin(admin.ModelAdmin):
-    list_display = ('name', 'group', 'parent', 'forked_from', 'location', 'created_by', 'created_at', 'updated_at')
+    list_display = ('slug', 'group', 'parent', 'forked_from', 'location', 'created_by', 'created_at', 'updated_at')
     list_filter = ('location', 'created_by',)
-    search_fields = ('name', 'group', 'description', 'location',)
-    ordering = ('name',)
+    search_fields = ('slug', 'group', 'description', 'location',)
+    ordering = ('slug',)
     inlines = (MissionStatementInline,)
  
+class UserProfileAdmin(admin.ModelAdmin):
+    pass
+
+	
+admin.site.register(UserProfile, UserProfileAdmin)
 admin.site.register(GroupProfile, GroupProfileAdmin)
 admin.site.register(GroupPermission)
 admin.site.register(MissionStatement, MissionStatementAdmin)

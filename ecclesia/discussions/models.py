@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from django.utils.translation import gettext_lazy as _
@@ -44,16 +44,25 @@ class Story(models.Model):
     def name_with_link(self):
         return _('<a href="%(url)s">%(user)s\'s %(speechact)s (#%(id)s)</a>') % {'user':self.created_by.get_full_name(), 'speechact':self.get_speech_act_display(), 'id':self.id, 'url':self.get_absolute_url()}
 
+
 class DiscussionType(models.Model):
-    name = models.CharField(_('name'), max_length=50, help_text=_('The name of the discussion type.'))
-		
+    name = models.CharField(_('name'), max_length=50, unique=True, blank=False, help_text=_('The name of the discussion type.'))
+
+    class Meta:
+        verbose_name = _('discussion type')
+        verbose_name_plural = _('discussion types')
+    
+    def __unicode__(self):
+        return self.name
+
+
 class Discussion(Presentable):
     """
     A discussion between users, related to a group
     """
-    group = models.ForeignKey(GroupProfile, verbose_name=_('group profile'), related_name='discussions', help_text=_("The group profile containing this discussion."))
+    group = models.ForeignKey(Group, verbose_name=_('group'), related_name='discussions', help_text=_("The group profile containing this discussion."))
     name = models.CharField(_('name'), max_length=50, help_text=_('The name of the discussion.'))
-    slug = models.SlugField(_('slug'), help_text=_("The url representation of the discussion's name. No whitespaces allowed - use hyphen/underscore to separate words"))
+    slug = models.SlugField(_('slug'), unique=True, blank=False, help_text=_("The url representation of the discussion's name. No whitespaces allowed - use hyphen/underscore to separate words"))
     type = models.ForeignKey(DiscussionType, verbose_name=_('discussion type'), related_name='objects', help_text=_("The discussion's type."))
     description = models.CharField(_('short description'), max_length=500, null=True, blank=True, help_text=_('A short description of the discussion.'))
     # no nesting on this release...
@@ -70,7 +79,7 @@ class Discussion(Presentable):
         
     
     def get_absolute_url(self):
-        return "http://%s/%s/discussion/%s/" % (get_domain(), self.group.slug, self.slug)
+        return "http://%s/discussion/%s/" % (get_domain(), self.slug)
     
     def __unicode__(self):
         return self.name
