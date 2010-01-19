@@ -151,6 +151,7 @@ VUController.prototype = {
 	drop		: function() {
 		$('#'+this.options.alias+'_'+this.drag).removeClass('dragon');
 		this.draw();
+		this.updateCoords();
 	},
 	updateCoords: function() {
 		var this_ = this;
@@ -168,7 +169,7 @@ VUController.prototype = {
 			url			: this_.options.update_url,
 			data		: this_.data,
 			success		: function(msg){
-				alert(msg);
+				//alert(msg);
 			}
 		});
 	}
@@ -182,7 +183,6 @@ var VUC = new VUController(config);
 <div id="buttons_container">
 {% if user_in_group %}
     <input id="create_discussion" type="button" value="{% trans 'Create Discussion' %}" onclick="document.location.href='/admin/discussions/discussion/add/?group_profile={{ group.id }}'"/><br/>
-	<input type="button" value="{% trans 'Update Groups Positions' %}" onclick="VUC.updateCoords();"/><br/>
 {% endif %}
 	<input type="button" value="{% trans 'Discussions List' %}" onclick="document.location.href='/discussions_list/{{group.slug}}/'"/>
 </div>
