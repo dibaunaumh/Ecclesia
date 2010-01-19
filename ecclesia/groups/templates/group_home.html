@@ -33,12 +33,13 @@
 <h3>Featured Discussions</h3>
 <div id="canvasContainer"></div>
 <style type="text/css">
+#buttons_container {float: left; padding-left: 15px}
 #canvasContainer {position: relative; margin: 0; padding: 0; float: left}
 #discsvu {margin: 0; padding: 0; border: thin solid #933}
 .disc {position: absolute; width: 150px; height: 100px; margin: 0; padding: 0; font-size: 12pt; font-weight: bold; overflow: hidden; border: thin solid #000; cursor: move}
 .disc a {display: block; float: left; padding: 10px; color: #000}
 .disc a:hover {color: #033; text-decoration: underline}
-.dragon { border: thin solid #033; background: url(static/img/cork_board.jpg) left top no-repeat;opacity:.6; -moz-opacity:.6}
+.dragon { border: thin solid #033;opacity:.6; -moz-opacity:.6}
 .selecton { border: 2px solid #033 }
 img {width: 150px; height: 100px}
 </style>
@@ -173,16 +174,16 @@ VUController.prototype = {
 	}
 };
 var config = {
-	alias		: 'disc'
+	alias		: 'disc',
+	bg_url		: '/static/img/whiteboard.jpg'
 }
 var VUC = new VUController(config);
 </script>
-{% if user_in_group %}
-    <br/>&nbsp;&nbsp;&nbsp;<input id="create_discussion" type="button" value="{% trans 'Create Discussion' %}" onclick="document.location.href='/admin/discussions/discussion/add/?group_profile={{ group.id }}'"/><br/>
-	<input type="button" value="{% trans 'Update Groups Positions' %}" onclick="VUC.updateCoords();"/>
-{% endif %}
-
 <div id="buttons_container">
+{% if user_in_group %}
+    <input id="create_discussion" type="button" value="{% trans 'Create Discussion' %}" onclick="document.location.href='/admin/discussions/discussion/add/?group_profile={{ group.id }}'"/><br/>
+	<input type="button" value="{% trans 'Update Groups Positions' %}" onclick="VUC.updateCoords();"/><br/>
+{% endif %}
 	<input type="button" value="{% trans 'Discussions List' %}" onclick="document.location.href='/discussions_list/{{group.slug}}/'"/>
 </div>
 

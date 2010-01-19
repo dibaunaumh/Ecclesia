@@ -10,10 +10,10 @@ class UserProfile(models.Model):
 	Enhances the definitions of User.
 	"""
     user = models.ForeignKey(User, unique=True, verbose_name=_('user'), related_name='profile', help_text=_("The internal User entity. Add this entity before you create a profile and set a User for it."))
-    picture = models.ImageField(max_length=100, upload_to='/static/img/user_pics', help_text=_('The name of the image file.'))
+    picture = models.ImageField(max_length=100, upload_to='static/img/user_pics', help_text=_('The name of the image file.'))
         
     def __unicode__(self):
-        return "%s's profile" % (self.user.name,)
+        return "%s's profile" % (self.user.username,)
 
 
 class GroupProfile(Presentable):
