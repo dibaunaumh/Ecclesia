@@ -38,29 +38,27 @@ VUController = function(options) {
 		height		: 600,
 		alias		: 'group',
 		bg_url		: '/static/img/cork_board.jpg',
-		update_url	: '/common/update_coords/?entity_type='
+		update_url	: '/common/update_coords/'
 	}
-	if(options != null && $(options).length) {
+	if(options != null) {
 		$.extend(this.options, options);
 	}
-	if(!options.update_url != null) {
-		this.options.update_url = this.options.update_url + this.options.alias;
-	}
+	this.options.update_url = this.options.update_url + this.options.alias;
 	
-	this.elems = new Array();
-	this.coords = new Array();
+	this.elems =[];
+	this.coords = [];
 	this.drag = {};
 	this.ctx = null;
 	this.img = new Image();
 	this.img.src = this.options.bg_url;
 	this.data = {
 	{% for group in groups %}
-		x_{{ group.id }} : {{ group.x_pos }}, y_{{ group.id }} : {{ group.y_pos }},
+		x_{{ group.pk }} : {{ group.x_pos }}, y_{{ group.pk }} : {{ group.y_pos }},
 	{% endfor %}
 	};
 	{% for group in groups %}
-	this.elems[i] = new Array();
-	this.elems[i]['id'] = {{ group.id }};
+	this.elems[i] = [];
+	this.elems[i]['id'] = {{ group.pk }};
 	this.elems[i]['name'] = '{{ group.group.name }}';
 	this.elems[i]['url'] = '{{ group.get_absolute_url }}';
 	this.coords[i++] = { left : {{ group.x_pos }}, top : {{ group.y_pos }} };
