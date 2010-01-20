@@ -7,12 +7,19 @@ Replace these with more appropriate tests for your application.
 
 from django.test import TestCase
 
-class SimpleTest(TestCase):
-    def test_basic_addition(self):
-        """
-        Tests that 1 + 1 always equals 2.
-        """
-        self.failUnlessEqual(1 + 1, 2)
+#class DiscussionsTest(TestCase):
+
+    #def test_delete_discussion(self):
+    #    """
+    #    Tests that the discussion is deleted.
+    #    """
+    #to do
+
+    #def test_discussions_list(self):
+    #    """
+    #    Tests that the discussions list presents a correct number of discussions depending on the search and filters.
+    #    """
+    #to do
 
 __test__ = {"doctest": """
 Another way to test that 1 + 1 is equal to 2.
