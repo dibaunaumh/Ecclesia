@@ -64,7 +64,7 @@ class SpeechAct(models.Model):
         return self.name
 
 		
-class Story(models.Model):
+class Story(Presentable):
     """
     A user story attached to a discussion
     """
