@@ -11,21 +11,21 @@ import sys
 
 
 class GroupsTest(TestCase):
-    
+
     users = []
     members = {}
     groups = []
     discussions = {}
-    
-    
+
+
     def setUp(self):
         """
-        Manually setup some initial fixtures. Using the fixtures/initial_data.xml is problematic, 
+        Manually setup some initial fixtures. Using the fixtures/initial_data.xml is problematic,
         because of the dependency on contrib.auth.models.Group.
         """
         self.groups = GroupProfile.objects.all()
         for gr in GroupProfile.objects.all():
-            self.members[gr.name] = User.objects.filter(groups=gr.group) 
+            self.members[gr.name] = User.objects.filter(groups=gr.group)
         # create 2 groups
         #self.users.append(create_user("__user1__", "Joe", "Smith"))
         #self.users.append(create_user("__user2__", "Alice", "Jones"))
@@ -52,13 +52,14 @@ class GroupsTest(TestCase):
         """
         client = Client()
         # todo use reverse
+        # todo test creating group via request.POST
         response = client.get("/")
         received_groups = response.context[-1]['groups']
         self.assertEquals(len(self.groups), len(received_groups), "Expected to receive %d groups, but got %d" % (len(self.groups), len(received_groups)))
         for i in range(len(self.groups)):
             self.assertEquals(self.groups[i].name, received_groups[i].name, "Expected to receive some other group name")
-        
-        
+
+
     def test_group_home_page(self):
         """
         Tests that the group home page presents a correct mission statement & lists of goals & members.
@@ -69,7 +70,7 @@ class GroupsTest(TestCase):
             response = client.get("/group/%s/" % self.groups[i].slug)
             group = response.context[-1]['group']
             self.assertEquals(self.groups[i].name, group.name, "Expected to receive some other group name")
-            
+
             # test goals
             #received_goals = response.context[-1]['goals']
             #expected_goals = self.goals[self.groups[i].name]
@@ -78,13 +79,13 @@ class GroupsTest(TestCase):
             #    self.assertEquals(expected_goals[j].name, received_goals[j].name, "Expected to find a different goal name, found %s" % received_goals[j].name)
 
             # test members
-            
+
             received_members = response.context[-1]['members']
             expected_members = self.members[self.groups[i].name]
             self.assertEquals(len(expected_members), len(received_members), "Expected a different number of members, got %d" % len(received_members))
             for j in range(len(received_members)):
                 self.assertEquals(expected_members[j].username, received_members[j].username, "Expected to find a different member name, found %s" % received_members[j].username)
-                
+
     def test_groups_list(self):
         """
         Tests that the groups list presents a correct number of groups depending on the search and filters.
@@ -92,7 +93,7 @@ class GroupsTest(TestCase):
         client = Client()
         response = client.get("/groups_list/?search=Earth&parent=&location=&created_by=2")
         self.assertEquals(len(response.context[-1]['my_items'].object_list), 1, "Expected a different number of groups after search and filters")
-      
+
     def test_members_list(self):
         """
         Tests that the members list presents a correct number of members depending on the search and filters.
@@ -100,7 +101,7 @@ class GroupsTest(TestCase):
         client = Client()
         response = client.get("/memberslist/Free_Democracy/?search=Arshavski&is_active=2&is_staff=2&is_superuser=1")
         self.assertEquals(len(response.context[-1]['my_items'].object_list), 1, "Expected a different number of members after search and filters")
-        
+
     def test_is_in_group(self):
         """
         Tests if the user is in group or not.
@@ -111,16 +112,16 @@ class GroupsTest(TestCase):
         self.assertEquals(response.content, "False", "The user is not expected to be in group")
         response = client.get("/group/is_in_group/?group_name=%s" % self.groups[1].name)
         self.assertEquals(response.content, "True", "The user is expected to be in group")
-        
+
     #def test_join_group(self):
         #todo
-    
+
     #def test_leave_group(self):
         #todo
-        
+
     #def test_login(self):
         #todo
-        
+
     def test_delete_group(self):
         """
         Tests that the group is deleted.
@@ -129,17 +130,17 @@ class GroupsTest(TestCase):
         before_delete_number = self.groups.count()
         response = client.get("/group-delete/1/")
         self.assertNotEquals(before_delete_number, self.groups.count(), "The group is not deleted")
-      
+
     def test_delete_member(self):
         """
         Tests that the group member is deleted.
-        """ 
+        """
         client = Client()
         member = self.members[self.groups[0].name][0]
         before_delete_number = self.members[self.groups[0].name].count()
         response = client.get("/member-delete/%s/%s/" % (self.groups[0].pk, member.pk))
         self.assertNotEquals(before_delete_number, self.members[self.groups[0].name].count(), "The group member is not deleted")
-        
+
     def test_promote_and_demote_member(self):
         """
         Tests that the user is demoted and promoted.
@@ -154,7 +155,6 @@ class GroupsTest(TestCase):
         response = client.get("/member-promote/%s/%s/" % (self.groups[1].pk, member.pk))
         permission = GroupPermission.objects.filter(group=self.groups[1])[0]
         self.assertEquals(initial_permission_number, permission.permission_type, "The group member is not promoted")
-        
-        
-        
-                
+
+
+
