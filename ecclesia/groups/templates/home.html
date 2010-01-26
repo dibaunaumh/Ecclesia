@@ -12,13 +12,19 @@
 <p>
 {% blocktrans %}
 	   Ecclesia is a social/political platform for helping people organize and meet their common goals.
-{% endblocktrans %}   
+{% endblocktrans %}
 </p>
 
 <hr/>
 
 <h3>Current groups</h3>
 <div id="canvasContainer"></div>
+
+<link rel="stylesheet" href="/static/js/jquery/css/start/jquery-ui-1.7.2.custom.css" />
+<script type="text/javascript" src="/site_media/js/ui.core.js"></script>
+<script type="text/javascript" src="/site_media/js/ui.draggable.js"></script>
+<script type="text/javascript" src="/site_media/js/ui.resizable.js"></script>
+
 <style type="text/css">
 #buttons_container {float: left; padding-left: 15px}
 #canvasContainer {position: relative; margin: 0; padding: 0; float: left}
@@ -29,7 +35,19 @@
 .dragon { border: thin solid #033; background: url(/static/img/cork_board.jpg) left top no-repeat;opacity:.6; -moz-opacity:.6}
 .selecton { border: 2px solid #033 }
 img {width: 150px; height: 100px}
+
+#dialog { font-size: 82.5%; }
+#dialog label, input { display:block; }
+#dialog input.text { margin-bottom:12px; width:95%; padding: .4em; }
+#dialog fieldset { padding:0; border:0; margin-top:25px; }
+div#users-contain {  width: 350px; margin: 20px 0; }
+div#users-contain table { margin: 1em 0; border-collapse: collapse; width: 100%; }
+div#users-contain table td, div#users-contain table th { border: 1px solid #eee; padding: .6em 10px; text-align: left; }
+.ui-button { outline: 0; margin:0; padding: .4em 1em .5em; text-decoration:none; cursor:pointer; position: relative; text-align: center; }
+.ui-dialog .ui-state-highlight, .ui-dialog .ui-state-error { padding: .3em;  }
+
 </style>
+
 <script type="text/javascript">
 var i = 0;
 VUController = function(options) {
@@ -44,7 +62,7 @@ VUController = function(options) {
 		$.extend(this.options, options);
 	}
 	this.options.update_url = this.options.update_url + this.options.alias;
-	
+
 	this.elems =[];
 	this.coords = [];
 	this.drag = {};
@@ -150,7 +168,7 @@ VUController.prototype = {
 				this_.data[y] = parseInt(this_.coords[id].top);
 			}
 		});
-		
+
 		$.ajax({
 			type		: "POST",
 			url			: this_.options.update_url,
@@ -163,8 +181,45 @@ VUController.prototype = {
 };
 var VUC = new VUController();
 </script>
+
+<script type="text/javascript">
+	$(function() {
+		var name = document.getElementById("name"),
+		description = document.getElementById("description");
+
+		$("#dialog").dialog({
+			bgiframe: true,
+            autoOpen: false,
+			height: 350,
+			width: 500,
+			modal: true,
+			buttons: {
+				'Create Group': function() {
+					$("#new_group_form").submit();
+				},
+
+				Cancel: function() {
+					$(this).dialog('close');
+				}
+			},
+			close: function() {}
+		});
+
+		$('#create_group').click(function() {
+			$('#dialog').dialog('open');
+		})
+	});
+</script>
+
+<div id="dialog" style="display:none" title="Create new Group">
+	<form method="POST" action="" id="new_group_form">
+	{% load add_class_to_form %}
+	{% add_class group_form 'text ui-widget-content ui-corner-all' %}
+	</form>
+</div>
+
 <div id="buttons_container">
-	<input type="button" value="{% trans 'Create Group' %}" onclick="document.location.href='/admin/groups/groupprofile/add/'"/><br clear="all"/>
+	<input id="create_group" class="ui-button ui-state-default ui-corner-all" type="button" value="{% trans 'Create Group' %}"/><br clear="all"/>
 	<input type="button" value="{% trans 'Groups List' %}" onclick="document.location.href='/groups_list/'"/>
 </div>
 

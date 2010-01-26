@@ -15,8 +15,16 @@ def home(request):
     """
     groups = GroupProfile.objects.all()
     user = request.user
-    return render_to_response('home.html', locals())
 
+    #saving new group
+    if 'name' in request.POST:
+        if not Group.objects.filter(name=request.POST['name']):
+            group = Group(name = request.POST['name'])
+            group.save()
+            group.permissions=dict(request.POST)['permissions']
+            group.save()
+    group_form = GroupForm(instance=Group())
+    return render_to_response('home.html', locals())
 
 def group_home(request, group_slug):
     """
@@ -78,9 +86,9 @@ def update_coords(request):
         group.x_pos = int(request.POST.get(pos_x, group.x_pos))
         group.y_pos = int(request.POST.get(pos_y, group.y_pos))
         group.save()
-       
+
     return HttpResponse(msg)
-	
+
 def user_home(request, user_name):
     """
     Homepage of a user, displaying the user's description & active content.
@@ -119,14 +127,14 @@ def is_in_group(request):
         if request.user.groups.filter(id=group.group.id):
             return HttpResponse("True")
     return HttpResponse("False")
-    
+
 def join_group(request):
     if 'group_slug' in request.POST:
         group = GroupProfile.objects.get(slug=request.POST['group_slug'])
         request.user.groups.add(group.group)
         GroupPermission(group=group.group, user=request.user, permission_type=2).save()
     return HttpResponse("")
-    
+
 def leave_group(request):
     if 'group_slug' in request.POST:
         group = GroupProfile.objects.get(slug=request.POST['group_slug'])
@@ -137,7 +145,7 @@ def leave_group(request):
 def login(request):
     path = request.POST['path']
     return render_to_response('admin/login.html', locals())
-    
+
 def delete_group(request, group_pk):
     group_profile = GroupProfile.objects.get(pk=group_pk)
     group = group_profile.group
