@@ -3,17 +3,20 @@ from django.contrib.auth.models import Group, User
 from django.utils.translation import gettext_lazy as _
 from common.utils import get_domain
 from common.models import Presentable
-
+from django.conf import settings
 
 class UserProfile(models.Model):
     """
 	Enhances the definitions of User.
 	"""
     user = models.ForeignKey(User, unique=True, verbose_name=_('user'), related_name='profile', help_text=_("The internal User entity. Add this entity before you create a profile and set a User for it."))
-    picture = models.ImageField(max_length=100, upload_to='static/img/user_pics', help_text=_('The name of the image file.'))
+    picture = models.ImageField(max_length=100, upload_to='img/user_pics', help_text=_('The name of the image file.'))
         
     def __unicode__(self):
         return "%s's profile" % (self.user.username,)
+        
+    def get_picture_abs_url(self):
+        return "%s%s" % (settings.MEDIA_URL, self.picture)
 
 
 class GroupProfile(Presentable):
