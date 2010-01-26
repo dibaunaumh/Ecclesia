@@ -1,3 +1,4 @@
+from django.contrib.auth.models import Group, User
 from ecclesia.discussions.models import Story, Discussion
 from ecclesia.groups.models import GroupProfile, GroupPermission
 from ecclesia.discussions.forms import StoryForm
@@ -5,6 +6,13 @@ from django.shortcuts import render_to_response
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 
 from services.search_filter_pagination import search_filter_paginate
+
+def visualize(request, discussion_slug):
+    discussion = Discussion.objects.get(slug=discussion_slug)
+    group = Group.objects.get(id=discussion.group.pk)
+    group = GroupProfile.objects.get(group=group)
+    stories = Story.objects.filter(discussion=discussion.pk)
+    return render_to_response('discussion_home.html', locals())
 
 def submit_story(request):
     story = Story(created_by=request.user)

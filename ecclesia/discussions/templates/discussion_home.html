@@ -1,0 +1,203 @@
+{% extends 'admin/base_site.html' %}
+{% load i18n %}
+{% block breadcrumbs %}<div class="breadcrumbs"><a href="/">{% trans 'Home' %}</a> &rsaquo; <a href="{{ group.get_absolute_url }}">{{ group.group.name }}{% trans "'s Home" %}</a> &rsaquo; {{ discussion.name }}</div>{% endblock %}
+{% block userlinks %}<a href="/admin/password_change/">{% trans 'Change password' %}</a> / <a href="/admin/logout/">{% trans 'Log out' %}</a>{% endblock %}
+{% block title %}{{ discussion.name }}{{ discussion.type.name }}{% endblock %}
+{% block coltype %}diagram{% endblock %}
+
+{% block content %}
+
+<h2>
+    {{ discussion.name }}{{ discussion.type.name }}
+</h2>
+{% ifequal user_permission_type 1 %}
+	<form action="/discussion-delete/{{discussion.pk}}/" method="post">      
+        <input type="image" onclick="if(confirm('Are you sure you want to delete this discussion?')) {this.form.submit();} else { return false; }" src="/static/icons/delete.png">Delete discussion</input>
+    </form>
+{% endifequal %}
+
+
+<p>
+	{{ discussion.description }}
+</p>
+
+<hr/>
+
+<div id="canvasContainer"></div>
+<style type="text/css">
+#ui_container {float: left; width: 145px; padding-left: 15px}
+#canvasContainer {position: relative; margin: 0; padding: 0; float: left}
+#storysvu {margin: 0; padding: 0; border: thin solid #933}
+.story {position: absolute; width: 150px; height: 100px; margin: 0; padding: 0; font-size: 12pt; font-weight: bold; overflow: hidden; border: thin solid #000; cursor: move}
+.story a {display: block; float: left; padding: 10px; color: #000}
+.story a:hover {color: #033; text-decoration: underline}
+.dragon { border: thin solid #033;opacity:.6; -moz-opacity:.6}
+.selecton { border: 2px solid #033 }
+img.story {width: 150px; height: 100px}
+a.member img {width: 50px; height: 50px; margin: 2px; border: 1px solid #933}
+</style>
+<script type="text/javascript">
+var i = 0;
+VUController = function(options) {
+	this.options = {
+		width		: 800,
+		height		: 500,
+		alias		: 'group',
+		bg_url		: '/static/img/cork_board.jpg',
+		update_url	: '/common/update_coords/'
+	}
+	if(options != null && $(options).length) {
+		$.extend(this.options, options);
+	}
+	this.options.update_url = this.options.update_url + this.options.alias;
+	
+	this.elems = [];
+	this.coords = [];
+	this.drag = {};
+	this.ctx = null;
+	this.img = new Image();
+	this.img.src = this.options.bg_url;
+	this.data = {
+	{% for story in stories %}
+		x_{{ story.pk }} : {{ story.x_pos }}, y_{{ story.pk }} : {{ story.y_pos }},
+	{% endfor %}
+	};
+	{% for story in stories %}
+	this.elems[i] = [];
+	this.elems[i]['id'] = {{ story.pk }};
+	this.elems[i]['name'] = '{{ story.name }}';
+	this.elems[i]['url'] = '{{ story.get_absolute_url }}';
+	this.coords[i++] = { left : {{ story.x_pos }}, top : {{ story.y_pos }} };
+	{% endfor %}
+	var this_ = this;
+	$(this.img).load(function(){
+		this_.init();
+	});
+};
+VUController.prototype = {
+	init		: function() {
+		if(this.initCanvas()) {
+			var this_ = this;
+			$.each(this.elems, function(id, el) {
+				$('#canvasContainer').append('<div class="'+this_.options.alias+'" id="'+this_.options.alias+'_'+id+'"><a href="'+el['url']+'">'+el['name']+'</a></div>');
+				this_.drag = id;
+				this_.position();
+				$('#'+this_.options.alias+'_'+id).draggable({
+					containment: 'parent',
+					start: function(e, ui) {
+						this_.setDrag(this);
+						this_.grip();
+					},
+					stop : function(e, ui) {
+						this_.coords[this_.drag] = $(this).position();
+						this_.drop();
+					}
+				});
+			});
+			this.draw();
+		} else {
+			alert('No canvas context.');
+		}
+	},
+	initCanvas	: function() {
+		$('#canvasContainer').empty();
+		$('#canvasContainer').append('<canvas id="'+this.options.alias+'svu" width="'+this.options.width+'" height="'+this.options.height+'"></canvas>');
+		this.ctx = document.getElementById(this.options.alias+'svu').getContext('2d');
+		return (this.ctx != null);
+	},
+	position	: function() {
+		var w = this.coords[this.drag].left;
+		var h = this.coords[this.drag].top;
+		$('#'+this.options.alias+'_'+this.drag).css('left', w+'px');
+		$('#'+this.options.alias+'_'+this.drag).css('top', h+'px');
+	},
+	setDrag		: function(el) {
+		var len = this.options.alias.length + 1;
+		this.drag = el.id.substr(len); // removing the this.options.alias+'_'
+	},
+	_draw		: function(id) {
+		var h = $('#'+this.options.alias+'_'+id).height();
+		var w = $('#'+this.options.alias+'_'+id).width();
+		try {
+			this.ctx.drawImage(this.img, this.coords[id].left, this.coords[id].top, w,  h);
+		} catch(e) {}
+	},
+	draw		: function(isGrip) {
+		var this_ = this;
+		if(this.img) {
+			this.ctx.clearRect(0, 0, this.options.width, this.options.height);
+			$.each(this.elems, function(id, el) {
+				if(isGrip) {
+					if(id != this_.drag) {
+						this_._draw(id);
+					}
+				} else {
+					this_._draw(id);
+				}
+			});
+		}
+	},
+	grip		: function() {
+		$('#'+this.options.alias+'_'+this.drag).addClass('dragon');
+		this.draw(true);
+	},
+	drop		: function() {
+		$('#'+this.options.alias+'_'+this.drag).removeClass('dragon');
+		this.draw();
+		this.updateCoords();
+	},
+	updateCoords: function() {
+		var this_ = this;
+		$.each(this.elems, function(id, el){
+			if(this_.coords[id].left != '') {
+				var x = 'x_'+el['id'];
+				var y = 'y_'+el['id'];
+				this_.data[x] = parseInt(this_.coords[id].left);
+				this_.data[y] = parseInt(this_.coords[id].top);
+			}
+		});
+		
+		$.ajax({
+			type		: "POST",
+			url			: this_.options.update_url,
+			data		: this_.data,
+			success		: function(msg){
+				//alert(msg);
+			}
+		});
+	}
+};
+var config = {
+	alias		: 'story',
+	bg_url		: '/static/img/whiteboard.jpg'
+}
+var VUC = new VUController(config);
+</script>
+
+<div id="ui_container">
+<div id="buttons_container">
+{% if user_in_group %}
+    <input id="create_story" type="button" value="{% trans 'Create Story' %}" onclick="document.location.href='/admin/discussions/discussion/add/?group_profile={{ group.id }}'"/><br/>
+{% endif %}
+	<input type="button" value="{% trans 'Stories List' %}" onclick="document.location.href='/stories_list/{{discussion.slug}}/'"/>
+</div>
+<hr/>
+<h3>Current members</h3>
+<div id="members_container">
+{% for member in members %}
+	<a href="{{ member.get_absolute_url }}" class="member" title="{{ member.username }}" alt=""><img src="{{ member.get_profile.get_picture_abs_url }}" alt=""/></a>
+{% endfor %}
+</div>
+</div>
+
+<hr/>
+<!--ul>
+<div id="ddd">
+<input type="button" value="{% trans 'Members List' %}" onclick="document.location.href='/members_list/{{group.name}}/'"/>
+{% for member in members %}
+    <li><a href="{{ member.get_absolute_url }}">{{ member.username }}</a>
+{% endfor %}
+</div>
+</ul-->
+
+{% endblock content %}
