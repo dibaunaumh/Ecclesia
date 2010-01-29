@@ -175,8 +175,7 @@ var VUC = new VUController();
 
 <div id="create_dialog" style="display:none" title="Create new Group">
 	<form method="POST" action="" id="create_form">
-	{% load add_class_to_form %}
-	{% add_class group_form 'text ui-widget-content ui-corner-all' %}
+	{{ group_form }}
 	</form>
 </div>
 

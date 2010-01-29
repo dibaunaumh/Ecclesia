@@ -26,6 +26,9 @@ def home(request):
             group_form = GroupForm()
         else:
             show_errors_in_form = True
+    #adding beautiful css
+    for key in group_form.fields:
+        group_form.fields[key].widget.attrs["class"] = 'text ui-widget-content ui-corner-all'
     return render_to_response('home.html', locals())
 
 def group_home(request, group_slug):

@@ -4,14 +4,32 @@ from ecclesia.groups.models import GroupProfile, GroupPermission
 from ecclesia.discussions.forms import StoryForm
 from django.shortcuts import render_to_response
 from django.http import HttpResponse, Http404, HttpResponseRedirect
-
+from forms import *
 from services.search_filter_pagination import search_filter_paginate
 
 def visualize(request, discussion_slug):
     discussion = Discussion.objects.get(slug=discussion_slug)
-    group = Group.objects.get(id=discussion.group.pk)
-    group = GroupProfile.objects.get(group=group)
+    group = GroupProfile.objects.get(group=Group.objects.get(id=discussion.group.pk))
     stories = Story.objects.filter(discussion=discussion.pk)
+    user_in_group = False
+    try:
+        user_in_group = request.user.groups.filter(id=group.group.id).count() > 0
+    except:
+        pass
+    #initializing the form
+    show_errors_in_form = False
+    story_form = StoryForm()
+    #saving new story
+    if request.POST:
+        story_form = StoryForm(request.POST)
+        if story_form.is_valid():
+            story_form.save()
+            story_form = StoryForm()
+        else:
+            show_errors_in_form = True
+    #adding beautiful css
+    for key in story_form.fields:
+        story_form.fields[key].widget.attrs["class"] = "text ui-widget-content ui-corner-all"
     return render_to_response('discussion_home.html', locals())
 
 def submit_story(request):
