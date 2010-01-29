@@ -21,10 +21,9 @@ from django.test import TestCase
     #    """
     #to do
 
-__test__ = {"doctest": """
-Another way to test that 1 + 1 is equal to 2.
-
->>> 1 + 1 == 2
-True
-"""}
+    #def test_create_discussion(self):
+    #    """
+    #    Tests that the discussion is created.
+    #    """
+    #to do
 
