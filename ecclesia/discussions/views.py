@@ -4,6 +4,7 @@ from ecclesia.groups.models import GroupProfile, GroupPermission
 from ecclesia.discussions.forms import StoryForm
 from django.shortcuts import render_to_response
 from django.http import HttpResponse, Http404, HttpResponseRedirect
+from django import forms
 from forms import *
 from services.search_filter_pagination import search_filter_paginate
 
@@ -23,7 +24,14 @@ def visualize(request, discussion_slug):
     if request.POST:
         story_form = StoryForm(request.POST)
         if story_form.is_valid():
-            story_form.save()
+            story = Story()
+            story.discussion = discussion
+            story.name = story_form.cleaned_data['name']
+            story.slug = story_form.cleaned_data['slug']
+            story.content = story_form.cleaned_data['content']
+            story.speech_act = story_form.cleaned_data['speech_act']
+            story.created_by = request.user
+            story.save()
             story_form = StoryForm()
         else:
             show_errors_in_form = True
