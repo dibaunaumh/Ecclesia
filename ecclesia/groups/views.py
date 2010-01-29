@@ -15,15 +15,17 @@ def home(request):
     """
     groups = GroupProfile.objects.all()
     user = request.user
-
+    #initializing the form
+    show_errors_in_form = False
+    group_form = GroupForm()
     #saving new group
-    if 'name' in request.POST:
-        if not Group.objects.filter(name=request.POST['name']):
-            group = Group(name = request.POST['name'])
-            group.save()
-            group.permissions=dict(request.POST)['permissions']
-            group.save()
-    group_form = GroupForm(instance=Group())
+    if request.POST:
+        group_form = GroupForm(request.POST)
+        if group_form.is_valid():
+            group_form.save()
+            group_form = GroupForm()
+        else:
+            show_errors_in_form = True
     return render_to_response('home.html', locals())
 
 def group_home(request, group_slug):

@@ -168,58 +168,20 @@ VUController.prototype = {
 				this_.data[y] = parseInt(this_.coords[id].top);
 			}
 		});
-
-		$.ajax({
-			type		: "POST",
-			url			: this_.options.update_url,
-			data		: this_.data,
-			success		: function(msg){
-				//alert(msg);
-			}
-		});
 	}
 };
 var VUC = new VUController();
 </script>
 
-<script type="text/javascript">
-	$(function() {
-		var name = document.getElementById("name"),
-		description = document.getElementById("description");
-
-		$("#dialog").dialog({
-			bgiframe: true,
-            autoOpen: false,
-			height: 350,
-			width: 500,
-			modal: true,
-			buttons: {
-				'Create Group': function() {
-					$("#new_group_form").submit();
-				},
-
-				Cancel: function() {
-					$(this).dialog('close');
-				}
-			},
-			close: function() {}
-		});
-
-		$('#create_group').click(function() {
-			$('#dialog').dialog('open');
-		})
-	});
-</script>
-
-<div id="dialog" style="display:none" title="Create new Group">
-	<form method="POST" action="" id="new_group_form">
+<div id="create_dialog" style="display:none" title="Create new Group">
+	<form method="POST" action="" id="create_form">
 	{% load add_class_to_form %}
 	{% add_class group_form 'text ui-widget-content ui-corner-all' %}
 	</form>
 </div>
 
 <div id="buttons_container">
-	<input id="create_group" class="ui-button ui-state-default ui-corner-all" type="button" value="{% trans 'Create Group' %}"/><br clear="all"/>
+	<input id="create" class="ui-button ui-state-default ui-corner-all" type="button" value="{% trans 'Create Group' %}"/><br clear="all"/>
 	<input type="button" value="{% trans 'Groups List' %}" onclick="document.location.href='/groups_list/'"/>
 </div>
 

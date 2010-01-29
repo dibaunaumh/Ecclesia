@@ -18,7 +18,7 @@
 <script type="text/javascript" src="/static/js/jquery/ui/ui.draggable.js"></script>
 <script type="text/javascript" src="/static/js/jquery/ui/ui.resizable.js"></script>
 <script type="text/javascript" src="/static/js/jquery/jquery.form.js"></script>
-{% block extrahead %}{% endblock %}			
+{% block extrahead %}{% endblock %}
 
 <script type="text/javascript">
 	URL = window.location.href;
@@ -80,6 +80,44 @@
 		$('#leave_group_confirmation').dialog('open');
 	}
 </script>
+
+<!-- Create new dialog -->
+<script type="text/javascript">
+	$(function() {
+		$("#create_dialog").dialog({
+			bgiframe: true,
+            autoOpen: false,
+			height: 350,
+			width: 500,
+			modal: true,
+			buttons: {
+				'Create': function() {
+					$("#create_form").submit();
+				},
+
+				Cancel: function() {
+					$(this).dialog('close');
+				}
+			},
+			close: function() {
+				window.location.reload(false);
+			}
+		});
+
+		$('#create').click(function() {
+			$('#create_dialog').dialog('open');
+		})
+	});
+</script>
+
+{% if show_errors_in_form %}
+	<script>
+		$(document).ready(function() {
+			$('#create_dialog').dialog('open');
+		});
+	</script>
+{% endif %}
+
 <div style="display:none" title="Leave Group Confirmation" id="leave_group_confirmation">Are you sure you want to leave the group?</div>
 </head>
 {% load i18n %}
@@ -101,7 +139,7 @@
 				<div align="right" id="user-tools">
 	        		<form action="/login/" method="post">
 			        	<input id="path" type="hidden" name="path"/>
-	                	<input type="submit" value="{% trans 'Login' %}" onmouseover="document.getElementById('path').value=document.URL;"/> 
+	                	<input type="submit" value="{% trans 'Login' %}" onmouseover="document.getElementById('path').value=document.URL;"/>
 						<input type="button" value="{% trans 'Sign-up' %}" onclick="document.location='/accounts/register'"/>
 					</form>
 				</div>
