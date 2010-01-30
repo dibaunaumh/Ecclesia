@@ -21,9 +21,14 @@ from django.test import TestCase
     #    """
     #to do
 
-    #def test_create_discussion(self):
+    #def test_delete_story(self):
     #    """
-    #    Tests that the discussion is created.
+    #    Tests that the story is deleted.
     #    """
     #to do
 
+    #def test_stories_list(self):
+    #    """
+    #    Tests that the stories list presents a correct number of stories depending on the search and filters.
+    #    """
+    #to do

@@ -1,10 +1,10 @@
 from utils import get_query
 from groups.forms import GroupProfileFilter, MemberProfileFilter
-from discussions.forms import DiscussionFilter
+from discussions.forms import DiscussionFilter, StoryFilter
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 
 def search_filter_paginate(entity_name, all_objects, request):
-    
+
     #search
     search_string = ""
     items_search = all_objects
@@ -17,8 +17,10 @@ def search_filter_paginate(entity_name, all_objects, request):
             i = get_query(request.GET['search'].strip(), ['first_name', 'last_name', 'email'])
         if entity_name == 'discussion':
             i = get_query(request.GET['search'].strip(), ['name', 'description', 'type'])
+        if entity_name == 'story':
+            i = get_query(request.GET['search'].strip(), ['name', 'content'])
         items_search = all_objects.filter(i)
-    
+
     #filter
     if entity_name == 'group':
         f = GroupProfileFilter(request.GET, queryset=items_search)
@@ -26,9 +28,11 @@ def search_filter_paginate(entity_name, all_objects, request):
         f = MemberProfileFilter(request.GET, queryset=items_search)
     if entity_name == 'discussion':
         f = DiscussionFilter(request.GET, queryset=items_search)
-    
+    if entity_name == 'story':
+        f = StoryFilter(request.GET, queryset=items_search)
+
     #pagination
-    items_list = f.qs  
+    items_list = f.qs
     paginator = Paginator(items_list, 20) # Show 20 items per page
     # Make sure page request is an int. If not, deliver first page.
     try:
@@ -42,13 +46,13 @@ def search_filter_paginate(entity_name, all_objects, request):
         my_items = paginator.page(paginator.num_pages)
 
     get_parameters = analyze_filters_parameters(entity_name, request)
-    
+
     if 'search' in request.GET:
         if get_parameters == "?":
             get_parameters = "?search=%s" % request.GET['search']
         else:
             get_parameters = "%s&search=%s" % (get_parameters, request.GET['search'])
-            
+
     return (my_items, get_parameters, f)
 
 def analyze_filters_parameters(entity_name, request):
@@ -65,4 +69,8 @@ def analyze_filters_parameters(entity_name, request):
         if 'type' in request.GET:
             get_parameters = "?type=%s&created_by=%s&" % \
             (request.GET['type'], request.GET['created_by'])
+    if entity_name == 'discussion':
+        if 'speech_act' in request.GET:
+            get_parameters = "?speech_act=%s&created_by=%s&" % \
+            (request.GET['speech_act'], request.GET['created_by'])
     return get_parameters

@@ -21,3 +21,8 @@ class DiscussionFilter(django_filters.FilterSet):
     class Meta:
         model = Discussion
         fields = ['type', 'created_by']
+
+class StoryFilter(django_filters.FilterSet):
+    class Meta:
+        model = Story
+        fields = ['speech_act', 'created_by']
