@@ -188,12 +188,14 @@ var VUC = new VUController(config);
 	<input type="button" value="{% trans 'Stories List' %}" onclick="document.location.href='/stories_list/{{discussion.slug}}/'"/>
 </div>
 <hr/>
+<!--
 <h3>Current members</h3>
 <div id="members_container">
 {% for member in members %}
 	<a href="{{ member.get_absolute_url }}" class="member" title="{{ member.username }}" alt=""><img src="{{ member.get_profile.get_picture_abs_url }}" alt=""/></a>
 {% endfor %}
 </div>
+-->
 </div>
 
 <hr/>
