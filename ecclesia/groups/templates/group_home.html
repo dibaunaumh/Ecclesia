@@ -36,7 +36,7 @@
 #ui_container {float: left; width: 145px; padding-left: 15px}
 #canvasContainer {position: relative; margin: 0; padding: 0; float: left}
 #discsvu {margin: 0; padding: 0; border: thin solid #933}
-.disc {position: absolute; width: 150px; height: 100px; margin: 0; padding: 0; font-size: 12pt; font-weight: bold; overflow: hidden; border: thin solid #000; cursor: move}
+.disc {position: absolute; width: 150px; height: 100px; margin: 0; padding: 0; font-size: 12pt; font-weight: bold; overflow: hidden; cursor: move}
 .disc a {display: block; float: left; padding: 10px; color: #000}
 .disc a:hover {color: #033; text-decoration: underline}
 .dragon { border: thin solid #033;opacity:.6; -moz-opacity:.6}
@@ -54,7 +54,7 @@ VUController = function(options) {
 		bg_url		: '/static/img/cork_board.jpg',
 		update_url	: '/common/update_coords/'
 	}
-	if(options != null && $(options).length) {
+	if(options != null) {
 		$.extend(this.options, options);
 	}
 	this.options.update_url = this.options.update_url + this.options.alias;

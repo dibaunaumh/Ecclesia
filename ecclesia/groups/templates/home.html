@@ -45,6 +45,12 @@ div#users-contain table td, div#users-contain table th { border: 1px solid #eee;
 
 <script type="text/javascript">
 var i = 0;
+/*
+ * TODO: replace all elements related properties with a generic Node class 
+ * that will be inherited by specific entities' representations (e.g: Group, Discussion).
+ * TODO: create a serialize function in that class that will return a serialized form of
+ * a data property.
+ */
 VUController = function(options) {
 	this.options = {
 		width		: 900,
@@ -161,6 +167,15 @@ VUController.prototype = {
 				var y = 'y_'+el['id'];
 				this_.data[x] = parseInt(this_.coords[id].left);
 				this_.data[y] = parseInt(this_.coords[id].top);
+			}
+		});
+		
+		$.ajax({
+			type		: "POST",
+			url			: this_.options.update_url,
+			data		: this_.data,
+			success		: function(msg){
+				//alert(msg);
 			}
 		});
 	}

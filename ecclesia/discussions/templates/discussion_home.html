@@ -37,6 +37,97 @@ img.story {width: 150px; height: 100px}
 a.member img {width: 50px; height: 50px; margin: 2px; border: 1px solid #933}
 </style>
 <script type="text/javascript">
+//Arrow		= function(label,from,to,x1,y1,x2,y2,storiesURL){
+Relation = function(config) {
+	this.config = {
+		label		: '',
+		url			: '',
+		from		: {},
+		to			: {},
+		dimensions	: { x1 : 0, y1 : 0, x2 : 0, y2 : 0 }
+	};
+	if(config != null) {
+		$.extend(this.config, config);
+	}
+};
+Relation.prototype = {
+	/*draw			: function(highlight) {
+		ctx.save();
+		ctx.beginPath();
+		ctx.lineWidth = 4;
+		if(highlight){
+			ctx.strokeStyle="rgb(230,130,200)";
+		} else {
+			ctx.strokeStyle="rgb(130,130,200)";
+		}
+		ctx.moveTo(this.config.dimensions.x1,this.config.dimensions.y1);
+		ctx.bezierCurveTo(this.config.dimensions.x1 + (this.config.dimensions.x2-this.config.dimensions.x1)/5,this.config.dimensions.y1,this.config.dimensions.x2-(this.config.dimensions.x2-this.config.dimensions.x1)/5,this.config.dimensions.y2,this.config.dimensions.x2,this.config.dimensions.y2);
+		ctx.stroke();
+		drawText(this.config.label,(this.config.dimensions.x1+this.config.dimensions.x2)/2, (this.config.dimensions.y1+this.config.dimensions.y2)/2, this.config.dimensions.x2-this.config.dimensions.x1,Math.atan2(this.config.dimensions.y2-this.config.dimensions.y1,this.config.dimensions.x2-this.config.dimensions.x1));
+		ctx.restore();
+	},*/
+	toString		: function() {
+		return this.config.from.toString()+" -> "+this.config.to.toString();
+	},
+	getLabel		: function() {
+		return this.config.label;
+	},
+	getDims	: function() {
+		return this.config.dimensions;
+	},
+	isInside		: function(x,y) {
+		if (! ( (x >= this.config.dimensions.x1) & (x <= this.config.dimensions.x2) & (y >= Math.min(this.config.dimensions.y1,this.config.dimensions.y2)-6) & (y <= Math.max(this.config.dimensions.y1,this.config.dimensions.y2)+6) ) ){ // check if x,y is in the bounding rectangle
+			return false;
+		}
+		var alpha = (x - this.config.dimensions.x1) / (this.config.dimensions.x2 - this.config.dimensions.x1);
+		return (Math.abs(y - (alpha * (this.config.dimensions.y2-this.config.dimensions.y1) + this.config.dimensions.y1)) <= 12);
+
+	}
+	
+};
+
+//Node = function(type,label,objId,addNew,storiesURL,index) {
+Story = function(config) {
+	this.config = {
+		objId		: 0,
+		type		: 'goal',
+		label		: '',
+		addNew		: false,
+		url			: '',
+		index		: 0,
+		dimensions	: { x : 0, y : 0, w : 150, h : 100 }
+	};
+	if(config != null) {
+		$.extend(this.config, config);
+	}
+};
+Story.prototype = {
+	/*draw		: function(highlight){
+		if (highlight){
+			this.ctx.strokeStyle = "rgb(180,0,0)";
+		} else {
+			this.ctx.strokeStyle = "rgb(0,0,0)";
+		}
+		if(this.addNew){
+			this.ctx.fillStyle = "rgb(230,230,230)";
+		} else {
+			this.ctx.fillStyle = "rgb(250,250,250)";
+		}
+		roundedRect(this.config.dimensions.x-this.config.dimensions.w/2,this.config.dimensions.y-this.config.dimensions.h/2,this.config.dimensions.w,this.config.dimensions.h,5);
+		this.ctx.fillStyle = "rgb(0,0,0)";
+		drawText(this.config.label, this.config.dimensions.x-5, this.config.dimensions.y, this.config.dimensions.w, 0);      
+	},*/
+	getDims	: function() {
+		return this.config.dimensions;
+	},
+	isInside		: function(x,y) { // return true if x,y is inside this node
+		return (x >= this.config.dimensions.x - this.config.dimensions.w/2) & (x <= this.config.dimensions.x + this.config.dimensions.w/2) & (y >= this.config.dimensions.y - this.config.dimensions.h/2) & (y <= this.config.dimensions.y + this.config.size.h/2);
+	},
+	toString		: function() {
+		return this.config.label;
+	}
+};
+
 var i = 0;
 VUController = function(options) {
 	this.options = {
@@ -46,7 +137,7 @@ VUController = function(options) {
 		bg_url		: '/static/img/cork_board.jpg',
 		update_url	: '/common/update_coords/'
 	}
-	if(options != null && $(options).length) {
+	if(options != null) {
 		$.extend(this.options, options);
 	}
 	this.options.update_url = this.options.update_url + this.options.alias;
@@ -167,11 +258,65 @@ VUController.prototype = {
 		});
 	}
 };
+
+/*
+ *	A controller class that handles Discussions GUI.
+ *	Accepts a VUController object instance and inherits it
+ *	using jQuery.extend()
+ *  ( sort of an inheritance :P )
+ */
+DiscussionController = function(VUController, options) {
+	this.options = {};
+	if(options != null) {
+		$.extend(this.options, options);
+	}
+	this = $.extend(true, {}, VUController, this);
+};
+DiscussionController.prototype = {
+	roundedRect	: function(x,y,width,height,radius){
+		this.ctx.beginPath();
+		this.ctx.moveTo(x,y+radius);
+		this.ctx.lineTo(x,y+height-radius);
+		this.ctx.quadraticCurveTo(x,y+height,x+radius,y+height);
+		this.ctx.lineTo(x+width-radius,y+height);
+		this.ctx.quadraticCurveTo(x+width,y+height,x+width,y+height-radius);
+		this.ctx.lineTo(x+width,y+radius);
+		this.ctx.quadraticCurveTo(x+width,y,x+width-radius,y);
+		this.ctx.lineTo(x+radius,y);
+		this.ctx.quadraticCurveTo(x,y,x,y+radius);
+		this.ctx.fill();
+		this.ctx.stroke();
+    },
+	drawText	: function(text,x,y,maxWidth,rotation) {
+    // if text is short enough - put it in 1 line. if not, search for the middle space, and split it there (only splits to 2 lines).
+        this.ctx.translate(x,y);
+        this.ctx.save();
+        this.ctx.rotate(rotation);        
+        if (this.ctx.measureText(text).width <= maxWidth*0.8){ 
+            this.ctx.fillText(text,0,0);
+        } else {
+            var spl = text.split('-');
+            var len = Math.floor(spl.length/2);
+            var pos = 0;
+            for (var i=0; i<len; i++){
+                pos = text.indexOf('-',pos)+1;
+            }            
+            var text1 = text.substring(0,pos);
+            var text2 = text.substring(pos);
+            this.ctx.fillText(text1,0,-10);
+            this.ctx.fillText(text2,0,+10);
+        }
+        this.ctx.restore();
+        this.ctx.translate(-x,-y);
+    }
+};
+
 var config = {
 	alias		: 'story',
 	bg_url		: '/static/img/whiteboard.jpg'
-}
+};
 var VUC = new VUController(config);
+var DC	= new DiscussionController(VUC, {});
 </script>
 
 <div id="create_dialog" style="display:none" title="Create new Story">
