@@ -23,7 +23,7 @@ class DiscussionType(models.Model):
     class Meta:
         verbose_name = _('discussion type')
         verbose_name_plural = _('discussion types')
-    
+
     def __unicode__(self):
         return self.name
 
@@ -32,7 +32,7 @@ class Discussion(Presentable):
     """
     A discussion between users, related to a group
     """
-    group = models.ForeignKey(Group, verbose_name=_('group'), related_name='discussions', help_text=_("The group profile containing this discussion."))
+    group = models.ForeignKey(Group, editable=False, verbose_name=_('group'), related_name='discussions', help_text=_("The group profile containing this discussion."))
     name = models.CharField(_('name'), max_length=50, help_text=_('The name of the discussion.'))
     slug = models.SlugField(_('slug'), unique=True, blank=False, help_text=_("The url representation of the discussion's name. No whitespaces allowed - use hyphen/underscore to separate words"))
     type = models.ForeignKey(DiscussionType, verbose_name=_('discussion type'), related_name='objects', help_text=_("The discussion's type."))
@@ -48,11 +48,11 @@ class Discussion(Presentable):
     class Meta:
         verbose_name = _('discussion')
         verbose_name_plural = _('discussions')
-        
-    
+
+
     def get_absolute_url(self):
         return "http://%s/discussions/%s/" % (get_domain(), self.slug)
-    
+
     def __unicode__(self):
         return self.name
 
@@ -63,7 +63,7 @@ class SpeechAct(models.Model):
     def __unicode__(self):
         return self.name
 
-		
+
 class Story(Presentable):
     """
     A user story attached to a discussion
@@ -76,19 +76,19 @@ class Story(Presentable):
     created_by = models.ForeignKey(User, editable=False, verbose_name=_('created by'), null=False, blank=False, help_text=_('The user that made the speech act.'))
     created_at = models.DateTimeField(_('created at'), auto_now_add=True, help_text=_('When the speech act was made.'))
     updated_at = models.DateTimeField(_('updated at'), auto_now=True, help_text=_('When the speech act was last updated.'))
-    
+
     # Generic foreign key machinery follows
     # content_type = models.ForeignKey(ContentType)
     # object_id = models.PositiveIntegerField()
     # object = generic.GenericForeignKey() # Unfortunately, it does not support verbose_name and help_text, so no gettext here.
-    
+
     class Meta:
         verbose_name = _('story')
         verbose_name_plural = _('stories')
-    
+
     def get_absolute_url(self):
         return urlresolvers.reverse('admin:discussion_story_change', args=(self.id,))
-    
+
     def __unicode__(self):
         return _("%(user)s's %(speechact)s (#%(id)s)") % {'user':self.created_by.get_full_name(), 'speechact':self.get_speech_act_display(), 'id':self.id}
 

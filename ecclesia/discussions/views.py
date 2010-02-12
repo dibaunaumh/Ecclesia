@@ -24,14 +24,7 @@ def visualize(request, discussion_slug):
     if request.POST:
         story_form = StoryForm(request.POST)
         if story_form.is_valid():
-            story = Story()
-            story.discussion = discussion
-            story.name = story_form.cleaned_data['name']
-            story.slug = story_form.cleaned_data['slug']
-            story.content = story_form.cleaned_data['content']
-            story.speech_act = story_form.cleaned_data['speech_act']
-            story.created_by = request.user
-            story.save()
+            save_story_from_form(story_form, discussion, request.user)
             story_form = StoryForm()
         else:
             show_errors_in_form = True
@@ -39,6 +32,17 @@ def visualize(request, discussion_slug):
     for key in story_form.fields:
         story_form.fields[key].widget.attrs["class"] = "text ui-widget-content ui-corner-all"
     return render_to_response('discussion_home.html', locals())
+
+def save_story_from_form(story_form, discussion, user):
+    story = Story()
+    story.discussion = discussion
+    story.name = story_form.cleaned_data['name']
+    story.slug = story_form.cleaned_data['slug']
+    story.content = story_form.cleaned_data['content']
+    story.speech_act = story_form.cleaned_data['speech_act']
+    story.created_by = user
+    story.save()
+    return
 
 #def submit_story(request):
 #    story = Story(created_by=request.user)

@@ -3,6 +3,7 @@ from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.contrib.auth.decorators import login_required
 from groups.models import *
 from discussions.models import *
+from discussions.forms import DiscussionForm
 import sys
 from forms import *
 
@@ -57,7 +58,32 @@ def group_home(request, group_slug):
         user_in_group = request.user.groups.filter(id=group.group.id).count() > 0
     except:
         pass
+    #initializing the form
+    show_errors_in_form = False
+    discussion_form = DiscussionForm()
+    #saving new story
+    if request.POST:
+        discussion_form = DiscussionForm(request.POST)
+        if discussion_form.is_valid():
+            save_discussion_from_form(discussion_form, group, user)
+            discussion_form = DiscussionForm()
+        else:
+            show_errors_in_form = True
+    #adding beautiful css
+    for key in discussion_form.fields:
+        discussion_form.fields[key].widget.attrs["class"] = "text ui-widget-content ui-corner-all"
     return render_to_response('group_home.html', locals())
+
+def save_discussion_from_form(discussion_form, group, user):
+    discussion = Discussion()
+    discussion.group = group.group
+    discussion.name = discussion_form.cleaned_data['name']
+    discussion.slug = discussion_form.cleaned_data['slug']
+    discussion.type = discussion_form.cleaned_data['type']
+    discussion.description = discussion_form.cleaned_data['description']
+    discussion.created_by = user
+    discussion.save()
+    return
 
 def groups_list(request):
     groups = GroupProfile.objects.all()
