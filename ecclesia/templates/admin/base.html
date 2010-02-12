@@ -19,6 +19,7 @@
 <script type="text/javascript" src="/static/js/jquery/ui/ui.draggable.js"></script>
 <script type="text/javascript" src="/static/js/jquery/ui/ui.resizable.js"></script>
 <script type="text/javascript" src="/static/js/jquery/jquery.form.js"></script>
+<script type="text/javascript" src="/static/js/jquery/jquery.jeditable.js"></script>
 {% block extrahead %}{% endblock %}
 
 <script type="text/javascript">
@@ -80,6 +81,15 @@
 		});
 		$('#leave_group_confirmation').dialog('open');
 	}
+</script>
+
+<!-- Edit inline for -->
+<script>
+$(document).ready(function() {
+    $('.edit').editable('/edit_inline_discussion/', {
+        width   : 150
+    });
+});
 </script>
 
 <!-- Create new dialog -->

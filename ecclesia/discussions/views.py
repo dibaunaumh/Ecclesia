@@ -92,3 +92,11 @@ def delete_story(request, story_pk):
     discussion = story.discussion
     story.delete()
     return HttpResponseRedirect('/stories_list/%s/' % discussion.slug)
+
+def get_inline_field(request):
+    fieldname = request.POST['id']
+    if fieldname.split("_")[0] == 'discussion':
+        discussion = Discussion.objects.get(pk=fieldname.split("_")[1])
+        discussion.name = request.POST['value']
+        discussion.save()
+        return HttpResponse("%s" % discussion.name)
