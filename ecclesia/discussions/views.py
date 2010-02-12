@@ -40,6 +40,17 @@ def visualize(request, discussion_slug):
         story_form.fields[key].widget.attrs["class"] = "text ui-widget-content ui-corner-all"
     return render_to_response('discussion_home.html', locals())
 
+def get_stories_view_json(request, discussion_slug):
+    discussion = Discussion.objects.get(slug=discussion_slug)
+    stories = Story.objects.filter(discussion=discussion)
+    json = ',';
+    for story in stories:
+        json = '%s{"story":{"id":%s,"url":"%s","name":"%s","dimensions":{"x":%s,"y":%s,"w":%s,"h":%s}}},' % (json, story.id, story.get_absolute_url(), story.title, story.x, story.y, story.w, story.h)
+    #json_serializer = serializers.get_serializer("json")()
+    #json_serializer.serialize(groups, ensure_ascii=False, stream=response, fields=('x', 'y', 'w', 'h'))
+    json = json.strip(',')
+    return HttpResponse('[%s]' % json)
+	
 #def submit_story(request):
 #    story = Story(created_by=request.user)
 #    form = StoryForm(request.POST, instance=story)

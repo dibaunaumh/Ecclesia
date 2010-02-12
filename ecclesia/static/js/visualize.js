@@ -6,9 +6,7 @@ Node = function(config) {
 		name		: '',
 		label		: ''
 	};
-	this.data = {};
-	this.ready = false;
-	if(config != null) {
+	if(config !== null) {
 		$.extend(true, this.config, config);
 	}
 };
@@ -16,62 +14,65 @@ Node.prototype = {
 	toString	: function() {
 		return this.config.name;
 	},
-	prepareData	: function() {
-		var this_ = this;
-		$.each(this.config.dimensions, function(key, val) {
-			// creating a mapped object in format of: { dimension_id:value, ... }
-			$.extend(this_.data, eval('{'+key+'_'+this_.config.id+':'+val+'}');
-		});
-	},
 	serialize	: function() {
-		this.prepareData();
-		return $.param(this.data) + '&pk=' + this.config.id;
+		return $.param(this.config.dimensions) + '&pk=' + this.config.id;
 	},
 	loadImage	: function() {
 		// setting the background image and making sure the image is loaded
 		if(this.config.bg_image && this.config.bg_src) {
 			this.config.bg_image.src = this.config.bg_src;
-			var this_ = this;
-			$(this.config.bg_image).load(function() {
-				this_.ready = true;
-			});
 		}
 	}
 };
 
-Group = function(Node) {
+Group = function(node_class) {
 	this.config = {
-		alias	: 'group',
-		model	: 'GroupProfile',
-		bg_src	: '/static/img/cork_board.jpg',
-		bg_image: new Image()
+		alias		: 'group',
+		model_name	: 'GroupProfile',
+		bg_src		: '/static/img/cork_board.jpg',
+		bg_image	: new Image()
 	};
-	this.loadImage();
 	// inheriting Node class
-	this = $.extend(true, {}, Node, this);
+	var dummy = $.extend(true, node_class, this);
+	$.extend(true, this, dummy);
+	this.loadImage();
 };
 Group.prototype = {
 	serialize	: function() {
-		this.prepareData();
-		return $.param(this.data) + '&model=' + this.config.model + '&pk=' + this.config.id;
+		return $.param(this.config.dimensions) + '&model_name=' + this.config.model + '&pk=' + this.config.id;
 	}
 };
 
-Discussion = function(Node) {
+Discussion = function(node_class) {
 	this.config = {
-		alias	: 'disc',
-		model	: 'Discussion',
-		bg_src	: '/static/img/whiteboard.jpg',
-		bg_image: new Image()
+		alias		: 'disc',
+		model_name	: 'Discussion',
+		bg_src		: '/static/img/whiteboard.jpg',
+		bg_image	: new Image()
 	};
-	this.loadImage();
 	// inheriting Node class
-	this = $.extend(true, {}, Node, this);
+	var dummy = $.extend(true, node_class, this);
+	$.extend(true, this, dummy);
+	this.loadImage();
 };
 Discussion.prototype = {
 	serialize	: function() {
-		this.prepareData();
-		return $.param(this.data) + '&model=' + this.config.model + '&pk=' + this.config.id;
+		return $.param(this.config.dimensions) + '&model_name=' + this.config.model + '&pk=' + this.config.id;
+	}
+};
+
+Story = function(node_class) {
+	this.config = {
+		alias		: 'story',
+		model_name	: 'Story',
+	};
+	// inheriting Node class
+	var dummy = $.extend(true, node_class, this);
+	$.extend(true, this, dummy);
+};
+Story.prototype = {
+	serialize	: function() {
+		return $.param(this.config.dimensions) + '&model_name=' + this.config.model + '&pk=' + this.config.id;
 	}
 };
 
@@ -81,34 +82,31 @@ VUController = function(options) {
 		height		: 600,
 		container_id: 'canvasContainer',
 		canvas_id	: 'groupsvu',
-		data_url	: '/groups/get_view_elements/',
-		update_url	: '/common/update_coords/'
+		data_url	: '/get_groups_view_json/',
+		update_url	: '/common/update_presentation/'
 	};
-	if(options != null) {
+	if(options !== null) {
 		$.extend(this.options, options);
 	}
-	//this.options.update_url = this.options.update_url + this.options.type;
 	
 	this.data = {};
 	this.elems = {};
 	this.drag = {};
 	this.ctx = null;
-	var this_ = this;
-	$(this.img).load(function(){
-		this_.init();
-	});
+	
+	this.getData();
 };
 VUController.prototype = {
-	getData			: function() {
+	getData				: function() {
 		var this_ = this;
 		// expecting format: [ { element_alias : { element_config_object }, ... ]
-		$.getJSON(this.options.data_url + this.options.model, function(data){
+		$.getJSON(this.options.data_url, function(data){
 			this_.data = data;
-			//alert(this_.data);
-			return true;
+			// initialize the view controller
+			this_.init();
 		});
 	},
-	createNodes		: function() {
+	createNodes			: function() {
 		var this_ = this;
 		$.each(this.data, function(i, item) {
 			$.each(item, function(key, val) {
@@ -130,18 +128,26 @@ VUController.prototype = {
 						node = new Opinion(node);
 						break;
 				}
-				this_.elems[node.config.id] = node;
+				var id = node.config.id;
+				// add the Node instance to the controller's elements
+				this_.elems[id] = node;
+				// set a load event listener to the element's background image to initialy draw it
+				if(this_.elems[id].config.bg_image) {
+					$(this_.elems[id].config.bg_image).load(function() {
+						this_._draw(id);
+					});
+				}
 			});
 		});
 	},
-	initCanvas		: function() {
+	initCanvas			: function() {
 		var o = this.options;
 		$('#'+o.container_id).empty();
 		$('#'+o.container_id).append('<canvas id="'+o.canvas_id+'" width="'+o.width+'" height="'+o.height+'"></canvas>');
 		this.ctx = document.getElementById(o.canvas_id).getContext('2d');
-		return (this.ctx != null);
+		return (this.ctx !== null);
 	},
-	setDraggable	: function(el) {
+	setDraggable		: function(el) {
 		var this_ = this;
 		// set a specific element as draggable
 		if(el) {
@@ -167,7 +173,7 @@ VUController.prototype = {
 			});
 		}
 	},
-	addElement		: function(el) {
+	addElement			: function(el) {
 		// add an element to the DOM
 		if(el) {
 			var config = el.config;
@@ -181,53 +187,48 @@ VUController.prototype = {
 			});
 		}
 	},
-	init			: function() {
-		// get the json containing all the elements' configs
-		if(this.getData()) {
-			// create the elements
-			this.createNodes();
-			// initialize the canvas
-			if(this.initCanvas()) {
-				var this_ = this;
-				// iterate over the elements and create the GUI
-				$.each(this.elems, function(id, el) {
-					// appending a div for each element to the canvas container
-					this_.addElement(el);
-					// position the element inside the container
-					this_.position(id);
-					// set it as draggable
-					this_.setDraggable(el);
-				});
-				// we have initialized the canvas so draw the element
-				this.draw();
-			} else {
-				alert('No canvas context.');
-			}
+	init				: function() {
+		// create the elements
+		this.createNodes();
+		// initialize the canvas
+		if(this.initCanvas()) {
+			var this_ = this;
+			// iterate over the elements and create the GUI
+			$.each(this.elems, function(id, el) {
+				// appending a div for each element to the canvas container
+				this_.addElement(el);
+				// position the element inside the container
+				this_.position(id);
+				// set it as draggable
+				this_.setDraggable(el);
+			});
+			// we have initialized the canvas so draw the element
+			this.draw();
 		} else {
-			alert('Failed to recive data.');
+			alert('No canvas context.');
 		}
 	},
-	position		: function(id) {
+	position			: function(id) {
 		var config = this.elems[id].config;
 		var id_selector = '#'+config.alias+'_'+id;
 		$(id_selector).css('left', config.dimensions.x+'px');
 		$(id_selector).css('top', config.dimensions.y+'px');
 	},
-	setDrag			: function(dom_id) {
+	setDrag				: function(dom_id) {
 		var temp = dom_id.split('_');
 		this.drag = this.elems[temp[1]];
 	},
-	_draw			: function(id) {
-		if(this.elems[id].ready) {
-			var config = this.elems[id].config;
-			try {
-				this.ctx.drawImage(config.bg_image, config.dimesions.x, config.dimesions.y, config.dimesions.w, config.dimesions.h);
-			} catch(e) {}
-		} else {
-			//this._draw(id);
-		}
+	_draw				: function(id) {
+		var config = this.elems[id].config;
+		try {
+			if(config.bg_image) {
+				this.ctx.drawImage(config.bg_image, config.dimensions.x, config.dimensions.y, config.dimensions.w, config.dimensions.h);
+			} else {
+				this.roundedRect(config.dimensions.x, config.dimensions.y, config.dimensions.w, config.dimensions.h, 5);
+			}
+		} catch(e) {}
 	},
-	draw			: function(isGrip) {
+	draw				: function(isGrip) {
 		var this_ = this;
 		this.ctx.clearRect(0, 0, this.options.width, this.options.height);
 		$.each(this.elems, function(id, el) {
@@ -240,16 +241,16 @@ VUController.prototype = {
 			}
 		});
 	},
-	grip			: function() {
+	grip				: function() {
 		$('#'+this.drag.config.alias+'_'+this.drag.config.id).addClass('dragon');
 		this.draw(true);
 	},
-	drop			: function() {
+	drop				: function() {
 		$('#'+this.drag.config.alias+'_'+this.drag.config.id).removeClass('dragon');
 		this.draw();
-		this.updateCoords();
+		this.updatePresentation();
 	},
-	updateCoords	: function() {
+	updatePresentation	: function() {
 		var this_ = this;
 		/*$.each(this.elems, function(id, el){
 			this_.data[id] = el.serialize();
@@ -265,4 +266,64 @@ VUController.prototype = {
 			}
 		});
 	}
+};
+/*
+ *	A controller class that handles Discussions GUI.
+ *	Accepts a VUController object instance and inherits it
+ *	using jQuery.extend()
+ *  ( sort of an inheritance :P )
+ */
+DiscussionController = function(VuController, options) {
+	this.options = {};
+	if(options != null) {
+		$.extend(this.options, options);
+	}
+	// inheriting Node class
+	var dummy = $.extend(true, VuController, this);
+	$.extend(true, this, dummy);
+};
+DiscussionController.prototype = {
+	roundedRect	: function(x,y,width,height,radius){
+		this.ctx.save();
+		// init the colors
+		this.ctx.fillStyle = "#eee";
+		this.ctx.strokeStyle = "#666";
+		// create the image
+		this.ctx.beginPath();
+		this.ctx.moveTo(x,y+radius);
+		this.ctx.lineTo(x,y+height-radius);
+		this.ctx.quadraticCurveTo(x,y+height,x+radius,y+height);
+		this.ctx.lineTo(x+width-radius,y+height);
+		this.ctx.quadraticCurveTo(x+width,y+height,x+width,y+height-radius);
+		this.ctx.lineTo(x+width,y+radius);
+		this.ctx.quadraticCurveTo(x+width,y,x+width-radius,y);
+		this.ctx.lineTo(x+radius,y);
+		this.ctx.quadraticCurveTo(x,y,x,y+radius);
+		this.ctx.fill();
+		this.ctx.stroke();
+		// restore former context options
+		this.ctx.restore();
+    },
+	drawText	: function(text,x,y,maxWidth,rotation) {
+    // if text is short enough - put it in 1 line. if not, search for the middle space, and split it there (only splits to 2 lines).
+        this.ctx.translate(x,y);
+        this.ctx.save();
+        this.ctx.rotate(rotation);        
+        if (this.ctx.measureText(text).width <= maxWidth*0.8){ 
+            this.ctx.fillText(text,0,0);
+        } else {
+            var spl = text.split('-');
+            var len = Math.floor(spl.length/2);
+            var pos = 0;
+            for (var i=0; i<len; i++){
+                pos = text.indexOf('-',pos)+1;
+            }            
+            var text1 = text.substring(0,pos);
+            var text2 = text.substring(pos);
+            this.ctx.fillText(text1,0,-10);
+            this.ctx.fillText(text2,0,+10);
+        }
+        this.ctx.restore();
+        this.ctx.translate(-x,-y);
+    }
 };
