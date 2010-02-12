@@ -28,5 +28,5 @@ urlpatterns = patterns('',
     (r'accounts/', include('registration.urls')),
 
     (r'^', include('ecclesia.groups.urls')),
-    (r'^edit_inline_discussion/$', 'ecclesia.discussions.views.get_inline_field'),
+    (r'^edit_inline/$', 'ecclesia.discussions.views.get_inline_field'),
 )

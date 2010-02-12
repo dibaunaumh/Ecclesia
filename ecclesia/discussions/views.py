@@ -83,6 +83,11 @@ def stories_list(request, discussion_slug):
             if GroupPermission.objects.filter(group=discussion[0].group).filter(user=user):
                 permission = GroupPermission.objects.filter(group=discussion[0].group).filter(user=user)[0]
                 user_permission_type = permission.permission_type
+        user_in_group = False
+        try:
+            user_in_group = user.groups.filter(id=discussion[0].group.id).count() > 0
+        except:
+            pass
     stories = Story.objects.filter(discussion=discussion[0])
     (my_items, get_parameters, f) = search_filter_paginate('story', stories, request)
     return render_to_response('stories_list.html', locals())
@@ -100,3 +105,8 @@ def get_inline_field(request):
         discussion.name = request.POST['value']
         discussion.save()
         return HttpResponse("%s" % discussion.name)
+    if fieldname.split("_")[0] == 'story':
+        story = Story.objects.get(pk=fieldname.split("_")[1])
+        story.content = request.POST['value']
+        story.save()
+        return HttpResponse("%s" % story.content)
