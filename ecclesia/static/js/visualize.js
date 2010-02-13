@@ -65,6 +65,7 @@ Story = function(node_class) {
 	this.config = {
 		alias		: 'story',
 		model_name	: 'Story',
+		type		: 'goal'
 	};
 	// inheriting Node class
 	var dummy = $.extend(true, node_class, this);
@@ -283,7 +284,35 @@ DiscussionController = function(VuController, options) {
 	$.extend(true, this, dummy);
 };
 DiscussionController.prototype = {
-	roundedRect	: function(x,y,width,height,radius){
+	createSpeechActContainers	: function() {
+		$('#'+this.options.container_id).append('<div id="course_of_action_container" class="stories_container"></div><div id="possible_result_container" class="stories_container"></div><div id="goal_condition_container" class="stories_container"></div><div id="goal_container" class="stories_container"></div>');
+		$('#'+this.options.container_id).css('position', 'relative');
+		$('.stories_container').height(this.options.height);
+		$('.stories_container').width(this.options.width * 0.25);
+	},
+	initCanvas			: function() {
+		var o = this.options;
+		$('#'+o.container_id).empty();
+		$('#'+o.container_id).append('<canvas id="'+o.canvas_id+'" width="'+o.width+'" height="'+o.height+'"></canvas>');
+		this.createSpeechActContainers();
+		this.ctx = document.getElementById(o.canvas_id).getContext('2d');
+		return (this.ctx !== null);
+	},
+	addElement			: function(el) {
+		// add an element to the DOM
+		if(el) {
+			var config = el.config;
+			$('#'+config.type+'_container').append('<div class="'+config.alias+'" id="'+config.alias+'_'+config.id+'"><a href="'+config.url+'">'+config.name+'</a></div>');
+		}
+		// add all elements to the DOM
+		else {
+			var this_ = this;
+			$.each(this.elems, function(id, el) {
+				this_.addElement(el);
+			});
+		}
+	},
+	roundedRect			: function(x,y,width,height,radius){
 		this.ctx.save();
 		// init the colors
 		this.ctx.fillStyle = "#eee";
@@ -304,7 +333,7 @@ DiscussionController.prototype = {
 		// restore former context options
 		this.ctx.restore();
     },
-	drawText	: function(text,x,y,maxWidth,rotation) {
+	drawText			: function(text,x,y,maxWidth,rotation) {
     // if text is short enough - put it in 1 line. if not, search for the middle space, and split it there (only splits to 2 lines).
         this.ctx.translate(x,y);
         this.ctx.save();
