@@ -39,7 +39,16 @@ Group = function(node_class) {
 };
 Group.prototype = {
 	serialize	: function() {
-		return $.param(this.config.dimensions) + '&model_name=' + this.config.model + '&pk=' + this.config.id;
+		return $.param(this.config.dimensions) + '&model_name=' + this.config.model_name + '&pk=' + this.config.id;
+	},
+	draw		: function(ctx) {
+		var dims = this.config.dimensions;
+		if(this.config.bg_image) {
+			try {
+				ctx.drawImage(this.config.bg_image, dims.x, dims.y, dims.w, dims.h);
+			} catch(e){}
+			ctx.strokeRect(dims.x, dims.y, dims.w, dims.h);
+		}
 	}
 };
 
@@ -57,7 +66,15 @@ Discussion = function(node_class) {
 };
 Discussion.prototype = {
 	serialize	: function() {
-		return $.param(this.config.dimensions) + '&model_name=' + this.config.model + '&pk=' + this.config.id;
+		return $.param(this.config.dimensions) + '&model_name=' + this.config.model_name + '&pk=' + this.config.id;
+	},
+	draw		: function(ctx) {
+		var dims = this.config.dimensions;
+		if(this.config.bg_image) {
+			try {
+				ctx.drawImage(this.config.bg_image, dims.x, dims.y, dims.w, dims.h);
+			} catch(e){}
+		}
 	}
 };
 
@@ -73,7 +90,32 @@ Story = function(node_class) {
 };
 Story.prototype = {
 	serialize	: function() {
-		return $.param(this.config.dimensions) + '&model_name=' + this.config.model + '&pk=' + this.config.id;
+		return $.param(this.config.dimensions) + '&model_name=' + this.config.model_name + '&pk=' + this.config.id;
+	},
+	roundedRect	: function(ctx,x,y,width,height,radius){
+		ctx.save();
+		// init the colors
+		ctx.fillStyle = "#eee";
+		ctx.strokeStyle = "#444";
+		// create the image
+		ctx.beginPath();
+		ctx.moveTo(x,y+radius);
+		ctx.lineTo(x,y+height-radius);
+		ctx.quadraticCurveTo(x,y+height,x+radius,y+height);
+		ctx.lineTo(x+width-radius,y+height);
+		ctx.quadraticCurveTo(x+width,y+height,x+width,y+height-radius);
+		ctx.lineTo(x+width,y+radius);
+		ctx.quadraticCurveTo(x+width,y,x+width-radius,y);
+		ctx.lineTo(x+radius,y);
+		ctx.quadraticCurveTo(x,y,x,y+radius);
+		ctx.fill();
+		ctx.stroke();
+		// restore former context options
+		ctx.restore();
+    },
+	draw		: function(ctx) {
+		var dims = this.config.dimensions;
+		this.roundedRect(ctx, dims.x, dims.y, dims.w, dims.h, 5);
 	}
 };
 
@@ -133,9 +175,9 @@ VUController.prototype = {
 				// add the Node instance to the controller's elements
 				this_.elems[id] = node;
 				// set a load event listener to the element's background image to initialy draw it
-				if(this_.elems[id].config.bg_image) {
-					$(this_.elems[id].config.bg_image).load(function() {
-						this_._draw(id);
+				if(node.config.bg_image) {
+					$(node.config.bg_image).load(function() {
+						node.draw(this_.ctx);
 					});
 				}
 			});
@@ -161,8 +203,8 @@ VUController.prototype = {
 				},
 				stop : function(e, ui) {
 					var position = $(this).position();
-					this_.elems[id].config.dimensions.x = position.left;
-					this_.elems[id].config.dimensions.y = position.top;
+					this_.elems[id].config.dimensions.x = parseInt(position.left);
+					this_.elems[id].config.dimensions.y = parseInt(position.top);
 					this_.drop();
 				}
 			});
@@ -219,26 +261,16 @@ VUController.prototype = {
 		var temp = dom_id.split('_');
 		this.drag = this.elems[temp[1]];
 	},
-	_draw				: function(id) {
-		var config = this.elems[id].config;
-		try {
-			if(config.bg_image) {
-				this.ctx.drawImage(config.bg_image, config.dimensions.x, config.dimensions.y, config.dimensions.w, config.dimensions.h);
-			} else {
-				this.roundedRect(config.dimensions.x, config.dimensions.y, config.dimensions.w, config.dimensions.h, 5);
-			}
-		} catch(e) {}
-	},
 	draw				: function(isGrip) {
 		var this_ = this;
 		this.ctx.clearRect(0, 0, this.options.width, this.options.height);
 		$.each(this.elems, function(id, el) {
 			if(isGrip) {
 				if(id != this_.drag.config.id) {
-					this_._draw(id);
+					el.draw(this_.ctx);
 				}
 			} else {
-				this_._draw(id);
+				el.draw(this_.ctx);
 			}
 		});
 	},
@@ -312,27 +344,6 @@ DiscussionController.prototype = {
 			});
 		}
 	},
-	roundedRect			: function(x,y,width,height,radius){
-		this.ctx.save();
-		// init the colors
-		this.ctx.fillStyle = "#eee";
-		this.ctx.strokeStyle = "#666";
-		// create the image
-		this.ctx.beginPath();
-		this.ctx.moveTo(x,y+radius);
-		this.ctx.lineTo(x,y+height-radius);
-		this.ctx.quadraticCurveTo(x,y+height,x+radius,y+height);
-		this.ctx.lineTo(x+width-radius,y+height);
-		this.ctx.quadraticCurveTo(x+width,y+height,x+width,y+height-radius);
-		this.ctx.lineTo(x+width,y+radius);
-		this.ctx.quadraticCurveTo(x+width,y,x+width-radius,y);
-		this.ctx.lineTo(x+radius,y);
-		this.ctx.quadraticCurveTo(x,y,x,y+radius);
-		this.ctx.fill();
-		this.ctx.stroke();
-		// restore former context options
-		this.ctx.restore();
-    },
 	drawText			: function(text,x,y,maxWidth,rotation) {
     // if text is short enough - put it in 1 line. if not, search for the middle space, and split it there (only splits to 2 lines).
         this.ctx.translate(x,y);
