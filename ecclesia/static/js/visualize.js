@@ -3,8 +3,7 @@ Node = function(config) {
 		dimensions	: {},
 		id			: -1,
 		url			: '',
-		name		: '',
-		label		: ''
+		name		: ''
 	};
 	if(config !== null) {
 		$.extend(true, this.config, config);
@@ -25,7 +24,7 @@ Node.prototype = {
 	}
 };
 
-Group = function(node_class) {
+Group = function(node_class, config) {
 	this.config = {
 		alias		: 'group',
 		model_name	: 'GroupProfile',
@@ -35,6 +34,8 @@ Group = function(node_class) {
 	// inheriting Node class
 	var dummy = $.extend(true, node_class, this);
 	$.extend(true, this, dummy);
+	// reconfig
+	$.extend(this.config, config);
 	this.loadImage();
 };
 Group.prototype = {
@@ -52,7 +53,7 @@ Group.prototype = {
 	}
 };
 
-Discussion = function(node_class) {
+Discussion = function(node_class, config) {
 	this.config = {
 		alias		: 'disc',
 		model_name	: 'Discussion',
@@ -62,6 +63,8 @@ Discussion = function(node_class) {
 	// inheriting Node class
 	var dummy = $.extend(true, node_class, this);
 	$.extend(true, this, dummy);
+	// reconfig
+	$.extend(this.config, config);
 	this.loadImage();
 };
 Discussion.prototype = {
@@ -78,7 +81,7 @@ Discussion.prototype = {
 	}
 };
 
-Story = function(node_class) {
+Story = function(node_class, config) {
 	this.config = {
 		alias		: 'story',
 		model_name	: 'Story',
@@ -87,6 +90,8 @@ Story = function(node_class) {
 	// inheriting Node class
 	var dummy = $.extend(true, node_class, this);
 	$.extend(true, this, dummy);
+	// reconfig
+	$.extend(this.config, config);
 };
 Story.prototype = {
 	serialize	: function() {
@@ -116,6 +121,52 @@ Story.prototype = {
 	draw		: function(ctx) {
 		var dims = this.config.dimensions;
 		this.roundedRect(ctx, dims.x, dims.y, dims.w, dims.h, 5);
+	}
+};
+Relation = new function(node_class, config) {
+	this.config = {
+		alias		: 'relation',
+		model_name	: 'StoryRelation',
+		from_id		: -1,
+		to_id		: -1,
+		from		: {},
+		to			: {}
+	};
+	// inheriting Node class
+	var dummy = $.extend(true, node_class, this);
+	$.extend(true, this, dummy);
+	// reconfig
+	$.extend(this.config, config);
+};
+Relation.prototype = {
+	serialize	: function() {
+		return 'model_name=' + this.config.model_name + '&pk=' + this.config.id;
+	},
+	toString	: function() {
+		return "("+this.from.toString()+","+this.to.toString()+")";
+    },
+	bezier		: function(ctx,x1,y1,x2,y2,label) {
+		ctx.save();
+		ctx.beginPath();
+		ctx.lineWidth = 4;
+		ctx.strokeStyle="rgb(130,130,200)";
+		ctx.moveTo(x1,y1);
+		ctx.bezierCurveTo(x1 + (x2-x1)/5,y1,x2-(x2-x1)/5,y2,x2,y2);
+		ctx.stroke();
+		//drawText(label,(x1+x2)/2, (y1+y2)/2, x2-x1,Math.atan2(y2-y1,x2-x1));
+		ctx.restore();
+    },
+	draw		: function(ctx) {
+		/*// get the dimensions of the from and to elements
+		var from_dims = this.from.cofig.dimensions;
+		var to_dims = this.to.cofig.dimensions;
+		// calculate the from and to points
+		var x1 = from_dims.x + from_dims.w;
+		var y1 = from_dims.y + from_dims.h/2;
+		var x2 = to_dims.x
+		var y2 = to_dims.y + to_dims.h/2;
+		// draw it
+		this.bezier(ctx, x1, y1, x2, y2);*/
 	}
 };
 
@@ -153,22 +204,22 @@ VUController.prototype = {
 		var this_ = this;
 		$.each(this.data, function(i, item) {
 			$.each(item, function(key, val) {
-				var node = new Node(val);
+				var node = new Node({});
 				switch(key) {
 					case 'group':
-						node = new Group(node);
+						node = new Group(node, val);
 						break;
 					case 'discussion':
-						node = new Discussion(node);
+						node = new Discussion(node, val);
 						break;
 					case 'story':
-						node = new Story(node);
+						node = new Story(node, val);
 						break;
 					case 'relation':
-						node = new Relation(node);
+						node = new Relation(node, val);
 						break;
 					case 'opinion':
-						node = new Opinion(node);
+						node = new Opinion(node, val);
 						break;
 				}
 				var id = node.config.id;
