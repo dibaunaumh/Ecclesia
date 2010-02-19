@@ -1,4 +1,4 @@
-# Django settings for ecclesia project.
+﻿# Django settings for ecclesia project.
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG

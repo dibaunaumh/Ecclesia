@@ -1,4 +1,4 @@
-# This Python file uses the following encoding: utf-8
+﻿# This Python file uses the following encoding: utf-8
 from ecclesia.goals.models import *
 from ecclesia.operations.models import *
 from ecclesia.goals.forms import *

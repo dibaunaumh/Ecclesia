@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import *
+﻿from django.conf.urls.defaults import *
 
 urlpatterns = patterns('',
     (r'^group/is_in_group/$', 'groups.views.is_in_group'),

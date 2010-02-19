@@ -1,4 +1,4 @@
-from django.contrib.auth.models import Group, User
+﻿from django.contrib.auth.models import Group, User
 from ecclesia.discussions.models import *
 from ecclesia.groups.models import GroupProfile, GroupPermission
 from ecclesia.discussions.forms import StoryForm

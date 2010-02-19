@@ -1,4 +1,4 @@
-from django.http import HttpResponseRedirect, HttpResponse, Http404
+﻿from django.http import HttpResponseRedirect, HttpResponse, Http404
 from groups.models import *
 from discussions.models import *
 

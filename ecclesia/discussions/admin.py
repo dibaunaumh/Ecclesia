@@ -1,4 +1,4 @@
-from models import *
+﻿from models import *
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as __unicode__
 from django.utils.translation import gettext_lazy as _

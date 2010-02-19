@@ -1,4 +1,4 @@
-Node = function(config) {
+﻿Node = function(config) {
 	this.config = {
 		dimensions	: {},
 		id			: -1,
