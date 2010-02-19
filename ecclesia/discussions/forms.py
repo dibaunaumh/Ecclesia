@@ -5,6 +5,10 @@ from django import forms
 
 from django.contrib.contenttypes.models import ContentType
 
+class DiscussionForm(forms.ModelForm):
+    class Meta:
+        model = Discussion
+
 class StoryForm(forms.ModelForm):
     #content_type = forms.ModelChoiceField(queryset=ContentType.objects.all(), widget=forms.HiddenInput)
     #object_id = forms.IntegerField(widget=forms.HiddenInput)

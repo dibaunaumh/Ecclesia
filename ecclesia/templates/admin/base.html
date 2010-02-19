@@ -19,6 +19,7 @@
 <script type="text/javascript" src="/static/js/jquery/ui/ui.draggable.js"></script>
 <script type="text/javascript" src="/static/js/jquery/ui/ui.resizable.js"></script>
 <script type="text/javascript" src="/static/js/jquery/jquery.form.js"></script>
+<script type="text/javascript" src="/static/js/jquery/jquery.jeditable.js"></script>
 <script type="text/javascript" src="/static/js/visualize.js"></script>
 {% block extrahead %}{% endblock %}
 
@@ -83,14 +84,23 @@
 	}
 </script>
 
+<!-- Edit inline for -->
+<script>
+$(document).ready(function() {
+    $('.edit').editable('/edit_inline/', {
+        width   : 150
+    });
+});
+</script>
+
 <!-- Create new dialog -->
 <script type="text/javascript">
 	$(function() {
 		$("#create_dialog").dialog({
 			bgiframe: true,
             autoOpen: false,
-			height: 350,
-			width: 500,
+			height: 546,
+			width: 700,
 			modal: true,
 			buttons: {
 				'Create': function() {
@@ -102,7 +112,7 @@
 				}
 			},
 			close: function() {
-				window.location.reload(false);
+				window.location = window.location;
 			}
 		});
 

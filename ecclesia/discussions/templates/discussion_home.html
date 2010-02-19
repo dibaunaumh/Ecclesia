@@ -8,7 +8,10 @@
 {% block content %}
 
 <h2>
-    {{ discussion.name }} ({{ discussion.type.name }})
+    <div{% if user_in_group %} class="edit" id="discussion_{{ discussion.pk }}"{% endif %}>
+		{{ discussion.name }}
+	</div>
+	({{ discussion.type.name }})
 </h2>
 {% ifequal user_permission_type 1 %}
 	<form action="/discussion-delete/{{discussion.pk}}/" method="post">
@@ -52,7 +55,7 @@ var DC	= new DiscussionController(VUC, {});
 
 <div id="create_dialog" style="display:none" title="Create new Story">
 	<form method="POST" action="" id="create_form">
-	{{ story_form }}
+	{{ story_form.as_p }}
 	</form>
 </div>
 
@@ -64,12 +67,14 @@ var DC	= new DiscussionController(VUC, {});
 	<input type="button" value="{% trans 'Stories List' %}" onclick="document.location.href='/stories_list/{{discussion.slug}}/'"/>
 </div>
 <hr/>
+<!--
 <h3>Current members</h3>
 <div id="members_container">
 {% for member in members %}
 	<a href="{{ member.get_absolute_url }}" class="member" title="{{ member.username }}" alt=""><img src="{{ member.get_profile.get_picture_abs_url }}" alt=""/></a>
 {% endfor %}
 </div>
+-->
 </div>
 
 <hr/>

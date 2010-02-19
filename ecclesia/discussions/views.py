@@ -24,14 +24,7 @@ def visualize(request, discussion_slug):
     if request.POST:
         story_form = StoryForm(request.POST)
         if story_form.is_valid():
-            story = Story()
-            story.discussion = discussion
-            story.name = story_form.cleaned_data['name']
-            story.slug = story_form.cleaned_data['slug']
-            story.content = story_form.cleaned_data['content']
-            story.speech_act = story_form.cleaned_data['speech_act']
-            story.created_by = request.user
-            story.save()
+            save_story_from_form(story_form, discussion, request.user)
             story_form = StoryForm()
         else:
             show_errors_in_form = True
@@ -54,6 +47,17 @@ def get_stories_view_json(request, discussion_slug):
     json = json.strip(',')
     return HttpResponse('[%s]' % json)
 	
+def save_story_from_form(story_form, discussion, user):
+    story = Story()
+    story.discussion = discussion
+    story.name = story_form.cleaned_data['name']
+    story.slug = story_form.cleaned_data['slug']
+    story.content = story_form.cleaned_data['content']
+    story.speech_act = story_form.cleaned_data['speech_act']
+    story.created_by = user
+    story.save()
+    return
+
 #def submit_story(request):
 #    story = Story(created_by=request.user)
 #    form = StoryForm(request.POST, instance=story)
@@ -93,6 +97,11 @@ def stories_list(request, discussion_slug):
             if GroupPermission.objects.filter(group=discussion[0].group).filter(user=user):
                 permission = GroupPermission.objects.filter(group=discussion[0].group).filter(user=user)[0]
                 user_permission_type = permission.permission_type
+        user_in_group = False
+        try:
+            user_in_group = user.groups.filter(id=discussion[0].group.id).count() > 0
+        except:
+            pass
     stories = Story.objects.filter(discussion=discussion[0])
     (my_items, get_parameters, f) = search_filter_paginate('story', stories, request)
     return render_to_response('stories_list.html', locals())
@@ -102,3 +111,16 @@ def delete_story(request, story_pk):
     discussion = story.discussion
     story.delete()
     return HttpResponseRedirect('/stories_list/%s/' % discussion.slug)
+
+def get_inline_field(request):
+    fieldname = request.POST['id']
+    if fieldname.split("_")[0] == 'discussion':
+        discussion = Discussion.objects.get(pk=fieldname.split("_")[1])
+        discussion.name = request.POST['value']
+        discussion.save()
+        return HttpResponse("%s" % discussion.name)
+    if fieldname.split("_")[0] == 'story':
+        story = Story.objects.get(pk=fieldname.split("_")[1])
+        story.content = request.POST['value']
+        story.save()
+        return HttpResponse("%s" % story.content)
