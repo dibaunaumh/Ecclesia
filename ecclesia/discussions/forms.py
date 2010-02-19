@@ -8,6 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 class DiscussionForm(forms.ModelForm):
     class Meta:
         model = Discussion
+        exclude = ('x_pos', 'y_pos', 'width', 'height')
 
 class StoryForm(forms.ModelForm):
     #content_type = forms.ModelChoiceField(queryset=ContentType.objects.all(), widget=forms.HiddenInput)
@@ -15,6 +16,7 @@ class StoryForm(forms.ModelForm):
 
     class Meta:
         model = Story
+        exclude = ('x_pos', 'y_pos', 'width', 'height')
 
 def get_story_form_for_object(object):
     content_type = ContentType.objects.get_for_model(object).id
