@@ -1,5 +1,5 @@
 from django.contrib.auth.models import Group, User
-from ecclesia.discussions.models import Story, Discussion
+from ecclesia.discussions.models import *
 from ecclesia.groups.models import GroupProfile, GroupPermission
 from ecclesia.discussions.forms import StoryForm
 from django.shortcuts import render_to_response
@@ -43,9 +43,12 @@ def visualize(request, discussion_slug):
 def get_stories_view_json(request, discussion_slug):
     discussion = Discussion.objects.get(slug=discussion_slug)
     stories = Story.objects.filter(discussion=discussion)
-    json = ',';
+    json = ','
     for story in stories:
-        json = '%s{"story":{"id":%s,"url":"%s","name":"%s","dimensions":{"x":%s,"y":%s,"w":%s,"h":%s}}},' % (json, story.id, story.get_absolute_url(), story.title, story.x, story.y, story.w, story.h)
+        json = '%s{"story":{"id":%s,"url":"%s","name":"%s","type":"%s","dimensions":{"x":%s,"y":%s,"w":%s,"h":%s}}},' % (json, story.id, story.get_absolute_url(), story.title, story.speech_act, story.x, story.y, story.w, story.h)
+    relations = StoryRelation.objects.filter(discussion=discussion)
+    #for relation in relations:
+     #   json = '%s{"relation":{"id":%s,"url":"%s","name":"%s","type":"%s","from_id":"%s","to_id":"%s"}},' % (json, relation.id, relation.get_absolute_url(), relation.title, relation.speech_act, relaiton.from_story.pk, relaiton.to_story.pk)
     #json_serializer = serializers.get_serializer("json")()
     #json_serializer.serialize(groups, ensure_ascii=False, stream=response, fields=('x', 'y', 'w', 'h'))
     json = json.strip(',')
