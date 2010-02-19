@@ -175,7 +175,9 @@ var VUC = new VUController();
 </div>
 
 <div id="buttons_container">
-	<input id="create" class="ui-button ui-state-default ui-corner-all" type="button" value="{% trans 'Create Group' %}"/><br clear="all"/>
+	{% if user.is_authenticated %}
+		<input id="create" class="ui-button ui-state-default ui-corner-all" type="button" value="{% trans 'Create Group' %}"/><br clear="all"/>
+	{% endif %}
 	<input type="button" value="{% trans 'Groups List' %}" onclick="document.location.href='/groups_list/'"/>
 </div>
 
