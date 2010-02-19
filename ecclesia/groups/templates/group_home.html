@@ -203,16 +203,9 @@ var VUC = new VUController(config);
 	<a href="{{ member.get_absolute_url }}" class="member" title="{{ member.username }}" alt=""><img src="{{ member.get_profile.get_picture_abs_url }}" alt=""/></a>
 {% endfor %}
 </div>
+<input type="button" value="{% trans 'Members List' %}" onclick="document.location.href='/members_list/{{group.slug}}/'"/>
 </div>
 
 <hr/>
-<!--ul>
-<div id="ddd">
-<input type="button" value="{% trans 'Members List' %}" onclick="document.location.href='/members_list/{{group.name}}/'"/>
-{% for member in members %}
-    <li><a href="{{ member.get_absolute_url }}">{{ member.username }}</a>
-{% endfor %}
-</div>
-</ul-->
 
 {% endblock content %}
