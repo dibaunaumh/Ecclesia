@@ -19,13 +19,13 @@ def home(request):
     user = request.user
     #initializing the form
     show_errors_in_form = False
-    group_form = GroupForm()
+    group_form = GroupProfileForm()
     #saving new group
     if request.POST:
-        group_form = GroupForm(request.POST)
+        group_form = GroupProfileForm(request.POST)
         if group_form.is_valid():
-            group_form.save()
-            group_form = GroupForm()
+            save_group_from_form(group_form, request.user)
+            group_form = GroupProfileForm()
         else:
             show_errors_in_form = True
     #adding beautiful css
@@ -53,6 +53,19 @@ def get_discussions_view_json(request):
     json = json.strip(',')
     return HttpResponse('[%s]' % json)
 	
+def save_group_from_form(group_form, user):
+    if Group.objects.filter(name=group_form.cleaned_data['slug']):
+        group = Group.objects.filter(name=group_form.cleaned_data['slug'])[0]
+    else:
+        group = Group(name=group_form.cleaned_data['slug'])
+        group.save()
+    group_profile = GroupProfile()
+    group_profile.group = group
+    group_profile.slug = group_form.cleaned_data['slug']
+    group_profile.description = group_form.cleaned_data['description']
+    group_profile.save()
+    return
+
 def group_home(request, group_slug):
     """
     Homepage of a group, displaying the group's description & active content.

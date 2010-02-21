@@ -11,18 +11,18 @@ class UserProfile(models.Model):
 	"""
     user = models.ForeignKey(User, unique=True, verbose_name=_('user'), related_name='profile', help_text=_("The internal User entity. Add this entity before you create a profile and set a User for it."))
     picture = models.ImageField(max_length=100, upload_to='img/user_pics', help_text=_('The name of the image file.'))
-        
+
     def __unicode__(self):
         return "%s's profile" % (self.user.username,)
-        
+
     def get_picture_abs_url(self):
         return "%s%s" % (settings.MEDIA_URL, self.picture)
 
 
 class GroupProfile(Presentable):
     """
-    Represents an organization of people trying to meet some 
-    common goals. This is an extension of the django.contrib.auth Group model, 
+    Represents an organization of people trying to meet some
+    common goals. This is an extension of the django.contrib.auth Group model,
 	use the above to manage the actual group membership.
     """
     group = models.ForeignKey(Group, unique=True, verbose_name=_('group'), related_name='profile', help_text=_("The internal Group entity. If you are adding a Profile Group, please create a new Group & don't select an existing one"))
@@ -33,25 +33,25 @@ class GroupProfile(Presentable):
     location = models.CharField(_('location'), max_length=500, null=True, blank=True, help_text=_('Where is the group located'))
     #geolocation
     #tags
-    created_by = models.ForeignKey(User, verbose_name=_('created by'), null=True, blank=True, help_text=_('The user that created the group'))
+    created_by = models.ForeignKey(User, editable=False, verbose_name=_('created by'), null=True, blank=True, help_text=_('The user that created the group'))
     created_at = models.DateTimeField(_('created at'), auto_now_add=True, help_text=_('When was the group created'))
     updated_at = models.DateTimeField(_('updated at'), auto_now=True, help_text=_('When was the group last updated'))
-    
+
     class Meta:
         verbose_name = _("group profile")
         verbose_name_plural = _("group profiles")
-        
-    
+
+
     def get_absolute_url(self):
         return "http://%s/group/%s/" % (get_domain(), self.slug)
-    
+
     def save(self):
         super(GroupProfile, self).save()
         if self.created_by:
             if not GroupPermission.objects.filter(group=self.group).filter(user=self.created_by):
                 group_permission = GroupPermission(group=self.group, user=self.created_by, permission_type=1)
                 group_permission.save()
-        
+
     def __unicode__(self):
         return self.group.name
 
@@ -81,33 +81,33 @@ class MissionStatement(models.Model):
     created_by = models.ForeignKey(User, verbose_name=_('created by'), null=True, blank=True, help_text=_('The user that created the mission statement'))
     created_at = models.DateTimeField(_('created at'), auto_now_add=True, help_text=_('When was the mission statement created'))
     updated_at = models.DateTimeField(_('updated at'), auto_now=True, help_text=_('When was the mission statement last updated'))
-    
-    
+
+
     class Meta:
         verbose_name = _("mission statement")
         verbose_name_plural = _("mission statements")
-        
-    
+
+
     def get_absolute_url(self):
         return "http://%s/admin/groups/missionstatement/%d/" % (get_domain(), self.id)
-    
-    
+
+
     def __unicode__(self):
         return u"%s's %s" % (self.group_profile.group.name, _('mission statement'))
-    
+
 class GroupPermission(models.Model):
     """
     Group permissions. Only the manager of the group has the permission to delete a group,
-    delete a discussion, kick member out from the group, promote member to manager and 
+    delete a discussion, kick member out from the group, promote member to manager and
     demote member from being a manager.
     """
     group = models.ForeignKey(Group, verbose_name=_('group'), related_name='permission', help_text=_("Group entity"))
     user = models.ForeignKey(User, verbose_name=_('user'), help_text=_('The user that has the permissions'))
     permission_type = models.IntegerField(choices = ((1, "Manager"), (2, "Editor"), (3, "Reader")))
-    
+
     class Meta:
         verbose_name = _("group permission")
         verbose_name_plural = _("group permissions")
-    
+
     def __unicode__(self):
         return u"%s's permission for %s" % (self.user, self.group)

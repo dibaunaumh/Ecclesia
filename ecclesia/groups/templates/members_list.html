@@ -21,10 +21,11 @@
 			<table border="0" cellpadding="0" cellspacing="0" class="sortable">
 				<thead>
 				<tr>
-					<th width="20">ID</th>	
-					<th width="100">First Name</th>	
-					<th width="100">Last Name</th>	
-					<th width="100">Is Active</th>	
+					<th width="20">ID</th>
+					<th width="100">Username</th>
+					<th width="100">First Name</th>
+					<th width="100">Last Name</th>
+					<th width="100">Is Active</th>
 					<th width="100">Is Authenticated</th>
 					<th width="100">Is Staff</th>
 					<th width="100">Is Superuser</th>
@@ -33,11 +34,12 @@
 				</tr>
 				</thead>
 				<tbody>
-				
+
 				{% for obj in my_items.object_list %}
 				<tr class="ref_{{forloop.counter|divisibleby:"2"}}">
 					<td align="left">{{ obj.pk }}</td>
-					<td><a href="{{ obj.get_absolute_url }}">{{ obj.first_name }}</a></td>
+					<td><a href="{{ obj.get_absolute_url }}">{{ obj.username }}</a></td>
+					<td>{{obj.first_name}}</td>
 					<td>{{obj.last_name}}</td>
 					<td>{{obj.is_active}}</td>
 					<td>{{obj.is_authenticated}}</td>
@@ -46,13 +48,13 @@
 					<td>{{obj.last_login|date:"d/m/Y"}}</td>
 					{% ifequal user_permission_type 1 %}
 						<td>
-							<form action="/member-delete/{{group.pk}}/{{obj.pk}}/" method="post">      
+							<form action="/member-delete/{{group.pk}}/{{obj.pk}}/" method="post">
 						        <input type="image" onclick="if(confirm('Are you sure you want to kick this member?')) {this.form.submit();} else { return false; }" src="/static/icons/delete.png">Kick member</input>
 						    </form>
-							<form action="/member-promote/{{group.pk}}/{{obj.pk}}/" method="post">      
+							<form action="/member-promote/{{group.pk}}/{{obj.pk}}/" method="post">
 						        <input type="image" onclick="if(confirm('Are you sure you want to promote this member?')) {this.form.submit();} else { return false; }" src="/static/icons/plus.gif">Promote member</input>
 						    </form>
-							<form action="/member-demote/{{group.pk}}/{{obj.pk}}/" method="post">      
+							<form action="/member-demote/{{group.pk}}/{{obj.pk}}/" method="post">
 						        <input type="image" onclick="if(confirm('Are you sure you want to demote this member?')) {this.form.submit();} else { return false; }" src="/static/icons/minus.gif">Demote member</input>
 						    </form>
 						</td>

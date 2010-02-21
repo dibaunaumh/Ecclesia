@@ -19,6 +19,7 @@ class MemberProfileForm(forms.ModelForm):
         model = User
         fields = ['first_name', 'last_name', 'email',]
 
-class GroupForm(forms.ModelForm):
+class GroupProfileForm(forms.ModelForm):
     class Meta:
-        model = Group
+        model = GroupProfile
+        exclude = ('x_pos', 'y_pos', 'width', 'height', 'group', 'parent', 'forked_from', 'location')
