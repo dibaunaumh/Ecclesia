@@ -25,7 +25,7 @@
 </p>
 
 <hr/>
-
+<div class="container">
 <div id="canvasContainer"></div>
 <style type="text/css">
 #ui_container {float: left; width: 145px; padding-left: 15px}
@@ -37,6 +37,7 @@
 #possible_result_container{background-color: #ccf}
 .stories_container{float: left}
 .story {position: absolute; width: 150px; height: 100px; margin: 0; padding: 0; font-size: 12pt; font-weight: bold; overflow: hidden; cursor: move}
+.relation {visibility:hidden}
 .story a {display: block; float: left; padding: 10px; color: #000}
 .story a:hover {color: #033; text-decoration: underline}
 .dragon { border: thin solid #033;opacity:.6; -moz-opacity:.6}
@@ -58,7 +59,6 @@ var DC	= new DiscussionController(VUC, {});
 	{{ story_form.as_p }}
 	</form>
 </div>
-
 <div id="ui_container">
 <div id="buttons_container">
 {% if user_in_group %}
@@ -66,6 +66,29 @@ var DC	= new DiscussionController(VUC, {});
 {% endif %}
 	<input type="button" value="{% trans 'Stories List' %}" onclick="document.location.href='/stories_list/{{discussion.slug}}/'"/>
 </div>
+</div>
+<br clear="both"/>
+<hr/>
+<form name="story-input">
+	<fieldset>
+		<input type="radio" name="story-class" id="story" value="story" /><label for="story">Story</label>
+		<input type="radio" name="story-class" id="relation" value="relation" /><label for="relation">Relation</label>
+		<input type="radio" name="story-class" id="opinion" value="opinion" /><label for="opinion">Opinion</label>
+	</fieldset>
+	<fieldset>
+		<textarea name="title"></textarea>
+	</fieldset>
+	<fieldset>
+		<select name="speech_act">
+			{% for sa in speech_acts %}
+				<option value="{{ sa.pk }}">{{ sa.name }}</option>
+			{% endfor %}
+		</select>
+	</fieldset>
+	<fieldset>
+		<input type="submit" value="{% trans 'Submit' %}"/>
+	</fieldset>
+</form>
 <hr/>
 <!--
 <h3>Current members</h3>

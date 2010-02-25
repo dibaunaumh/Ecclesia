@@ -31,6 +31,7 @@ def visualize(request, discussion_slug):
     #adding beautiful css
     for key in story_form.fields:
         story_form.fields[key].widget.attrs["class"] = "text ui-widget-content ui-corner-all"
+    speech_acts = SpeechAct.objects.all()
     return render_to_response('discussion_home.html', locals())
 
 def get_stories_view_json(request, discussion_slug):
@@ -40,8 +41,8 @@ def get_stories_view_json(request, discussion_slug):
     for story in stories:
         json = '%s{"story":{"id":%s,"url":"%s","name":"%s","type":"%s","dimensions":{"x":%s,"y":%s,"w":%s,"h":%s}}},' % (json, story.id, story.get_absolute_url(), story.title, story.speech_act, story.x, story.y, story.w, story.h)
     relations = StoryRelation.objects.filter(discussion=discussion)
-    #for relation in relations:
-     #   json = '%s{"relation":{"id":%s,"url":"%s","name":"%s","type":"%s","from_id":"%s","to_id":"%s"}},' % (json, relation.id, relation.get_absolute_url(), relation.title, relation.speech_act, relaiton.from_story.pk, relaiton.to_story.pk)
+    for relation in relations:
+        json = '%s{"relation":{"id":%s,"url":"%s","name":"%s","type":"%s","from_id":"%s","to_id":"%s"}},' % (json, relation.id, relation.get_absolute_url(), relation.title, relation.speech_act, relation.from_story.unique_id(), relation.to_story.unique_id())
     #json_serializer = serializers.get_serializer("json")()
     #json_serializer.serialize(groups, ensure_ascii=False, stream=response, fields=('x', 'y', 'w', 'h'))
     json = json.strip(',')
@@ -50,7 +51,7 @@ def get_stories_view_json(request, discussion_slug):
 def save_story_from_form(story_form, discussion, user):
     story = Story()
     story.discussion = discussion
-    story.name = story_form.cleaned_data['name']
+    story.title = story_form.cleaned_data['title']
     story.slug = story_form.cleaned_data['slug']
     story.content = story_form.cleaned_data['content']
     story.speech_act = story_form.cleaned_data['speech_act']
