@@ -61,7 +61,7 @@ def group_home(request, group_slug):
                 user_permission_type = permission.permission_type
     query = group.mission_statements.all().order_by("-created_at")
     if query.count() > 0:
-        mission_statement = query[0].mission_statement
+        mission_statement = query[0]
     else:
         mission_statement = ""
     discussions = group.group.discussions.all()
@@ -71,20 +71,32 @@ def group_home(request, group_slug):
         user_in_group = request.user.groups.filter(id=group.group.id).count() > 0
     except:
         pass
-    #initializing the form
+    #initializing the forms
     show_errors_in_form = False
+    show_errors_in_mission_statement_form = False
     discussion_form = DiscussionForm()
-    #saving new story
+    mission_statement_form = MissionStatementForm()
+    #saving new discussion
     if request.POST:
-        discussion_form = DiscussionForm(request.POST)
-        if discussion_form.is_valid():
-            save_discussion_from_form(discussion_form, group, user)
-            discussion_form = DiscussionForm()
+        if 'slug' in request.POST:
+            discussion_form = DiscussionForm(request.POST)
+            if discussion_form.is_valid():
+                save_discussion_from_form(discussion_form, group, user)
+                discussion_form = DiscussionForm()
+            else:
+                show_errors_in_form = True
         else:
-            show_errors_in_form = True
+            mission_statement_form = MissionStatementForm(request.POST)
+            if mission_statement_form.is_valid():
+                save_mission_statement_from_form(mission_statement_form, group, user)
+                mission_statement_form = DiscussionForm()
+            else:
+                show_errors_in_mission_statement_form = True
     #adding beautiful css
     for key in discussion_form.fields:
         discussion_form.fields[key].widget.attrs["class"] = "text ui-widget-content ui-corner-all"
+    for key in mission_statement_form.fields:
+        mission_statement_form.fields[key].widget.attrs["class"] = "text ui-widget-content ui-corner-all"
     return render_to_response('group_home.html', locals())
 
 def save_discussion_from_form(discussion_form, group, user):
@@ -96,6 +108,14 @@ def save_discussion_from_form(discussion_form, group, user):
     discussion.description = discussion_form.cleaned_data['description']
     discussion.created_by = user
     discussion.save()
+    return
+
+def save_mission_statement_from_form(mission_statement_form, group, user):
+    mission_statement = MissionStatement()
+    mission_statement.group_profile = group
+    mission_statement.mission_statement = mission_statement_form.cleaned_data['mission_statement']
+    mission_statement.created_by = user
+    mission_statement.save()
     return
 
 def groups_list(request):

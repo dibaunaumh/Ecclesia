@@ -9,7 +9,7 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
-import os 
+import os
 
 base_dir = os.path.abspath(os.path.dirname(__file__))
 
@@ -66,6 +66,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.csrf.middleware.CsrfMiddleware',
 )
 
 ROOT_URLCONF = 'ecclesia.urls'
@@ -74,7 +75,7 @@ TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
-    '%s/templates' % base_dir, 
+    '%s/templates' % base_dir,
     '%s/groups/templates' % base_dir,
     '%s/goals/templates' % base_dir,
 )
