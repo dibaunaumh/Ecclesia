@@ -42,6 +42,16 @@ Group.prototype = {
 	serialize	: function () {
 		return $.param(this.config.dimensions) + '&model_name=' + this.config.model_name + '&pk=' + this.config.id;
 	},
+	addToDOM	: function (container) {
+		var c = this.config;
+		$('#'+container).append('<div class="'+c.alias+'" id="'+c.alias+'_'+c.id+'"><a href="'+c.url+'">'+c.name+'</a></div>');
+	},
+	position	: function () {
+		var c = this.config;
+		var id_selector = '#'+c.alias+'_'+c.id;
+		$(id_selector).css('left', c.dimensions.x+'px');
+		$(id_selector).css('top', c.dimensions.y+'px');
+	},
 	draw		: function (ctx) {
 		var dims = this.config.dimensions;
 		if(this.config.bg_image) {
@@ -70,6 +80,16 @@ Discussion = function (node_class, config) {
 Discussion.prototype = {
 	serialize	: function () {
 		return $.param(this.config.dimensions) + '&model_name=' + this.config.model_name + '&pk=' + this.config.id;
+	},
+	addToDOM	: function (container) {
+		var c = this.config;
+		$('#'+container).append('<div class="'+c.alias+'" id="'+c.alias+'_'+c.id+'"><a href="'+c.url+'">'+c.name+'</a></div>');
+	},
+	position	: function () {
+		var c = this.config;
+		var id_selector = '#'+c.alias+'_'+c.id;
+		$(id_selector).css('left', c.dimensions.x+'px');
+		$(id_selector).css('top', c.dimensions.y+'px');
 	},
 	draw		: function (ctx) {
 		var dims = this.config.dimensions;
@@ -118,6 +138,16 @@ Story.prototype = {
 		// restore former context options
 		ctx.restore();
     },
+	addToDOM	: function () {
+		var c = this.config;
+		$('#'+c.type+'_container').append('<div class="'+c.alias+'" id="'+c.alias+'_'+c.id+'"><a href="'+c.url+'">'+c.name+'</a></div>');
+	},
+	position	: function () {
+		var c = this.config;
+		var id_selector = '#'+c.alias+'_'+c.id;
+		$(id_selector).css('left', c.dimensions.x+'px');
+		$(id_selector).css('top', c.dimensions.y+'px');
+	},
 	draw		: function (ctx) {
 		var dims = this.config.dimensions;
 		this.roundedRect(ctx, dims.x, dims.y, dims.w, dims.h, 5);
@@ -151,11 +181,15 @@ Relation.prototype = {
 		ctx.lineWidth = 2;
 		ctx.strokeStyle="rgb(130,130,200)";
 		ctx.moveTo(x1,y1);
-		ctx.bezierCurveTo(x1 + (x2-x1)/5,y1,x2-(x2-x1)/5,y2,x2,y2);
+		ctx.bezierCurveTo(x1+(x2-x1)/2,y1,x2-(x2-x1)/2,y2,x2,y2);
 		ctx.stroke();
 		//drawText(label,(x1+x2)/2, (y1+y2)/2, x2-x1,Math.atan2(y2-y1,x2-x1));
 		ctx.restore();
     },
+	addToDOM	: function () {
+		var c = this.config;
+		$('#'+c.type+'_container').append('<div class="'+c.alias+'" id="'+c.alias+'_'+c.id+'"><a href="'+c.url+'">'+c.name+'</a></div>');
+	},
 	draw		: function (ctx) {
 		// get the dimensions of the from and to elements
 		var from_dims = this.config.from.config.dimensions;
@@ -170,7 +204,60 @@ Relation.prototype = {
 	}
 };
 Opinion = function (node_class, config) {
-
+	this.config = {
+		alias		: 'opinion',
+		model_name	: 'Opinion',
+		type		: 'for',
+		parent_id	: -1,
+		parent		: {}
+	};
+	// inheriting Node class
+	var dummy = $.extend(true, node_class, this);
+	$.extend(true, this, dummy);
+	// reconfig
+	$.extend(this.config, config);
+};
+Opinion.prototype = {
+	serialize	: function () {
+		return 'model_name=' + this.config.model_name + '&pk=' + this.config.id;
+	},
+	addToDOM	: function () {
+		var c = this.config;
+		var container = c.parent.config.alias+'_'+c.parent.config.id;
+		$('#'+container).append('<div class="'+c.alias+' '+c.type+'_opinion" id="'+c.alias+'_'+c.id+'"><a href="'+c.url+'">'+c.name+'</a></div>');
+	},
+	position	: function () {
+		if(this.parent.config) {
+			var parent_dims = this.parent.config.dimensions;
+			var margin = 3;
+			var opn_edge = 30;
+			var x,y;
+			switch(this.config.type) {
+				case 'for': {
+					x = parent_dims.w + margin;
+					y = parent_dims.h/2 - opn_edge/2;
+				} break;
+				case 'against': {
+					x = -margin - opn_edge;
+					y = parent_dims.h/2 - opn_edge/2;
+				} break;
+				case 'true': {
+					x = parent_dims.w/2 - opn_edge/2;
+					y = -margin - opn_edge;
+				} break;
+				case 'false': {
+					x = parent_dims.w/2 - opn_edge/2;
+					y = parent_dims.h + margin;
+				} break;
+			}
+			var id_selector = '#'+this.config.alias+'_'+this.config.id;
+			$(id_selector).css('left', x+'px');
+			$(id_selector).css('top', y+'px');
+		}
+	},
+	draw		: function () {
+		
+	}
 };
 
 VUController = function (options) {
@@ -203,13 +290,15 @@ VUController.prototype = {
 			this_.init();
 		});
 	},
-	setRelations		: function () {
+	setElementsRelations: function () {
 		var this_ = this;
 		$.each(this.elems, function (key, el) {
+			var c = this_.elems[key].config;
 			if(el instanceof Relation) {
-				var el = this_.elems[key];
-				el.config.from = this_.elems[el.config.from_id];
-				el.config.to = this_.elems[el.config.to_id];
+				c.from = this_.elems[c.from_id];
+				c.to = this_.elems[c.to_id];
+			} else if(el instanceof Opinion) {
+				c.parent = this_.elems[c.parent_id];
 			}
 		});
 	},
@@ -246,7 +335,7 @@ VUController.prototype = {
 				}
 			});
 		});
-		this.setRelations();
+		this.setElementsRelations();
 	},
 	initCanvas			: function () {
 		var o = this.options;
@@ -284,8 +373,7 @@ VUController.prototype = {
 	addElement			: function (el) {
 		// add an element to the DOM
 		if(el) {
-			var config = el.config;
-			$('#'+this.options.container_id).append('<div class="'+config.alias+'" id="'+config.alias+'_'+config.id+'"><a href="'+config.url+'">'+config.name+'</a></div>');
+			el.addToDOM(this.options.container_id);
 		}
 		// add all elements to the DOM
 		else {
@@ -306,7 +394,7 @@ VUController.prototype = {
 				// appending a div for each element to the canvas container
 				this_.addElement(el);
 				// position the element inside the container
-				this_.position(id);
+				this_.position(el);
 				// set it as draggable
 				this_.setDraggable(el);
 			});
@@ -316,11 +404,10 @@ VUController.prototype = {
 			alert('No canvas context.');
 		}
 	},
-	position			: function (id) {
-		var config = this.elems[id].config;
-		var id_selector = '#'+id;
-		$(id_selector).css('left', config.dimensions.x+'px');
-		$(id_selector).css('top', config.dimensions.y+'px');
+	position			: function (el) {
+		if(el.position) {
+			el.position();
+		}
 	},
 	setDrag				: function (id) {
 		this.drag = this.elems[id];
@@ -397,8 +484,9 @@ DiscussionController.prototype = {
 	addElement			: function (el) {
 		// add an element to the DOM
 		if(el) {
-			var config = el.config;
-			$('#'+config.type+'_container').append('<div class="'+config.alias+'" id="'+config.alias+'_'+config.id+'"><a href="'+config.url+'">'+config.name+'</a></div>');
+			if(el instanceof Opinion) {	container = config.parent.config.alias+'_'+config.parent.config.id;	}
+								 else {	container = config.type+'_container'; }
+			el.addToDOM();
 		}
 		// add all elements to the DOM
 		else {

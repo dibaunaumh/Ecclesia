@@ -76,7 +76,7 @@ class MissionStatement(models.Model):
     statements. The actual group profile will feature the mission statement that
     has the largest support (i.e., number of votes).
     """
-    group_profile = models.ForeignKey(GroupProfile, verbose_name=_('group profile'), related_name='mission_statements', help_text=_('The groupd subject of this mission statement'))
+    group_profile = models.ForeignKey(GroupProfile, editable=False, verbose_name=_('group profile'), related_name='mission_statements', help_text=_('The groupd subject of this mission statement'))
     mission_statement = models.TextField(_('mission statement'), max_length=1000, help_text=_('The suggested mission statement of the group'))
     created_by = models.ForeignKey(User, verbose_name=_('created by'), null=True, blank=True, help_text=_('The user that created the mission statement'))
     created_at = models.DateTimeField(_('created at'), auto_now_add=True, help_text=_('When was the mission statement created'))

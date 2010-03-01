@@ -1,6 +1,7 @@
 ﻿from django.contrib.auth.models import Group, User
 from ecclesia.discussions.models import *
 from ecclesia.groups.models import GroupProfile, GroupPermission
+from ecclesia.groups.models import GroupProfile, GroupPermission, MissionStatement
 from ecclesia.discussions.forms import StoryForm
 from django.shortcuts import render_to_response
 from django.http import HttpResponse, Http404, HttpResponseRedirect
@@ -43,6 +44,9 @@ def get_stories_view_json(request, discussion_slug):
     relations = StoryRelation.objects.filter(discussion=discussion)
     for relation in relations:
         json = '%s{"relation":{"id":%s,"url":"%s","name":"%s","type":"%s","from_id":"%s","to_id":"%s"}},' % (json, relation.id, relation.get_absolute_url(), relation.title, relation.speech_act, relation.from_story.unique_id(), relation.to_story.unique_id())
+    opinions = Opinion.objects.filter(discussion=discussion)
+    for opinion in opinions:
+        json = '%s{"opinion":{"id":%s,"url":"%s","name":"%s","type":"%s","parent_id":"%s"}},' % (json, opinion.id, opinion.get_absolute_url(), opinion.title, opinion.speech_act, opinion.parent_story.unique_id())
     #json_serializer = serializers.get_serializer("json")()
     #json_serializer.serialize(groups, ensure_ascii=False, stream=response, fields=('x', 'y', 'w', 'h'))
     json = json.strip(',')
@@ -125,3 +129,10 @@ def get_inline_field(request):
         story.content = request.POST['value']
         story.save()
         return HttpResponse("%s" % story.content)
+    if fieldname.split("_")[0] == 'missionstatement':
+        mission_statement = MissionStatement.objects.get(pk=fieldname.split("_")[1])
+        print mission_statement
+        print request.POST['value']
+        mission_statement.mission_statement = request.POST['value']
+        mission_statement.save()
+        return HttpResponse("%s" % mission_statement.mission_statement)

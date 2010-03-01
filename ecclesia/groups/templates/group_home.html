@@ -16,16 +16,17 @@
     </form>
 {% endifequal %}
 
-
 <p>
-	{{ mission_statement }}
-</p>
-
 {% if user_in_group %}
-    <input id="add_mission" type="button" value="{% trans 'Add Mission Statement' %}" onclick="document.location.href='/admin/groups/missionstatement/add/?group_profile={{ group.id }}'"/>
+	{% ifequal mission_statement "" %}
+		<input id="add_mission" class="ui-button ui-state-default ui-corner-all" type="button" value="{% trans 'Add Mission Statement' %}"/><br clear="all"/>
+	{% else %}
+		<div class="edit" id="missionstatement_{{ mission_statement.pk }}">{{ mission_statement.mission_statement }}</div>
+	{% endifequal %}
 {% else %}
-	<input id="add_mission" type="hidden" value="{% trans 'Add Mission Statement' %}" onclick="document.location.href='/admin/groups/missionstatement/add/?group_profile={{ group.id }}'"/>
+	<div>{{ mission_statement.mission_statement }}</div>
 {% endif %}
+</p>
 
 
 <hr/>
@@ -51,10 +52,51 @@ var config = {
 }
 var VUC = new VUController(config);
 </script>
+<script>
+	$(function() {
+		$("#mission_statement_dialog").dialog({
+			bgiframe: true,
+            autoOpen: false,
+			height: 402,
+			width: 787,
+			modal: true,
+			buttons: {
+				'Create': function() {
+					$("#mission_statement_form").submit();
+				},
+
+				Cancel: function() {
+					$(this).dialog('close');
+				}
+			},
+			close: function() {
+				window.location = window.location;
+			}
+		});
+
+		$('#add_mission').click(function() {
+			$('#mission_statement_dialog').dialog('open');
+		})
+	});
+</script>
+
+{% if show_errors_in_mission_statement_form %}
+	<script>
+		$(document).ready(function() {
+			$('#mission_statement_dialog').dialog('open');
+		});
+	</script>
+{% endif %}
 
 <div id="create_dialog" style="display:none" title="Create new Discussion">
 	<form method="POST" action="" id="create_form">
 		{{ discussion_form.as_p }}
+	</form>
+</div>
+
+<div id="mission_statement_dialog" style="display:none" title="Mission Statement">
+	<form method="POST" action="" id="mission_statement_form">
+		{{ mission_statement_form.as_p }}
 	</form>
 </div>
 
