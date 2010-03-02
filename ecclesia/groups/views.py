@@ -202,8 +202,8 @@ def join_group(request):
 def leave_group(request):
     if 'group_slug' in request.POST:
         group = GroupProfile.objects.get(slug=request.POST['group_slug'])
-        GroupPermission.object.filter(group=group.group).filter(user=request.user).delete()
-        request.user.groups.remove(group.group.group)
+        GroupPermission.objects.filter(group=group.group).filter(user=request.user).delete()
+        request.user.groups.remove(group.group)
     return HttpResponse("")
 
 def login(request):
