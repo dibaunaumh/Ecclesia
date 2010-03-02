@@ -49,11 +49,13 @@
 	}
 	});
 	function join_group(){
-		$.post("/group/join_group/", {group_slug: URL.split("/").reverse()[1]});
-		document.getElementById('join_group').style.display='none';
-		document.getElementById('leave_group').style.display='block';
-		document.getElementById('add_mission').type='button';
-		document.getElementById('create_discussion').type='button';
+		$.post("/group/join_group/", {group_slug: URL.split("/").reverse()[1]},
+		function(data){
+		    document.getElementById('join_group').style.display='none';
+			document.getElementById('leave_group').style.display='block';
+			document.getElementById('create_container').style.display='block';
+			document.getElementById('add_mission').type='button';
+		});
 	}
 	function leave_group(){
 		$("#leave_group_confirmation").dialog({
@@ -74,8 +76,8 @@
 					$(this).dialog('close');
 					document.getElementById('leave_group').style.display='none';
 					document.getElementById('join_group').style.display='block';
+					document.getElementById('create_container').style.display='none';
 					document.getElementById('add_mission').type='hidden';
-					document.getElementById('create_discussion').type='hidden';
 				}
 			}
 		});

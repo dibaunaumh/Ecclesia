@@ -232,10 +232,10 @@ var VUC = new VUController(config);
 
 <div id="ui_container">
 <div id="buttons_container">
-{% if user_in_group %}
-    <input id="create" class="ui-button ui-state-default ui-corner-all" type="button" value="{% trans 'Create Discussion' %}"/><br clear="all"/>
-{% endif %}
-	<input type="button" value="{% trans 'Discussions List' %}" onclick="document.location.href='/discussions_list/{{group.slug}}/'"/>
+<div id="create_container" {% if user_in_group %}style="display:block"{% else %}style="display:none"{% endif %}>
+	<input id="create" class="ui-button ui-state-default ui-corner-all" type="button" value="{% trans 'Create Discussion' %}"/><br clear="all"/>
+</div>
+<input type="button" value="{% trans 'Discussions List' %}" onclick="document.location.href='/discussions_list/{{group.slug}}/'"/>
 </div>
 
 <hr/>
