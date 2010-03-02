@@ -1,7 +1,6 @@
-﻿from django.shortcuts import get_object_or_404, render_to_response
+from django.shortcuts import get_object_or_404, render_to_response
 from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.contrib.auth.decorators import login_required
-from django.core import serializers
 from groups.models import *
 from discussions.models import *
 from discussions.forms import DiscussionForm
@@ -33,26 +32,6 @@ def home(request):
         group_form.fields[key].widget.attrs["class"] = 'text ui-widget-content ui-corner-all'
     return render_to_response('home.html', locals())
 
-def get_groups_view_json(request):
-    groups = GroupProfile.objects.all()
-    json = ',';
-    for group in groups:
-        json = '%s{"group":{"id":%s,"url":"%s","name":"%s","dimensions":{"x":%s,"y":%s,"w":%s,"h":%s}}},' % (json, group.id, group.get_absolute_url(), group.group.name, group.x, group.y, group.w, group.h)
-    #json_serializer = serializers.get_serializer("json")()
-    #json_serializer.serialize(groups, ensure_ascii=False, stream=response, fields=('x', 'y', 'w', 'h'))
-    json = json.strip(',')
-    return HttpResponse('[%s]' % json)
-
-def get_discussions_view_json(request):
-    discussions = Discussion.objects.all()
-    json = ',';
-    for discussion in discussions:
-        json = '%s{"discussion":{"id":%s,"url":"%s","name":"%s","dimensions":{"x":%s,"y":%s,"w":%s,"h":%s}}},' % (json, discussion.id, discussion.get_absolute_url(), discussion.name, discussion.x, discussion.y, discussion.w, discussion.h)
-    #json_serializer = serializers.get_serializer("json")()
-    #json_serializer.serialize(groups, ensure_ascii=False, stream=response, fields=('x', 'y', 'w', 'h'))
-    json = json.strip(',')
-    return HttpResponse('[%s]' % json)
-	
 def save_group_from_form(group_form, user):
     if Group.objects.filter(name=group_form.cleaned_data['slug']):
         group = Group.objects.filter(name=group_form.cleaned_data['slug'])[0]
@@ -158,6 +137,21 @@ def members_list(request, group_slug):
     members = group.get_group_members()
     (my_items, get_parameters, f) = search_filter_paginate('member', members, request)
     return render_to_response('members_list.html', locals())
+
+def update_coords(request):
+    """
+    Update groups x and y positions on the featured view
+    """
+    groups = GroupProfile.objects.all()
+    msg = "Coordinates updated successfully."
+    for group in groups:
+        pos_x = 'x_%s' % group.id
+        pos_y = 'y_%s' % group.id
+        group.x_pos = int(request.POST.get(pos_x, group.x_pos))
+        group.y_pos = int(request.POST.get(pos_y, group.y_pos))
+        group.save()
+
+    return HttpResponse(msg)
 
 def user_home(request, user_name):
     """

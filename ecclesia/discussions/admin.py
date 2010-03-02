@@ -1,4 +1,4 @@
-﻿from models import *
+from models import *
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as __unicode__
 from django.utils.translation import gettext_lazy as _
@@ -22,22 +22,22 @@ class SpeechActAdmin(admin.ModelAdmin):
     ordering = ('name',)
 	
 class StoryAdmin(admin.ModelAdmin):
-    list_display = ('title', 'slug', 'speech_act', 'discussion', 'created_by', 'created_at', 'updated_at', 'content')
+    list_display = ('name', 'slug', 'speech_act', 'discussion', 'created_by', 'created_at', 'updated_at', 'content')
     list_filter = ('discussion', 'speech_act', 'created_at', 'created_by')
-    search_fields = ('title', 'content', 'slug')
-    ordering = ('title', 'discussion', 'speech_act', 'slug', 'created_at', 'updated_at')
+    search_fields = ('name', 'content', 'slug')
+    ordering = ('name', 'discussion', 'speech_act', 'slug', 'created_at', 'updated_at')
 	
 class StoryRelationAdmin(admin.ModelAdmin):
-    list_display = ('from_story', 'to_story', 'title', 'slug', 'speech_act', 'discussion', 'created_by', 'created_at', 'updated_at', 'content')
+    list_display = ('from_story', 'to_story', 'name', 'slug', 'speech_act', 'discussion', 'created_by', 'created_at', 'updated_at', 'content')
     list_filter = ('from_story', 'to_story', 'discussion', 'speech_act', 'created_at', 'created_by')
-    search_fields = ('from_story', 'to_story', 'title', 'content', 'slug')
-    ordering = ('from_story', 'to_story', 'title', 'discussion', 'speech_act', 'slug', 'created_at', 'updated_at')
+    search_fields = ('from_story', 'to_story', 'name', 'content', 'slug')
+    ordering = ('from_story', 'to_story', 'name', 'discussion', 'speech_act', 'slug', 'created_at', 'updated_at')
 
 class OpinionAdmin(admin.ModelAdmin):
-    list_display = ('parent_story', 'title', 'slug', 'speech_act', 'discussion', 'created_by', 'created_at', 'updated_at', 'content')
+    list_display = ('parent_story', 'name', 'slug', 'speech_act', 'discussion', 'created_by', 'created_at', 'updated_at', 'content')
     list_filter = ('parent_story', 'discussion', 'speech_act', 'created_at', 'created_by')
-    search_fields = ('parent_story', 'title', 'content', 'slug')
-    ordering = ('parent_story', 'title', 'discussion', 'speech_act', 'slug', 'created_at', 'updated_at')
+    search_fields = ('parent_story', 'name', 'content', 'slug')
+    ordering = ('parent_story', 'name', 'discussion', 'speech_act', 'slug', 'created_at', 'updated_at')
 	
 admin.site.register(Story, StoryAdmin)
 admin.site.register(StoryRelation, StoryRelationAdmin)
