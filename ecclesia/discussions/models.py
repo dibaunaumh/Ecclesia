@@ -58,25 +58,33 @@ class Discussion(Presentable):
 
 
 class SpeechAct(models.Model):
-    name = models.CharField(_('name'), max_length=50, unique=True, blank=False, help_text=_('The name of the speech act.'))
+    name = models.SlugField(_('name'), max_length=50, unique=True, blank=False, help_text=_('The name of the speech act.'))
+    discussion_type = models.ForeignKey(DiscussionType, verbose_name=_('discussion type'), related_name='speech_acts', help_text=_('The type of discussion that allows this speech act.'))
+    story_type = models.IntegerField(_('story type'), default=1, choices=((1,_('story')),(2,_('opinion')),(3,_('relation'))))
 
     def __unicode__(self):
         return self.name
 
 
-class Story(Presentable):
+class BaseStory(Presentable):
+    title = models.CharField(_('title'), max_length=50, blank=False, help_text=_('A title for story.'))
+    slug = models.SlugField(_('slug'), max_length=50, unique=True, blank=False, help_text=_("The url representation of the story's title. No whitespaces allowed - use hyphen/underscore to separate words"))
+    content = models.TextField(_('content'), help_text=_("The user content"))
+    created_at = models.DateTimeField(_('created at'), auto_now_add=True, help_text=_('When the speech act was made.'))
+    updated_at = models.DateTimeField(_('updated at'), auto_now=True, help_text=_('When the speech act was last updated.'))
+    created_by = models.ForeignKey(User, verbose_name=_('created by'), null=False, blank=False, help_text=_('The user that made the speech act.'))
+	
+    class Meta:
+        abstract = True
+
+		
+class Story(BaseStory):
     """
     A user story attached to a discussion
     """
-    discussion = models.ForeignKey(Discussion, editable=False, related_name='stories', verbose_name=_('discussion'), null=False, blank=False, help_text=_('The discussion this story is a part of.'))
-    name = models.SlugField(_('name'), max_length=50, help_text=_('The name of the story.'))
-    slug = models.CharField(_('slug'), max_length=50, unique=True, blank=False, help_text=_("The url representation of the story's name. No whitespaces allowed - use hyphen/underscore to separate words"))
-    content = models.TextField(_('content'), help_text=_("The user content"))
-    speech_act = models.ForeignKey(SpeechAct, related_name='objects', verbose_name=_('speech act'), null=False, blank=False, help_text=_("Which speech act this story represents."))
-    created_by = models.ForeignKey(User, editable=False, verbose_name=_('created by'), null=False, blank=False, help_text=_('The user that made the speech act.'))
-    created_at = models.DateTimeField(_('created at'), auto_now_add=True, help_text=_('When the speech act was made.'))
-    updated_at = models.DateTimeField(_('updated at'), auto_now=True, help_text=_('When the speech act was last updated.'))
-
+    discussion = models.ForeignKey(Discussion, related_name='stories', verbose_name=_('discussion'), null=False, blank=False, help_text=_('The discussion this story is a part of.'))
+    speech_act = models.ForeignKey(SpeechAct, related_name='stories', verbose_name=_('speech act'), null=False, blank=False, help_text=_("Which speech act this story represents."))
+	
     # Generic foreign key machinery follows
     # content_type = models.ForeignKey(ContentType)
     # object_id = models.PositiveIntegerField()
@@ -86,20 +94,53 @@ class Story(Presentable):
         verbose_name = _('story')
         verbose_name_plural = _('stories')
 
+    def unique_id(self):
+        return "%s_%d" % ('story', self.id)
+		
     def get_absolute_url(self):
-        return urlresolvers.reverse('admin:discussion_story_change', args=(self.id,))
+        return "http://%s/story/%s/" % (get_domain(), self.slug)
 
     def __unicode__(self):
-        return _("%(user)s's %(speechact)s (#%(id)s)") % {'user':self.created_by.get_full_name(), 'speechact':self.get_speech_act_display(), 'id':self.id}
+        return _("%(user)s's %(speechact)s (#%(id)s)") % {'user':self.created_by.get_full_name(), 'speechact':self.speech_act.name, 'id':self.id}
 
     def name_with_link(self):
         return _('<a href="%(url)s">%(user)s\'s %(speechact)s (#%(id)s)</a>') % {'user':self.created_by.get_full_name(), 'speechact':self.get_speech_act_display(), 'id':self.id, 'url':self.get_absolute_url()}
 
 
-class StoryRelation(Story):
+class StoryRelation(BaseStory):
+    discussion = models.ForeignKey(Discussion, related_name='relations', verbose_name=_('discussion'), null=False, blank=False, help_text=_('The discussion this story is a part of.'))
+    speech_act = models.ForeignKey(SpeechAct, related_name='relations', verbose_name=_('speech act'), null=False, blank=False, help_text=_("Which speech act this story represents."))
     from_story = models.ForeignKey(Story, related_name='from_relation', verbose_name=_('from_relation'), null=False, blank=False, help_text=_('The story this story relation flows from.'))
     to_story = models.ForeignKey(Story, related_name='to_relation', verbose_name=_('to_relation'), null=False, blank=False, help_text=_('The story this story relation directs to.'))
 
+    class Meta:
+        verbose_name = _('story relation')
+        verbose_name_plural = _('story relations')
 
-class Opinion(Story):
+    def unique_id(self):
+        return "%s_%d" % ('relation', self.id)
+		
+    def get_absolute_url(self):
+        return "http://%s/story_relation/%s/" % (get_domain(), self.slug)
+
+    def __unicode__(self):
+        return self.title
+
+
+class Opinion(BaseStory):
+    discussion = models.ForeignKey(Discussion, related_name='opinions', verbose_name=_('discussion'), null=False, blank=False, help_text=_('The discussion this story is a part of.'))
+    speech_act = models.ForeignKey(SpeechAct, related_name='opinions', verbose_name=_('speech act'), null=False, blank=False, help_text=_("Which speech act this story represents."))
     parent_story = models.ForeignKey(Story, related_name='opinions', verbose_name=_('parent story'), null=False, blank=False, help_text=_('The parent story containing this opinion.'))
+
+    class Meta:
+        verbose_name = _('opinion')
+        verbose_name_plural = _('opinions')
+
+    def unique_id(self):
+        return "%s_%d" % ('opinion', self.id)
+		
+    def get_absolute_url(self):
+        return "http://%s/opinion/%s/" % (get_domain(), self.slug)
+
+    def __unicode__(self):
+        return self.title

@@ -44,7 +44,7 @@ Group.prototype = {
 	},
 	addToDOM	: function (container) {
 		var c = this.config;
-		$('#'+container).append('<div class="'+c.alias+'" id="'+c.alias+'_'+c.id+'"><a href="'+c.url+'">'+c.name+'</a></div>');
+		$('#'+container).append('<div class="'+c.alias+'" id="'+c.alias+'_'+c.id+'"><a href="'+c.url+'" class="'+c.alias+'_title">'+c.name+'</a></div>');
 	},
 	position	: function () {
 		var c = this.config;
@@ -83,7 +83,7 @@ Discussion.prototype = {
 	},
 	addToDOM	: function (container) {
 		var c = this.config;
-		$('#'+container).append('<div class="'+c.alias+'" id="'+c.alias+'_'+c.id+'"><a href="'+c.url+'">'+c.name+'</a></div>');
+		$('#'+container).append('<div class="'+c.alias+'" id="'+c.alias+'_'+c.id+'"><a href="'+c.url+'" class="'+c.alias+'_title">'+c.name+'</a></div>');
 	},
 	position	: function () {
 		var c = this.config;
@@ -140,7 +140,7 @@ Story.prototype = {
     },
 	addToDOM	: function () {
 		var c = this.config;
-		$('#'+c.type+'_container').append('<div class="'+c.alias+'" id="'+c.alias+'_'+c.id+'"><a href="'+c.url+'">'+c.name+'</a></div>');
+		$('#'+c.type+'_container').append('<div class="'+c.alias+'" id="'+c.alias+'_'+c.id+'"><a href="'+c.url+'" class="'+c.alias+'_title">'+c.name+'</a></div>');
 	},
 	position	: function () {
 		var c = this.config;
@@ -188,7 +188,7 @@ Relation.prototype = {
     },
 	addToDOM	: function () {
 		var c = this.config;
-		$('#'+c.type+'_container').append('<div class="'+c.alias+'" id="'+c.alias+'_'+c.id+'"><a href="'+c.url+'">'+c.name+'</a></div>');
+		$('#'+c.type+'_container').append('<div class="'+c.alias+'" id="'+c.alias+'_'+c.id+'"><a href="'+c.url+'" class="'+c.alias+'_title">'+c.name+'</a></div>');
 	},
 	draw		: function (ctx) {
 		// get the dimensions of the from and to elements
@@ -209,7 +209,9 @@ Opinion = function (node_class, config) {
 		model_name	: 'Opinion',
 		type		: 'for',
 		parent_id	: -1,
-		parent		: {}
+		parent		: {},
+		container_id: '',
+		added		: false
 	};
 	// inheriting Node class
 	var dummy = $.extend(true, node_class, this);
@@ -223,16 +225,26 @@ Opinion.prototype = {
 	},
 	addToDOM	: function () {
 		var c = this.config;
-		var container = c.parent.config.alias+'_'+c.parent.config.id;
-		$('#'+container).append('<div class="'+c.alias+' '+c.type+'_opinion" id="'+c.alias+'_'+c.id+'"><a href="'+c.url+'">'+c.name+'</a></div>');
+		$('#'+c.container_id).append('<div class="'+c.alias+'" id="'+c.alias+'_'+c.id+'"></div>');
 	},
-	position	: function () {
-		if(this.parent.config) {
-			var parent_dims = this.parent.config.dimensions;
+	container	: function () {
+		if(this.config.parent.config) {
+			var c = this.config;
+			var pc = c.parent.config;
+			c.container_id = pc.alias+'_'+pc.id+'_'+c.type;
+			// try getting the container from the DOM
+			var id_selector = '#'+c.container_id;
+			var container = $(id_selector);
+			// check if it exists and return it if it does
+			if(container.length) { return this; }
+			// if it doesn't we create it
+			$('#'+pc.alias+'_'+pc.id).append('<div class="'+c.type+'_opinions" id="'+c.container_id+'"><a href="#"></a></div>');
+			// position the container and set its style
+			var parent_dims = pc.dimensions;
 			var margin = 3;
 			var opn_edge = 30;
 			var x,y;
-			switch(this.config.type) {
+			switch(c.type) {
 				case 'for': {
 					x = parent_dims.w + margin;
 					y = parent_dims.h/2 - opn_edge/2;
@@ -250,13 +262,22 @@ Opinion.prototype = {
 					y = parent_dims.h + margin;
 				} break;
 			}
-			var id_selector = '#'+this.config.alias+'_'+this.config.id;
 			$(id_selector).css('left', x+'px');
 			$(id_selector).css('top', y+'px');
+			return this;
+		} else {
+			throw new Error('No parent element is set for: '+c.id);
 		}
 	},
+	position	: function () {},
 	draw		: function () {
-		
+		if(!this.config.added) {
+			var opns = parseInt($('a','#'+this.config.container_id).text());
+			if(!opns) { opns = 1; }
+				 else { opns += 1; }
+			$('a', '#'+this.config.container_id).text(opns);
+			this.config.added = true;
+		}
 	}
 };
 
@@ -267,7 +288,8 @@ VUController = function (options) {
 		container_id: 'canvasContainer',
 		canvas_id	: 'groupsvu',
 		data_url	: '/get_groups_view_json/',
-		update_url	: '/common/update_presentation/'
+		update_url	: '/common/update_presentation/',
+		meta_url	: ''
 	};
 	if(options !== null) {
 		$.extend(this.options, options);
@@ -459,34 +481,45 @@ VUController.prototype = {
  */
 DiscussionController = function (VuController, options) {
 	this.options = {};
-	if(options != null) {
-		$.extend(this.options, options);
-	}
 	// inheriting Node class
 	var dummy = $.extend(true, VuController, this);
 	$.extend(true, this, dummy);
+	// set the options
+	if(options != null) {
+		$.extend(this.options, options);
+	}
 };
 DiscussionController.prototype = {
-	createSpeechActContainers	: function () {
-		$('#'+this.options.container_id).append('<div id="course_of_action_container" class="stories_container"></div><div id="possible_result_container" class="stories_container"></div><div id="goal_condition_container" class="stories_container"></div><div id="goal_container" class="stories_container"></div>');
-		$('#'+this.options.container_id).css('position', 'relative');
-		$('.stories_container').height(this.options.height);
-		$('.stories_container').width(this.options.width * 0.25);
+	getVisualizationMetaData: function () {
+		$.ajax({
+			url		: this.options.meta_url,
+			dataType: 'json',
+			async	: false,
+			success	: function (data) {
+				$('#'+this.options.container_id).append('<div id="course_of_action_container" class="stories_container"></div><div id="possible_result_container" class="stories_container"></div><div id="goal_condition_container" class="stories_container"></div><div id="goal_container" class="stories_container"></div>');
+				$('#'+this.options.container_id).css('position', 'relative');
+				$('.stories_container').height(this.options.height);
+				$('.stories_container').width(this.options.width * 0.25);
+			}
+		});
 	},
-	initCanvas			: function () {
+	initCanvas				: function () {
 		var o = this.options;
 		$('#'+o.container_id).empty();
 		$('#'+o.container_id).append('<canvas id="'+o.canvas_id+'" width="'+o.width+'" height="'+o.height+'"></canvas>');
-		this.createSpeechActContainers();
+		this.speechActContainers();
 		this.ctx = document.getElementById(o.canvas_id).getContext('2d');
 		return (this.ctx !== null);
 	},
-	addElement			: function (el) {
+	addElement				: function (el) {
 		// add an element to the DOM
 		if(el) {
-			if(el instanceof Opinion) {	container = config.parent.config.alias+'_'+config.parent.config.id;	}
-								 else {	container = config.type+'_container'; }
-			el.addToDOM();
+			if(el instanceof Opinion) {	
+				el.container().addToDOM();
+			} else {
+				el.addToDOM();
+			}
+			
 		}
 		// add all elements to the DOM
 		else {
@@ -496,7 +529,7 @@ DiscussionController.prototype = {
 			});
 		}
 	},
-	drawText			: function (text,x,y,maxWidth,rotation) {
+	drawText				: function (text,x,y,maxWidth,rotation) {
     // if text is short enough - put it in 1 line. if not, search for the middle space, and split it there (only splits to 2 lines).
         this.ctx.translate(x,y);
         this.ctx.save();
