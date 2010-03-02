@@ -1,9 +1,11 @@
-from django.conf.urls.defaults import *
+﻿from django.conf.urls.defaults import *
 
 urlpatterns = patterns('',
     (r'^group/is_in_group/$', 'groups.views.is_in_group'),
     (r'^group/join_group/$', 'groups.views.join_group'),
     (r'^group/leave_group/$', 'groups.views.leave_group'),
+    (r'^get_groups_view_json/$', 'groups.views.get_groups_view_json'),
+    (r'^get_discussions_view_json/$', 'groups.views.get_discussions_view_json'),
     (r'^group/(?P<group_slug>.*)/$', 'groups.views.group_home'),
     (r'^discussions_list/(?P<group_slug>.*)/$', 'discussions.views.discussions_list'),
     (r'^discussion-delete/(?P<discussion_pk>\w+)/$', 'discussions.views.delete_discussion'),
