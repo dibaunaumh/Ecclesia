@@ -52,7 +52,7 @@ def get_discussions_view_json(request):
     #json_serializer.serialize(groups, ensure_ascii=False, stream=response, fields=('x', 'y', 'w', 'h'))
     json = json.strip(',')
     return HttpResponse('[%s]' % json)
-	
+
 def save_group_from_form(group_form, user):
     if Group.objects.filter(name=group_form.cleaned_data['slug']):
         group = Group.objects.filter(name=group_form.cleaned_data['slug'])[0]
