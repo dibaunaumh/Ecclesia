@@ -16,7 +16,7 @@ class StoryForm(forms.ModelForm):
 
     class Meta:
         model = Story
-        exclude = ('x_pos', 'y_pos', 'width', 'height')
+        exclude = ('x_pos', 'y_pos', 'width', 'height', 'created_by', 'discussion')
 
 def get_story_form_for_object(object):
     content_type = ContentType.objects.get_for_model(object).id
