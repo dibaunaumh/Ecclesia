@@ -236,32 +236,32 @@ Opinion.prototype = {
 			// check if it exists and return it if it does
 			if(container.length) { return this; }
 			// if it doesn't we create it
-			$('#'+pc.alias+'_'+pc.id).append('<div class="'+c.type+'_opinions" id="'+c.container_id+'"><a href="#"></a></div>');
+			$('#'+pc.alias+'_'+pc.id).append('<div class="opinions '+c.type+'_opinions" id="'+c.container_id+'"><a href="#"></a></div>');
 			// position the container and set its style
 			var parent_dims = pc.dimensions;
 			var margin = 3;
-			var opn_edge = 30;
+			var opn_edge = 20;
 			var x,y;
 			switch(c.type) {
 				case 'for': {
-					x = parent_dims.w + margin;
-					y = parent_dims.h/2 - opn_edge/2;
+					x = parent_dims.w - opn_edge;
+					y = - (opn_edge);
 				} break;
 				case 'against': {
-					x = -margin - opn_edge;
-					y = parent_dims.h/2 - opn_edge/2;
+					x = parent_dims.w - opn_edge*2 -2; //adding 2 for borders
+					y = - (opn_edge);
 				} break;
 				case 'true': {
-					x = parent_dims.w/2 - opn_edge/2;
-					y = -margin - opn_edge;
+					x = parent_dims.w - opn_edge*3 -4;
+					y = - (opn_edge);
 				} break;
 				case 'false': {
-					x = parent_dims.w/2 - opn_edge/2;
-					y = parent_dims.h + margin;
+					x = parent_dims.w - opn_edge*4 -6;
+					y = - (opn_edge);
 				} break;
 			}
-			$(id_selector).css('left', x+'px');
-			$(id_selector).css('top', y+'px');
+			$(id_selector).css('left', x+'px')
+			              .css('top', y+'px');
 			return this;
 		} else {
 			throw new Error('No parent element is set for: '+c.id);
@@ -269,8 +269,8 @@ Opinion.prototype = {
 	},
 	position	: function () {},
 	draw		: function () {
-		if(!this.config.added) {
-			var opns = parseInt($('a','#'+this.config.container_id).text());
+        if(!this.config.added) {
+			var opns = parseInt($('a', '#'+this.config.container_id).text());
 			if(!opns) { opns = 1; }
 				 else { opns += 1; }
 			$('a', '#'+this.config.container_id).text(opns);

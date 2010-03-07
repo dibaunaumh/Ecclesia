@@ -14,14 +14,12 @@
         #goal_container{background-color: #cf9}
         #possible_result_container{background-color: #ccf}
         div.relation {visibility:hidden}
+        div.opinion { visibility:hidden }
 
         .stories_container{float: left}
         div.story {position: absolute; width: 150px; height: 100px; margin: 0; padding: 0; font-size: 12pt; font-weight: bold; cursor: move}
         div.story a.story_title {display: block; float: left; padding: 10px; color: #000}
         div.story a.story_title:hover {color: #033; text-decoration: underline}
-
-        div.opinion { position: absolute; width: 30px; height: 30px }
-        div.opinion a.opinion_title { display: block; float: left; padding: 0; color: #000 }
 
         .dragon { border: thin solid #033;opacity:.6; -moz-opacity:.6}
         .selecton { border: 2px solid #033 }
@@ -29,10 +27,15 @@
         a.member img {width: 50px; height: 50px; margin: 2px; border: 1px solid #933}
 
         /* Opinion Types */
-        .for_opinion { color: #0f0 }
-        .against_opinion { color: #f00 }
-        .true_opinion { color: #00f }
-        .false_opinion { color: #ff0 }
+        .opinions { position: absolute; width: 20px; height: 20px; border: 1px solid #000 }
+        .for_opinions { border-color: #0f0 }
+        .for_opinions a { float: right; color: #0f0 }
+        .against_opinions { border-color: #f00 }
+        .against_opinions a { float: right; color: #f00 }
+        .true_opinions { border-color: #00f }
+        .true_opinions a { float: right; color: #00f }
+        .false_opinions { border-color: #ff0 }
+        .false_opinions a { float: right; color: #ff0 }
     </style>
 {% endblock %}
 {% block extrahead %}
