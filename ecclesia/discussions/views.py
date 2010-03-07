@@ -7,6 +7,7 @@ from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django import forms
 from forms import *
 from services.search_filter_pagination import search_filter_paginate
+from django.core import serializers
 
 def visualize(request, discussion_slug):
     discussion = Discussion.objects.get(slug=discussion_slug)
@@ -46,14 +47,17 @@ def get_stories_view_json(request, discussion_slug):
     opinions = Opinion.objects.filter(discussion=discussion)
     for opinion in opinions:
         json = '%s{"opinion":{"id":%s,"url":"%s","name":"%s","type":"%s","parent_id":"%s"}},' % (json, opinion.id, opinion.get_absolute_url(), opinion.title, opinion.speech_act, opinion.parent_story.unique_id())
-    speech_acts = SpeechAct.objects.filter(discussion_type=discussion.type)
-    
-    json = '%s{"meta":{}},'
     #json_serializer = serializers.get_serializer("json")()
     #json_serializer.serialize(groups, ensure_ascii=False, stream=response, fields=('x', 'y', 'w', 'h'))
     json = json.strip(',')
     return HttpResponse('[%s]' % json)
-	
+
+def get_visualization_meta_data(request):
+    speech_acts = SpeechAct.objects.order_by('story_type','ordinal')
+    json_serializer = serializers.get_serializer("json")()
+    json = json_serializer.serialize(speech_acts, ensure_ascii=False)
+    return HttpResponse(json)
+
 def save_story_from_form(story_form, discussion, user):
     story = Story()
     story.discussion = discussion

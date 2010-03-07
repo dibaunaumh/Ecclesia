@@ -1,13 +1,11 @@
-﻿Node = function (config) {
+Node = function (config) {
 	this.config = {
 		dimensions	: {},
 		id			: -1,
 		url			: '',
 		name		: ''
 	};
-	if(config !== null) {
-		$.extend(true, this.config, config);
-	}
+	$.extend(true, this.config, config || {});
 };
 Node.prototype = {
 	toString	: function () {
@@ -35,7 +33,7 @@ Group = function (node_class, config) {
 	var dummy = $.extend(true, node_class, this);
 	$.extend(true, this, dummy);
 	// reconfig
-	$.extend(this.config, config);
+	$.extend(this.config, config || {});
 	this.loadImage();
 };
 Group.prototype = {
@@ -74,7 +72,7 @@ Discussion = function (node_class, config) {
 	var dummy = $.extend(true, node_class, this);
 	$.extend(true, this, dummy);
 	// reconfig
-	$.extend(this.config, config);
+	$.extend(this.config, config || {});
 	this.loadImage();
 };
 Discussion.prototype = {
@@ -111,7 +109,7 @@ Story = function (node_class, config) {
 	var dummy = $.extend(true, node_class, this);
 	$.extend(true, this, dummy);
 	// reconfig
-	$.extend(this.config, config);
+	$.extend(this.config, config || {});
 };
 Story.prototype = {
 	serialize	: function () {
@@ -166,7 +164,7 @@ Relation = function (node_class, config) {
 	var dummy = $.extend(true, node_class, this);
 	$.extend(true, this, dummy);
 	// reconfig
-	$.extend(this.config, config);
+	$.extend(this.config, config || {});
 };
 Relation.prototype = {
 	serialize	: function () {
@@ -186,9 +184,9 @@ Relation.prototype = {
 		//drawText(label,(x1+x2)/2, (y1+y2)/2, x2-x1,Math.atan2(y2-y1,x2-x1));
 		ctx.restore();
     },
-	addToDOM	: function () {
+	addToDOM	: function (container) {
 		var c = this.config;
-		$('#'+c.type+'_container').append('<div class="'+c.alias+'" id="'+c.alias+'_'+c.id+'"><a href="'+c.url+'" class="'+c.alias+'_title">'+c.name+'</a></div>');
+		$('#'+container).append('<div class="'+c.alias+'" id="'+c.alias+'_'+c.id+'"><a href="'+c.url+'" class="'+c.alias+'_title">'+c.name+'</a></div>');
 	},
 	draw		: function (ctx) {
 		// get the dimensions of the from and to elements
@@ -217,7 +215,7 @@ Opinion = function (node_class, config) {
 	var dummy = $.extend(true, node_class, this);
 	$.extend(true, this, dummy);
 	// reconfig
-	$.extend(this.config, config);
+	$.extend(this.config, config || {});
 };
 Opinion.prototype = {
 	serialize	: function () {
@@ -291,27 +289,14 @@ VUController = function (options) {
 		update_url	: '/common/update_presentation/',
 		meta_url	: ''
 	};
-	if(options !== null) {
-		$.extend(this.options, options);
-	}
+	$.extend(this.options, options || {});
 	
 	this.data = {};
 	this.elems = {};
 	this.drag = {};
 	this.ctx = null;
-	
-	this.getData();
 };
 VUController.prototype = {
-	getData				: function () {
-		var this_ = this;
-		// expecting format: [ { element_alias : { element_config_object }, ... ]
-		$.getJSON(this.options.data_url, function (data){
-			this_.data = data;
-			// initialize the view controller
-			this_.init();
-		});
-	},
 	setElementsRelations: function () {
 		var this_ = this;
 		$.each(this.elems, function (key, el) {
@@ -405,25 +390,39 @@ VUController.prototype = {
 			});
 		}
 	},
-	init				: function () {
-		// create the elements
-		this.createNodes();
-		// initialize the canvas
-		if(this.initCanvas()) {
-			var this_ = this;
-			// iterate over the elements and create the GUI
-			$.each(this.elems, function (id, el) {
-				// appending a div for each element to the canvas container
-				this_.addElement(el);
-				// position the element inside the container
-				this_.position(el);
-				// set it as draggable
-				this_.setDraggable(el);
-			});
-			// we have initialized the canvas so draw the element
-			this.draw();
+	getData				: function () {
+		var this_ = this;
+		// expecting format: [ { element_alias : { element_config_object }, ... ]
+		$.getJSON(this.options.data_url, function (data){
+			this_.data = data;
+			// initialize the view controller
+			this_.init(true);
+		});
+	},
+	init				: function (loaded) {
+		if(!loaded) {
+			// get the data
+			this.getData();
 		} else {
-			alert('No canvas context.');
+			// create the elements
+			this.createNodes();
+			// initialize the canvas
+			if(this.initCanvas()) {
+				var this_ = this;
+				// iterate over the elements and create the GUI
+				$.each(this.elems, function (id, el) {
+					// appending a div for each element to the canvas container
+					this_.addElement(el);
+					// position the element inside the container
+					this_.position(el);
+					// set it as draggable
+					this_.setDraggable(el);
+				});
+				// we have initialized the canvas so draw the element
+				this.draw();
+			} else {
+				alert('No canvas context.');
+			}
 		}
 	},
 	position			: function (el) {
@@ -485,41 +484,63 @@ DiscussionController = function (VuController, options) {
 	var dummy = $.extend(true, VuController, this);
 	$.extend(true, this, dummy);
 	// set the options
-	if(options != null) {
-		$.extend(this.options, options);
-	}
+	$.extend(this.options, options || {});
+
+    this.metaData = {};
 };
 DiscussionController.prototype = {
-	getVisualizationMetaData: function () {
-		$.ajax({
-			url		: this.options.meta_url,
-			dataType: 'json',
-			async	: false,
-			success	: function (data) {
-				$('#'+this.options.container_id).append('<div id="course_of_action_container" class="stories_container"></div><div id="possible_result_container" class="stories_container"></div><div id="goal_condition_container" class="stories_container"></div><div id="goal_container" class="stories_container"></div>');
-				$('#'+this.options.container_id).css('position', 'relative');
-				$('.stories_container').height(this.options.height);
-				$('.stories_container').width(this.options.width * 0.25);
-			}
+    getData				: function () {
+		var this_ = this;
+		// expecting format: [ { element_alias : { element_config_object }, ... ]
+		$.getJSON(this.options.data_url, function (data){
+			this_.data = data;
+			// get the Visualization's meta data
+			this_.getVisualizationMetaData();
 		});
 	},
-	initCanvas				: function () {
+	getVisualizationMetaData: function () {
+		var this_ = this;
+		$.getJSON(this.options.meta_url, function (json) {
+            // apply the received data
+            this_.metaData = json;
+            // initialize the view controller
+            this_.init(true);
+		});
+	},
+    initVisualization   : function () {
+        var this_ = this;
+        // setting the speech act containers
+        $.each(this.metaData, function (i, item) {
+            switch(item.fields.story_type) {
+                case 1: { // story
+                    $('#'+this_.options.container_id).append('<div id="'+item.fields.name+'_container" class="stories_container"></div>');
+                } break;
+                case 2: { // opinion
+                } break;
+                case 3: { // relation
+                } break;
+            }
+        });
+        // set some style options
+        //$('#'+this_.options.container_id).css('position', 'relative');
+        $('.stories_container').height(this_.options.height)
+                               .width(this_.options.width * 0.25);
+    },
+	initCanvas			: function () {
 		var o = this.options;
-		$('#'+o.container_id).empty();
-		$('#'+o.container_id).append('<canvas id="'+o.canvas_id+'" width="'+o.width+'" height="'+o.height+'"></canvas>');
-		this.speechActContainers();
+		$('#'+o.container_id).empty()
+                             .append('<canvas id="'+o.canvas_id+'" width="'+o.width+'" height="'+o.height+'"></canvas>');
 		this.ctx = document.getElementById(o.canvas_id).getContext('2d');
+        if(this.metaData.length != 0) {
+            this.initVisualization();
+        }
 		return (this.ctx !== null);
 	},
-	addElement				: function (el) {
+	addElement			: function (el) {
 		// add an element to the DOM
 		if(el) {
-			if(el instanceof Opinion) {	
-				el.container().addToDOM();
-			} else {
-				el.addToDOM();
-			}
-			
+			if(el instanceof Opinion) { el.container().addToDOM(); }
+								 else { el.addToDOM(this.options.container_id); }
 		}
 		// add all elements to the DOM
 		else {
@@ -529,7 +550,7 @@ DiscussionController.prototype = {
 			});
 		}
 	},
-	drawText				: function (text,x,y,maxWidth,rotation) {
+	drawText			: function (text,x,y,maxWidth,rotation) {
     // if text is short enough - put it in 1 line. if not, search for the middle space, and split it there (only splits to 2 lines).
         this.ctx.translate(x,y);
         this.ctx.save();
