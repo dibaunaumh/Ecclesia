@@ -22,10 +22,10 @@ a.member img {width: 50px; height: 50px; margin: 2px; border: 1px solid #933}
 
 /* Opinion Types */
 .opinions { position: absolute; width: 20px; height: 20px; border: 1px solid #000 }
-.for_opinions { border-color: #0f0 }
-.for_opinions a { float: right; color: #0f0 }
-.against_opinions { border-color: #f00 }
-.against_opinions a { float: right; color: #f00 }
+.good_opinions { border-color: #0f0 }
+.good_opinions a { float: right; color: #0f0 }
+.bad_opinions { border-color: #f00 }
+.bad_opinions a { float: right; color: #f00 }
 .true_opinions { border-color: #00f }
 .true_opinions a { float: right; color: #00f }
 .false_opinions { border-color: #ff0 }
