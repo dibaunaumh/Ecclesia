@@ -243,11 +243,11 @@ Opinion.prototype = {
 			var opn_edge = 20;
 			var x,y;
 			switch(c.type) {
-				case 'for': {
+				case 'good': {
 					x = parent_dims.w - opn_edge;
 					y = - (opn_edge);
 				} break;
-				case 'against': {
+				case 'bad': {
 					x = parent_dims.w - opn_edge*2 -2; //adding 2 for borders
 					y = - (opn_edge);
 				} break;

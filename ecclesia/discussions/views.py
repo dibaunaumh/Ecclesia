@@ -54,8 +54,7 @@ def get_stories_view_json(request, discussion_slug):
 
 def get_visualization_meta_data(request):
     speech_acts = SpeechAct.objects.order_by('story_type','ordinal')
-    json_serializer = serializers.get_serializer("json")()
-    json = json_serializer.serialize(speech_acts, ensure_ascii=False)
+    json = serializers.serialize('json', speech_acts, ensure_ascii=False)
     return HttpResponse(json)
 
 def save_story_from_form(story_form, discussion, user):

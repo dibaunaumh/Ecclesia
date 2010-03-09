@@ -5,38 +5,7 @@
 {% block title %}{{ discussion.name }}{{ discussion.type.name }}{% endblock %}
 {% block coltype %}diagram{% endblock %}
 {% block extrastyle %}
-    <style type="text/css">
-        #ui_container {float: left; width: 145px; padding-left: 15px}
-        #canvasContainer {position: relative; float: left; margin: 0; padding: 0}
-        #storysvu {position: absolute; left: 0; top: 0; margin: 0; padding: 0; border: thin solid #933}
-        #course_of_action_container{background-color: #cff}
-        #goal_condition_container{background-color: #ffc}
-        #goal_container{background-color: #cf9}
-        #possible_result_container{background-color: #ccf}
-        div.relation {visibility:hidden}
-        div.opinion { visibility:hidden }
-
-        .stories_container{float: left}
-        div.story {position: absolute; width: 150px; height: 100px; margin: 0; padding: 0; font-size: 12pt; font-weight: bold; cursor: move}
-        div.story a.story_title {display: block; float: left; padding: 10px; color: #000}
-        div.story a.story_title:hover {color: #033; text-decoration: underline}
-
-        .dragon { border: thin solid #033;opacity:.6; -moz-opacity:.6}
-        .selecton { border: 2px solid #033 }
-        img.story {width: 150px; height: 100px}
-        a.member img {width: 50px; height: 50px; margin: 2px; border: 1px solid #933}
-
-        /* Opinion Types */
-        .opinions { position: absolute; width: 20px; height: 20px; border: 1px solid #000 }
-        .for_opinions { border-color: #0f0 }
-        .for_opinions a { float: right; color: #0f0 }
-        .against_opinions { border-color: #f00 }
-        .against_opinions a { float: right; color: #f00 }
-        .true_opinions { border-color: #00f }
-        .true_opinions a { float: right; color: #00f }
-        .false_opinions { border-color: #ff0 }
-        .false_opinions a { float: right; color: #ff0 }
-    </style>
+    <link rel="stylesheet" type="text/css" href="/static/css/discussions.css" />
 {% endblock %}
 {% block extrahead %}
     <script type="text/javascript">
@@ -88,6 +57,7 @@
 </div>
 <br clear="both"/>
 <hr/>
+{% block story_input %}
 <form name="story-input">
 	<fieldset>
 		<input type="radio" name="story-class" id="story" value="story" /><label for="story">Story</label>
@@ -109,6 +79,7 @@
 	</fieldset>
 </form>
 <hr/>
+{% endblock %}
 <!--
 <h3>Current members</h3>
 <div id="members_container">
