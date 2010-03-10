@@ -44,7 +44,6 @@ def add_base_story(request):
         title = request.POST["title"]
         slug = slugify(title)
         user = request.user
-        print user
         speech_act = get_object_or_404(SpeechAct, pk=int(request.POST["speech_act"]))
         result = {
             '1': add_story,
