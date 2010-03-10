@@ -281,7 +281,7 @@ Opinion.prototype = {
 
 VUController = function (options) {
 	this.options = {
-		width		: 900,
+		width		: 958,
 		height		: 600,
 		container_id: 'canvasContainer',
 		canvas_id	: 'groupsvu',

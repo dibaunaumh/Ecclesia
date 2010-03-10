@@ -33,7 +33,7 @@ def visualize(request, discussion_slug):
     #adding beautiful css
     for key in story_form.fields:
         story_form.fields[key].widget.attrs["class"] = "text ui-widget-content ui-corner-all"
-    speech_acts = SpeechAct.objects.all()
+    speech_acts = SpeechAct.objects.filter(story_type=1) # 'story' as default
     return render_to_response('discussion_home.html', locals())
 
 def add_base_story(request):
@@ -107,6 +107,12 @@ def get_stories_view_json(request, discussion_slug):
 
 def get_visualization_meta_data(request):
     speech_acts = SpeechAct.objects.order_by('story_type','ordinal')
+    json = serializers.serialize('json', speech_acts, ensure_ascii=False)
+    return HttpResponse(json)
+
+def get_speech_acts_by_story_type(request):
+    story_type = request.GET.get('story_type', 1)
+    speech_acts = SpeechAct.objects.filter(story_type=story_type)
     json = serializers.serialize('json', speech_acts, ensure_ascii=False)
     return HttpResponse(json)
 

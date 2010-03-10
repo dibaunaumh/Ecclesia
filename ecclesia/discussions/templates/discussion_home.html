@@ -17,9 +17,30 @@
         var VUC = new VUController(config);
         var DC	= new DiscussionController(VUC, {});
         DC.init();
+        $(document).ready(function () {
+            $("input[name='story-class']").change(function () {
+                $.getJSON(
+                    '/discussions/get_speech_acts_by_story_type/',
+                    'story_type='+$(this).val(),
+                    function (response) {
+                        var html = '';
+                        $.each(response, function (i, item) {
+                            html += '<option value="'+item.pk+'">'+item.fields.name+'</option>';
+                        });
+                        $("select[name='speech_act']").html(html);
+                    }
+                );
+            });
+        });
     </script>
 {% endblock %}
 {% block content %}
+<div id="buttons_container">
+{% if user_in_group %}
+	<input id="create" class="ui-button ui-state-default ui-corner-all" type="button" value="{% trans 'Create Story' %}"/><br clear="all"/>
+{% endif %}
+	<input type="button" value="{% trans 'Stories List' %}" onclick="document.location.href='/stories_list/{{discussion.slug}}/'"/>
+</div>
 
 <h2>
     <div{% if user_in_group %} class="edit" id="discussion_{{ discussion.pk }}"{% endif %}>
@@ -38,45 +59,39 @@
 	{{ discussion.description }}
 </p>
 
-<hr/>
 <div class="container">
-<div id="canvasContainer"></div>
 <div id="create_dialog" style="display:none" title="Create new Story">
 	<form method="POST" action="" id="create_form">
 	{{ story_form.as_p }}
 	</form>
 </div>
 
-<div id="ui_container">
-<div id="buttons_container">
-{% if user_in_group %}
-    <input id="create" class="ui-button ui-state-default ui-corner-all" type="button" value="{% trans 'Create Story' %}"/><br clear="all"/>
-{% endif %}
-	<input type="button" value="{% trans 'Stories List' %}" onclick="document.location.href='/stories_list/{{discussion.slug}}/'"/>
-</div>
-</div>
-<br clear="both"/>
+<div id="canvasContainer"></div>
+
 <hr/>
 {% block story_input %}
 <form name="story-input" method="POST" action="/discussions/add_story/" target="_blank">
     <input type="hidden" name="discussion" value="{{ discussion.id }}">
-	<fieldset>
-		<input type="radio" name="story-class" id="story" value="story" /><label for="story">Story</label>
-		<input type="radio" name="story-class" id="relation" value="relation" /><label for="relation">Relation</label>
-		<input type="radio" name="story-class" id="opinion" value="opinion" /><label for="opinion">Opinion</label>
-	</fieldset>
-	<fieldset>
+	<div id="story-input-types">
+		<fieldset id="story-input-story-type">
+			<legend>Story type:</legend>
+			<input type="radio" name="story-class" id="story" value="1" checked="checked" /><label for="story">Story</label>
+			<input type="radio" name="story-class" id="relation" value="3" /><label for="relation">Relation</label>
+			<input type="radio" name="story-class" id="opinion" value="2" /><label for="opinion">Opinion</label>
+		</fieldset>
+		<fieldset id="story-input-speech-act">
+			<legend>Speech act:</legend>
+			<select name="speech_act">
+				{% for sa in speech_acts %}
+					<option value="{{ sa.pk }}">{{ sa.name }}</option>
+				{% endfor %}
+			</select>
+		</fieldset>
+	</div>
+	<fieldset id="story-input-title">
+		<legend>Title:</legend>
 		<textarea name="title"></textarea>
-	</fieldset>
-	<fieldset>
-		<select name="speech_act">
-			{% for sa in speech_acts %}
-				<option value="{{ sa.pk }}">{{ sa.name }}</option>
-			{% endfor %}
-		</select>
-	</fieldset>
-	<fieldset>
-		<input type="submit" value="{% trans 'Submit' %}"/>
+		<input type="submit" value="{% trans 'Submit' %}" id="story-input-submit"/>
 	</fieldset>
 </form>
 <hr/>

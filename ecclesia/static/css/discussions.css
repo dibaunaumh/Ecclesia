@@ -1,12 +1,16 @@
 #content{width:960px;margin:10px auto}
 
-#ui_container {float: left; width: 145px; padding-left: 15px}
+#buttons_container {float: right; padding-left: 15px}
 #canvasContainer {position: relative; float: left; margin: 0; padding: 0}
 #storysvu {position: absolute; left: 0; top: 0; margin: 0; padding: 0; border: thin solid #933}
 #course_of_action_container{background-color: #cff}
 #goal_condition_container{background-color: #ffc}
 #goal_container{background-color: #cf9}
 #possible_result_container{background-color: #ccf}
+#story-input-submit{position:absolute;right:0;bottom:0}
+#story-input-title{position:relative}
+#story-input-title textarea{width:700px;height:50px}
+#story-input-types{float:left}
 div.relation {display:none}
 div.opinion {display:none}
 
