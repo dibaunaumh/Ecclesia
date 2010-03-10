@@ -44,11 +44,12 @@ def add_base_story(request):
         title = request.POST["title"]
         slug = slugify(title)
         user = request.user
+        print user
         speech_act = get_object_or_404(SpeechAct, pk=int(request.POST["speech_act"]))
         result = {
-            "story": add_story,
-            "opinion": add_opinion,
-            "relation": add_relation,
+            '1': add_story,
+            '2': add_opinion,
+            '3': add_relation,
         }[story_type](request, discussion, user, title, slug, speech_act)
     else:
         result = HttpResponse("Wrong usage: HTTP POST expected")
