@@ -1,13 +1,14 @@
-from django.contrib.auth.models import Group, User
-from ecclesia.discussions.models import *
 from ecclesia.groups.models import GroupProfile, GroupPermission, MissionStatement
 from ecclesia.discussions.forms import StoryForm
-from django.shortcuts import render_to_response
+from ecclesia.discussions.models import Discussion,SpeechAct,Story,StoryRelation,Opinion
+from django.contrib.auth.models import Group, User
+from django.shortcuts import render_to_response,get_object_or_404
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django import forms
 from forms import *
 from services.search_filter_pagination import search_filter_paginate
 from django.core import serializers
+from django.template.defaultfilters import slugify
 
 def visualize(request, discussion_slug):
     discussion = Discussion.objects.get(slug=discussion_slug)
@@ -34,6 +35,58 @@ def visualize(request, discussion_slug):
         story_form.fields[key].widget.attrs["class"] = "text ui-widget-content ui-corner-all"
     speech_acts = SpeechAct.objects.all()
     return render_to_response('discussion_home.html', locals())
+
+def add_base_story(request):
+    #saving new story
+    if request.POST:
+        discussion = get_object_or_404(Discussion, pk=request.POST["discussion"])
+        story_type = request.POST["story-class"]
+        title = request.POST["title"]
+        slug = slugify(title)
+        user = request.user
+        speech_act = get_object_or_404(SpeechAct, pk=int(request.POST["speech_act"]))
+        result = {
+            "story": add_story,
+            "opinion": add_opinion,
+            "relation": add_relation,
+        }[story_type](request, discussion, user, title, slug, speech_act)
+    else:
+        result = HttpResponse("Wrong usage: HTTP POST expected")
+    return result
+
+
+def add_story(request, discussion, user, title, slug, speech_act):
+    story = Story()
+    story.discussion = discussion
+    story.created_by = user
+    story.title = title
+    story.slug = slug
+    story.speech_act = speech_act
+    story.save()
+    return HttpResponse("OK")
+
+def add_opinion(request, discussion, user, title, slug, speech_act):
+    opinion = Opinion()
+    opinion.discussion = discussion
+    opinion.created_by = user
+    opinion.title = title
+    opinion.slug = slug
+    opinion.speech_act = speech_act
+    # TODO get the story this opinion refers to
+    opinion.save()
+    return HttpResponse("OK")
+
+def add_relation(request, discussion, user, title, slug, speech_act):
+    relation = Relation()
+    relation.discussion = discussion
+    relation.created_by = user
+    relation.title = title
+    relation.slug = slug
+    relation.speech_act = speech_act
+    # TODO get the from & to stories this relation refers to
+    relation.save()
+    return HttpResponse("OK")
+
 
 def get_stories_view_json(request, discussion_slug):
     discussion = Discussion.objects.get(slug=discussion_slug)

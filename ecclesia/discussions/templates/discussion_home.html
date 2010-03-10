@@ -58,7 +58,8 @@
 <br clear="both"/>
 <hr/>
 {% block story_input %}
-<form name="story-input">
+<form name="story-input" method="POST" action="/discussions/add_story/" target="_blank">
+    <input type="hidden" name="discussion" value="{{ discussion.id }}">
 	<fieldset>
 		<input type="radio" name="story-class" id="story" value="story" /><label for="story">Story</label>
 		<input type="radio" name="story-class" id="relation" value="relation" /><label for="relation">Relation</label>

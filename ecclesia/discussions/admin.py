@@ -16,7 +16,7 @@ class DiscussionAdmin(admin.ModelAdmin):
     ordering = ('name', 'slug', 'group', 'type', 'created_at', 'updated_at')
 	
 class SpeechActAdmin(admin.ModelAdmin):
-    list_display = ('name',)
+    list_display = ('name', 'ordinal')
     list_filter = ('name',)
     search_fields = ('name',)
     ordering = ('name',)
