@@ -195,8 +195,6 @@ def get_inline_field(request):
         return HttpResponse("%s" % story.content)
     if fieldname.split("_")[0] == 'missionstatement':
         mission_statement = MissionStatement.objects.get(pk=fieldname.split("_")[1])
-        print mission_statement
-        print request.POST['value']
         mission_statement.mission_statement = request.POST['value']
         mission_statement.save()
         return HttpResponse("%s" % mission_statement.mission_statement)

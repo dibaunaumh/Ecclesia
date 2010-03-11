@@ -55,7 +55,14 @@
 		    document.getElementById('join_group').style.display='none';
 			document.getElementById('leave_group').style.display='block';
 			document.getElementById('create_container').style.display='block';
-			document.getElementById('add_mission').type='button';
+			document.getElementById('mission_statement').style.display='none';
+			{% ifequal mission_statement "" %}
+				document.getElementById('mission_statement_button').style.display='block';
+				document.getElementById('mission_statement_edit').style.display='none';
+			{% else %}
+				document.getElementById('mission_statement_edit').style.display='block';
+				document.getElementById('mission_statement_button').style.display='none';
+			{% endifequal %}
 		});
 	}
 	function leave_group(){
@@ -78,7 +85,9 @@
 					document.getElementById('leave_group').style.display='none';
 					document.getElementById('join_group').style.display='block';
 					document.getElementById('create_container').style.display='none';
-					document.getElementById('add_mission').type='hidden';
+					document.getElementById('mission_statement_button').style.display='none';
+					document.getElementById('mission_statement_edit').style.display='none';
+					document.getElementById('mission_statement').style.display='block';
 				}
 			}
 		});

@@ -21,20 +21,20 @@
 			<table border="0" cellpadding="0" cellspacing="0" class="sortable">
 				<thead>
 				<tr>
-					<th width="20">ID</th>	
-					<th width="100">Name</th>	
-					<th width="350">Description</th>	
-					<th><link>Parent</link></th>	
+					<th width="20">ID</th>
+					<th width="100">Name</th>
+					<th width="350">Description</th>
+					<th><link>Parent</link></th>
 					<th>Forked From</th>
 					<th>Location</th>
 					<th>Created by</th>
 					<th>Created at</th>
-					<th>Updated at</th>					
-					{#<th width="60">Created</th>#}		
+					<th>Updated at</th>
+					{#<th width="60">Created</th>#}
 				</tr>
 				</thead>
 				<tbody>
-				
+
 				{% for obj in my_items.object_list %}
 				<tr class="ref_{{forloop.counter|divisibleby:"2"}}">
 					<td align="left">{{ obj.pk }}</td>

@@ -17,17 +17,34 @@
 {% endifequal %}
 
 <p>
-{% if user_in_group %}
-	{% ifequal mission_statement "" %}
+	<div id="mission_statement_button" {% if user_in_group %}{% ifequal mission_statement "" %}style="display:block"{%else%}style="display:none"{%endifequal%}{%else %}style="display:none"{% endif %}>
 		<input id="add_mission" class="ui-button ui-state-default ui-corner-all" type="button" value="{% trans 'Add Mission Statement' %}"/><br clear="all"/>
-	{% else %}
+	</div>
+	<div id="mission_statement_edit" {% if user_in_group %}{% ifnotequal mission_statement "" %}style="display:block"{%else%}style="display:none"{%endifnotequal%}{%else %}style="display:none"{% endif %}>
 		<div class="edit" id="missionstatement_{{ mission_statement.pk }}">{{ mission_statement.mission_statement }}</div>
-	{% endifequal %}
-{% else %}
-	<div>{{ mission_statement.mission_statement }}</div>
-{% endif %}
+	</div>
+	<div id="mission_statement" {% if not user_in_group %}{% ifnotequal mission_statement "" %}style="display:block"{%else%}style="display:none"{%endifnotequal%}{%else %}style="display:none"{% endif %}>
+		<div>{{ mission_statement.mission_statement }}</div>
+	</div>
 </p>
 
+<!--
+<p>
+<div id="ms">
+{% ifequal mission_statement "" %}
+	<div id="mission_statement_button" {% if user_in_group %}style="display:block"{% else %}style="display:none"{% endif %}>
+		<input id="add_mission" class="ui-button ui-state-default ui-corner-all" type="button" value="{% trans 'Add Mission Statement' %}"/><br clear="all"/>
+	</div>
+{% else %}
+	{% if user_in_group %}
+		<div class="edit" id="missionstatement_{{ mission_statement.pk }}">{{ mission_statement.mission_statement }}</div>
+	{% else %}
+		<div>{{ mission_statement.mission_statement }}</div>
+	{% endif %}
+{% endifequal %}
+</div>
+</p>
+-->
 
 <hr/>
 
