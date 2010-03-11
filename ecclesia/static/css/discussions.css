@@ -3,10 +3,10 @@
 #buttons_container {float: right; padding-left: 15px}
 #canvasContainer {position: relative; float: left; margin: 0; padding: 0}
 #storysvu {position: absolute; left: 0; top: 0; margin: 0; padding: 0; border: thin solid #933}
-#course_of_action_container{background-color: #cff}
-#goal_condition_container{background-color: #ffc}
-#goal_container{background-color: #cf9}
-#possible_result_container{background-color: #ccf}
+#course_of_action_container{border-right: 1px solid #933}
+#goal_condition_container{border-right: 1px solid #933}
+#goal_container{}
+#possible_result_container{border-right: 1px solid #933}
 #story-input-submit{position:absolute;right:0;bottom:0}
 #story-input-title{position:relative}
 #story-input-title textarea{width:700px;height:50px}
@@ -14,9 +14,9 @@
 div.relation {display:none}
 div.opinion {display:none}
 
-.stories_container{float: left}
+.stories_container{float: left; text-align: center}
 div.story {position: absolute; width: 150px; height: 100px; margin: 0; padding: 0; font-size: 12pt; font-weight: bold; cursor: move}
-div.story a.story_title {display: block; float: left; padding: 10px; color: #000}
+div.story a.story_title {display: block; float: left; padding: 2px; color: #000; overflow: hidden}
 div.story a.story_title:hover {color: #033; text-decoration: underline}
 
 .dragon { border: thin solid #033;opacity:.6; -moz-opacity:.6}
@@ -25,12 +25,6 @@ img.story {width: 150px; height: 100px}
 a.member img {width: 50px; height: 50px; margin: 2px; border: 1px solid #933}
 
 /* Opinion Types */
-.opinions { position: absolute; width: 20px; height: 20px; border: 1px solid #000 }
-.good_opinions { border-color: #0f0 }
-.good_opinions a { float: right; color: #0f0 }
-.bad_opinions { border-color: #f00 }
-.bad_opinions a { float: right; color: #f00 }
-.true_opinions { border-color: #00f }
-.true_opinions a { float: right; color: #00f }
-.false_opinions { border-color: #ff0 }
-.false_opinions a { float: right; color: #ff0 }
+.opinions { display:none; position: absolute; width: 24px; height: 24px }
+.opinions a { position: relative; left: 0; top: 3px; color: #222 }
+.opinion_container_bg{ position: absolute; left: 0; top: 0 }

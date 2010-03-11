@@ -5,6 +5,10 @@ Node = function (config) {
 		url			: '',
 		name		: ''
 	};
+    this.state = {
+        hover   : false,
+        drag    : false
+    };
 	$.extend(true, this.config, config || {});
 };
 Node.prototype = {
@@ -19,7 +23,34 @@ Node.prototype = {
 		if(this.config.bg_image && this.config.bg_src) {
 			this.config.bg_image.src = this.config.bg_src;
 		}
-	}
+	},
+    wrapTitle   : function (container) {
+        var container_w = container.width();
+        var title_padding = parseInt(container.children('a').css('padding-right'))
+                            + parseInt(container.children('a').css('padding-left'));
+        container.children('a').width(container_w - title_padding - 2);
+    },
+    roundedRect	: function (ctx,x,y,width,height,radius,fill_color,stroke_color){
+		ctx.save();
+		// init the colors
+		ctx.fillStyle = fill_color;
+		ctx.strokeStyle = stroke_color;
+		// create the image
+		ctx.beginPath();
+		ctx.moveTo(x,y+radius);
+		ctx.lineTo(x,y+height-radius);
+		ctx.quadraticCurveTo(x,y+height,x+radius,y+height);
+		ctx.lineTo(x+width-radius,y+height);
+		ctx.quadraticCurveTo(x+width,y+height,x+width,y+height-radius);
+		ctx.lineTo(x+width,y+radius);
+		ctx.quadraticCurveTo(x+width,y,x+width-radius,y);
+		ctx.lineTo(x+radius,y);
+		ctx.quadraticCurveTo(x,y,x,y+radius);
+		ctx.fill();
+		ctx.stroke();
+		// restore former context options
+		ctx.restore();
+    }
 };
 
 Group = function (node_class, config) {
@@ -101,55 +132,52 @@ Discussion.prototype = {
 
 Story = function (node_class, config) {
 	this.config = {
-		alias		: 'story',
-		model_name	: 'Story',
-		type		: 'goal'
+		alias	    	: 'story',
+		model_name  	: 'Story',
+		type	    	: 'goal',
+        fill_normal     : '#e3e3e3',
+        fill_hover      : '#f2f2f2',
+        stroke_normal   : '#444',
+        stroke_hover    : '#000'
 	};
 	// inheriting Node class
 	var dummy = $.extend(true, node_class, this);
 	$.extend(true, this, dummy);
 	// reconfig
 	$.extend(this.config, config || {});
+    // set the id that connects this instance to the DOM
+    this.DOMid = this.config.alias+'_'+this.config.id;
 };
 Story.prototype = {
 	serialize	: function () {
 		return $.param(this.config.dimensions) + '&model_name=' + this.config.model_name + '&pk=' + this.config.id;
 	},
-	roundedRect	: function (ctx,x,y,width,height,radius){
-		ctx.save();
-		// init the colors
-		ctx.fillStyle = "#eee";
-		ctx.strokeStyle = "#444";
-		// create the image
-		ctx.beginPath();
-		ctx.moveTo(x,y+radius);
-		ctx.lineTo(x,y+height-radius);
-		ctx.quadraticCurveTo(x,y+height,x+radius,y+height);
-		ctx.lineTo(x+width-radius,y+height);
-		ctx.quadraticCurveTo(x+width,y+height,x+width,y+height-radius);
-		ctx.lineTo(x+width,y+radius);
-		ctx.quadraticCurveTo(x+width,y,x+width-radius,y);
-		ctx.lineTo(x+radius,y);
-		ctx.quadraticCurveTo(x,y,x,y+radius);
-		ctx.fill();
-		ctx.stroke();
-		// restore former context options
-		ctx.restore();
-    },
 	addToDOM	: function () {
 		var c = this.config;
-		$('#'+c.type+'_container').append('<div class="'+c.alias+'" id="'+c.alias+'_'+c.id+'"><a href="'+c.url+'" class="'+c.alias+'_title">'+c.name+'</a></div>');
+		$('#'+c.type+'_container').append('<div class="'+c.alias+'" id="'+this.DOMid+'"><a href="'+c.url+'" class="'+c.alias+'_title">'+c.name+'</a></div>');
+		this.wrapTitle($('#'+this.DOMid));
 	},
 	position	: function () {
 		var c = this.config;
-		var id_selector = '#'+c.alias+'_'+c.id;
+		var id_selector = '#'+this.DOMid
 		$(id_selector).css('left', c.dimensions.x+'px');
 		$(id_selector).css('top', c.dimensions.y+'px');
 	},
 	draw		: function (ctx) {
 		var dims = this.config.dimensions;
-		this.roundedRect(ctx, dims.x, dims.y, dims.w, dims.h, 5);
-	}
+        var state = this.state.hover ? 'hover' : 'normal';
+		this.roundedRect(ctx, dims.x, dims.y, dims.w, dims.h, 5, this.config['fill_'+state], this.config['stroke_'+state]);
+	},
+    hover       : function (ctx) {
+        this.state.hover = true;
+        this.draw(ctx);
+        $('#'+this.DOMid).children('.opinions').show();
+    },
+    unhover     : function (ctx) {
+        this.state.hover = false;
+        this.draw(ctx);
+        $('#'+this.DOMid).children('.opinions').hide();
+    }
 };
 Relation = function (node_class, config) {
 	this.config = {
@@ -236,11 +264,11 @@ Opinion.prototype = {
 			// check if it exists and return it if it does
 			if(container.length) { return this; }
 			// if it doesn't we create it
-			$('#'+pc.alias+'_'+pc.id).append('<div class="opinions '+c.type+'_opinions" id="'+c.container_id+'"><a href="#"></a></div>');
+			$('#'+pc.alias+'_'+pc.id).append('<div class="opinions '+c.type+'_opinions" id="'+c.container_id+'"><canvas id="'+c.container_id+'_bg" class="opinion_container_bg"></canvas><a href="#"></a></div>');
 			// position the container and set its style
 			var parent_dims = pc.dimensions;
 			var margin = 3;
-			var opn_edge = 20;
+			var opn_edge = 24;
 			var x,y;
 			switch(c.type) {
 				case 'good': {
@@ -262,13 +290,15 @@ Opinion.prototype = {
 			}
 			$(id_selector).css('left', x+'px')
 			              .css('top', y+'px');
+            // draw its background
+            this.drawContainerBg(c.container_id);
 			return this;
 		} else {
 			throw new Error('No parent element is set for: '+c.id);
 		}
 	},
 	position	: function () {},
-	draw		: function () {
+	draw		    : function () {
         if(!this.config.added) {
 			var opns = parseInt($('a', '#'+this.config.container_id).text());
 			if(!opns) { opns = 1; }
@@ -276,7 +306,23 @@ Opinion.prototype = {
 			$('a', '#'+this.config.container_id).text(opns);
 			this.config.added = true;
 		}
-	}
+	},
+    drawContainerBg : function (container_id) {
+        var id = container_id+'_bg';
+        var ctx = $('#'+id).get(0).getContext('2d');
+        var w = $('#'+container_id).innerWidth();
+        var h = $('#'+container_id).innerHeight();
+        var color = '#eee';
+        switch(container_id.split('_')[2]) {
+            case 'good': color = '#cfc'; break;
+            case 'bad': color = '#fcc'; break;
+            case 'true': color = '#ccf'; break;
+            case 'false': color = '#ffc'; break;
+        }
+        if(ctx) {
+            this.roundedRect(ctx, 0, 0, w, h, 3, color, '#666');
+        }
+    }
 };
 
 VUController = function (options) {
@@ -359,13 +405,16 @@ VUController.prototype = {
 			$('#'+id).draggable({
 				containment: 'parent',
 				start: function (e, ui) {
-					this_.setDrag(id);
+					this_.elems[id].state.drag = true;
+                    this_.setDrag(id);
 					this_.grip();
 				},
 				stop : function (e, ui) {
 					var position = $(this).position();
-					this_.elems[id].config.dimensions.x = parseInt(position.left);
-					this_.elems[id].config.dimensions.y = parseInt(position.top);
+					var el = this_.elems[id];
+                    el.state.drag = false;
+                    el.config.dimensions.x = parseInt(position.left);
+					el.config.dimensions.y = parseInt(position.top);
 					this_.drop();
 				}
 			});
@@ -377,6 +426,23 @@ VUController.prototype = {
 			});
 		}
 	},
+    setEventHandlers    : function (el) {
+        if(el) {
+            var this_ = this;
+            if(el.hover && $.isFunction(el.hover)) {
+                $('#'+el.DOMid).hover(
+                    function () {
+                        if(el.state.drag) { return; }
+                        else { el.hover(this_.ctx); }
+                    },
+                    function () {
+                        if(el.state.drag) { return; }
+                        else { el.unhover(this_.ctx); }
+                    }
+                );
+            }
+        }
+    },
 	addElement			: function (el) {
 		// add an element to the DOM
 		if(el) {
@@ -417,6 +483,8 @@ VUController.prototype = {
 					this_.position(el);
 					// set it as draggable
 					this_.setDraggable(el);
+                    // set other event handlers
+                    this_.setEventHandlers(el);
 				});
 				// we have initialized the canvas so draw the element
 				this.draw();
@@ -514,6 +582,7 @@ DiscussionController.prototype = {
             switch(item.fields.story_type) {
                 case 1: { // story
                     $('#'+this_.options.container_id).append('<div id="'+item.fields.name+'_container" class="stories_container"></div>');
+                    $('#'+item.fields.name+'_container').append('<h2>'+item.fields.name+'</h2>');
                 } break;
                 case 2: { // opinion
                 } break;
@@ -524,7 +593,7 @@ DiscussionController.prototype = {
         // set some style options
         //$('#'+this_.options.container_id).css('position', 'relative');
         $('.stories_container').height(this_.options.height)
-                               .width(this_.options.width * 0.25);
+                               .width(this_.options.width * 0.25 - 1);
     },
 	initCanvas			: function () {
 		var o = this.options;
