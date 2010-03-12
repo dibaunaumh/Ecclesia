@@ -6,6 +6,12 @@
 {% block coltype %}diagram{% endblock %}
 
 {% block content %}
+<div id="buttons_container">
+<div id="create_container" {% if user_in_group %}style="display:block"{% else %}style="display:none"{% endif %}>
+	<input id="create" class="ui-button ui-state-default ui-corner-all" type="button" value="{% trans 'Create Discussion' %}"/><br clear="all"/>
+</div>
+<input type="button" value="{% trans 'Discussions List' %}" onclick="document.location.href='/discussions_list/{{group.slug}}/'"/>
+</div>
 
 <h2>
     {{ group.group.name }}{% trans "'s Home" %}
@@ -28,6 +34,13 @@
 	</div>
 </p>
 
+<div id="members_container">
+<h3>Current members</h3>
+{% for member in members %}
+	<a href="{{ member.get_absolute_url }}" class="member" title="{{ member.username }}" alt=""><img src="{{ member.get_profile.get_picture_abs_url }}" alt=""/></a>
+{% endfor %}
+<input type="button" value="{% trans 'Members List' %}" onclick="document.location.href='/members_list/{{group.slug}}/'"/>
+</div>
 <!--
 <p>
 <div id="ms">
@@ -51,16 +64,18 @@
 <h3>Featured Discussions</h3>
 <div id="canvasContainer"></div>
 <style type="text/css">
+#buttons_container {float: right; padding-left: 15px}
+#content{width:960px;margin:10px auto}
 #ui_container {float: left; width: 145px; padding-left: 15px}
 #canvasContainer {position: relative; margin: 0; padding: 0; float: left}
-#discsvu {margin: 0; padding: 0; border: thin solid #933}
+#discsvu {margin: 0; padding: 0; border: thin solid #5B80B2}
 .disc {position: absolute; width: 150px; height: 100px; margin: 0; padding: 0; font-size: 12pt; font-weight: bold; overflow: hidden; cursor: move}
 .disc a {display: block; float: left; padding: 10px; color: #000}
 .disc a:hover {color: #033; text-decoration: underline}
 .dragon { border: thin solid #033;opacity:.6; -moz-opacity:.6}
 .selecton { border: 2px solid #033 }
 img.disc {width: 150px; height: 100px}
-a.member img {width: 50px; height: 50px; margin: 2px; border: 1px solid #933}
+a.member img {width: 50px; height: 50px; margin: 2px; border: 1px solid #5B80B2}
 </style>
 <script type="text/javascript">
 var config = {
@@ -116,24 +131,6 @@ VUC.init();
 	<form method="POST" action="" id="mission_statement_form">
 		{{ mission_statement_form.as_p }}
 	</form>
-</div>
-
-<div id="ui_container">
-<div id="buttons_container">
-<div id="create_container" {% if user_in_group %}style="display:block"{% else %}style="display:none"{% endif %}>
-	<input id="create" class="ui-button ui-state-default ui-corner-all" type="button" value="{% trans 'Create Discussion' %}"/><br clear="all"/>
-</div>
-<input type="button" value="{% trans 'Discussions List' %}" onclick="document.location.href='/discussions_list/{{group.slug}}/'"/>
-</div>
-
-<hr/>
-<h3>Current members</h3>
-<div id="members_container">
-{% for member in members %}
-	<a href="{{ member.get_absolute_url }}" class="member" title="{{ member.username }}" alt=""><img src="{{ member.get_profile.get_picture_abs_url }}" alt=""/></a>
-{% endfor %}
-</div>
-<input type="button" value="{% trans 'Members List' %}" onclick="document.location.href='/members_list/{{group.slug}}/'"/>
 </div>
 
 <hr/>

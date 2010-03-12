@@ -750,7 +750,11 @@ table#change-history tbody th {
     margin: 15px 0 0 5px;
     font-size: 20pt
 }
-#ekkli_logo{
+#ekkli_logo {
     float: left;
     margin: 5px 0 5px 10px
+}
+#join_group, #leave_group {
+    float: right;
+    margin-top: 27px
 }

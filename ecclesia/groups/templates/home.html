@@ -4,7 +4,6 @@
 
 {% block content %}
 
-
 <h2>
 	{% trans 'Welcome to Ecclesia' %}
 </h2>
@@ -15,15 +14,23 @@
 {% endblocktrans %}
 </p>
 
+<div id="buttons_container">
+	{% if user.is_authenticated %}
+		<input id="create" class="ui-button ui-state-default ui-corner-all" type="button" value="{% trans 'Create Group' %}"/><br clear="all"/>
+	{% endif %}
+	<input type="button" value="{% trans 'Groups List' %}" onclick="document.location.href='/groups_list/'"/>
+</div>
+
 <hr/>
 
 <h3>Current groups</h3>
 <div id="canvasContainer"></div>
 
 <style type="text/css">
-#buttons_container {float: left; padding-left: 15px}
+#buttons_container {float: right; padding-left: 15px}
+#content{width:960px;margin:10px auto}
 #canvasContainer {position: relative; margin: 0; padding: 0; float: left}
-#groupsvu {margin: 0; padding: 0; border: thin solid #933}
+#groupsvu {margin: 0; padding: 0; border: thin solid #5B80B2}
 .group{position: absolute; width: 150px; height: 100px; margin: 0; padding: 0; font-size: 12pt; font-weight: bold; overflow: hidden; cursor: move}
 .group a {display: block; float: left; padding: 10px; color: #000}
 .group a:hover {color: #033; text-decoration: underline}
@@ -51,13 +58,6 @@ VUC.init();
 	<form method="POST" action="" id="create_form">
 	{{ group_form.as_p }}
 	</form>
-</div>
-
-<div id="buttons_container">
-	{% if user.is_authenticated %}
-		<input id="create" class="ui-button ui-state-default ui-corner-all" type="button" value="{% trans 'Create Group' %}"/><br clear="all"/>
-	{% endif %}
-	<input type="button" value="{% trans 'Groups List' %}" onclick="document.location.href='/groups_list/'"/>
 </div>
 
 <hr/>
