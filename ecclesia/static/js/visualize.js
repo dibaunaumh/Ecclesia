@@ -171,12 +171,12 @@ Story.prototype = {
     hover       : function (ctx) {
         this.state.hover = true;
         this.draw(ctx);
-        $('#'+this.DOMid).children('.opinions').show();
+        //$('#'+this.DOMid).children('.opinions').show();
     },
     unhover     : function (ctx) {
         this.state.hover = false;
         this.draw(ctx);
-        $('#'+this.DOMid).children('.opinions').hide();
+        //$('#'+this.DOMid).children('.opinions').hide();
     }
 };
 Relation = function (node_class, config) {
