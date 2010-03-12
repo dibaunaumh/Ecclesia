@@ -264,12 +264,12 @@ Opinion.prototype = {
 			// check if it exists and return it if it does
 			if(container.length) { return this; }
 			// if it doesn't we create it
-			$('#'+pc.alias+'_'+pc.id).append('<div class="opinions '+c.type+'_opinions" id="'+c.container_id+'"><canvas id="'+c.container_id+'_bg" class="opinion_container_bg"></canvas><a href="#"></a></div>');
-			// position the container and set its style
-			var parent_dims = pc.dimensions;
+            var parent_dims = pc.dimensions;
 			var margin = 3;
 			var opn_edge = 24;
 			var x,y;
+			$('#'+pc.alias+'_'+pc.id).append('<div class="opinions '+c.type+'_opinions" id="'+c.container_id+'"><canvas width="'+opn_edge+'" height="'+opn_edge+'" id="'+c.container_id+'_bg" class="opinion_container_bg"></canvas><a href="#"></a></div>');
+			// position the container and set its style
 			switch(c.type) {
 				case 'good': {
 					x = parent_dims.w - opn_edge;
@@ -320,7 +320,7 @@ Opinion.prototype = {
             case 'false': color = '#ffc'; break;
         }
         if(ctx) {
-            this.roundedRect(ctx, 0, 0, w, h, 3, color, '#666');
+            this.roundedRect(ctx, 0, 0, w, h, 8, color, '#666');
         }
     }
 };
