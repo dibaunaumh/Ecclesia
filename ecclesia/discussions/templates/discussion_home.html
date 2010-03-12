@@ -18,6 +18,14 @@
         var DC	= new DiscussionController(VUC, {});
         DC.init();
         $(document).ready(function () {
+            var formConfigs = {
+                story_input : {
+                    callback : DC.init
+                }
+            };
+            var FC = new FormController();
+            FC.bind(formConfigs);
+            
             $("input[name='story-class']").change(function () {
                 $.getJSON(
                     '/discussions/get_speech_acts_by_story_type/',
@@ -70,17 +78,17 @@
 
 <hr/>
 {% block story_input %}
-<form name="story-input" method="POST" action="/discussions/add_story/" target="_blank">
+<form name="story_input" method="POST" action="/discussions/add_story/">
     <input type="hidden" name="discussion" value="{{ discussion.id }}">
-	<div id="story-input-types">
-		<fieldset id="story-input-story-type">
-			<legend>Story type:</legend>
-			<input type="radio" name="story-class" id="story" value="1" checked="checked" /><label for="story">Story</label>
-			<input type="radio" name="story-class" id="relation" value="3" /><label for="relation">Relation</label>
-			<input type="radio" name="story-class" id="opinion" value="2" /><label for="opinion">Opinion</label>
+	<div id="story_input-types">
+		<fieldset id="story_input-story-type">
+			<legend>{% trans 'Story type:' %}</legend>
+			<input type="radio" name="story-class" id="story" value="1" checked="checked" /><label for="story">{% trans 'Story' %}</label>
+			<input type="radio" name="story-class" id="relation" value="3" /><label for="relation">{% trans 'Relation' %}</label>
+			<input type="radio" name="story-class" id="opinion" value="2" /><label for="opinion">{% trans 'Opinion' %}</label>
 		</fieldset>
-		<fieldset id="story-input-speech-act">
-			<legend>Speech act:</legend>
+		<fieldset id="story_input-speech-act">
+			<legend>{% trans 'Speech act:' %}</legend>
 			<select name="speech_act">
 				{% for sa in speech_acts %}
 					<option value="{{ sa.pk }}">{{ sa.name }}</option>
@@ -88,10 +96,10 @@
 			</select>
 		</fieldset>
 	</div>
-	<fieldset id="story-input-title">
-		<legend>Title:</legend>
-		<textarea name="title"></textarea>
-		<input type="submit" value="{% trans 'Submit' %}" id="story-input-submit"/>
+	<fieldset id="story_input-title">
+		<legend>{% trans 'Title:' %}</legend>
+		<textarea name="title" class="is_value"></textarea>
+		<input type="submit" value="{% trans 'Submit' %}" id="story_input-submit"/>
 	</fieldset>
 </form>
 <hr/>

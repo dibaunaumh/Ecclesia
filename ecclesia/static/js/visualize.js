@@ -326,7 +326,8 @@ Opinion.prototype = {
 };
 
 VUController = function (options) {
-	this.options = {
+	_VUC = this;
+    this.options = {
 		width		: 958,
 		height		: 600,
 		container_id: 'canvasContainer',
@@ -344,20 +345,20 @@ VUController = function (options) {
 };
 VUController.prototype = {
 	setElementsRelations: function () {
-		var this_ = this;
-		$.each(this.elems, function (key, el) {
-			var c = this_.elems[key].config;
+		//var _VUC = this;
+		$.each(_VUC.elems, function (key, el) {
+			var c = _VUC.elems[key].config;
 			if(el instanceof Relation) {
-				c.from = this_.elems[c.from_id];
-				c.to = this_.elems[c.to_id];
+				c.from = _VUC.elems[c.from_id];
+				c.to = _VUC.elems[c.to_id];
 			} else if(el instanceof Opinion) {
-				c.parent = this_.elems[c.parent_id];
+				c.parent = _VUC.elems[c.parent_id];
 			}
 		});
 	},
 	createNodes			: function () {
-		var this_ = this;
-		$.each(this.data, function (i, item) {
+		//var _VUC = this;
+		$.each(_VUC.data, function (i, item) {
 			$.each(item, function (key, val) {
 				var node = new Node({});
 				switch(key) {
@@ -379,65 +380,65 @@ VUController.prototype = {
 				}
 				var id = node.config.alias+'_'+node.config.id;
 				// add the Node instance to the controller's elements
-				this_.elems[id] = node;
+				_VUC.elems[id] = node;
 				// set a load event listener to the element's background image to initialy draw it
 				if(node.config.bg_image) {
 					$(node.config.bg_image).load(function () {
-						node.draw(this_.ctx);
+						node.draw(_VUC.ctx);
 					});
 				}
 			});
 		});
-		this.setElementsRelations();
+		_VUC.setElementsRelations();
 	},
 	initCanvas			: function () {
-		var o = this.options;
+		var o = _VUC.options;
 		$('#'+o.container_id).empty();
 		$('#'+o.container_id).append('<canvas id="'+o.canvas_id+'" width="'+o.width+'" height="'+o.height+'"></canvas>');
-		this.ctx = document.getElementById(o.canvas_id).getContext('2d');
-		return (this.ctx !== null);
+		_VUC.ctx = document.getElementById(o.canvas_id).getContext('2d');
+		return (_VUC.ctx);
 	},
 	setDraggable		: function (el) {
-		var this_ = this;
+		//var _VUC = this;
 		// set a specific element as draggable
 		if(el) {
 			var id = el.config.alias+'_'+el.config.id;
 			$('#'+id).draggable({
 				containment: 'parent',
 				start: function (e, ui) {
-					this_.elems[id].state.drag = true;
-                    this_.setDrag(id);
-					this_.grip();
+					_VUC.elems[id].state.drag = true;
+                    _VUC.setDrag(id);
+					_VUC.grip();
 				},
 				stop : function (e, ui) {
 					var position = $(this).position();
-					var el = this_.elems[id];
+					var el = _VUC.elems[id];
                     el.state.drag = false;
                     el.config.dimensions.x = parseInt(position.left);
 					el.config.dimensions.y = parseInt(position.top);
-					this_.drop();
+					_VUC.drop();
 				}
 			});
 		}
 		// set all elements as draggable
 		else {
-			$.each(this.elems, function (id, el) {
-				this_.setDraggable(el);
+			$.each(_VUC.elems, function (id, el) {
+				_VUC.setDraggable(el);
 			});
 		}
 	},
     setEventHandlers    : function (el) {
         if(el) {
-            var this_ = this;
+            //var _VUC = this;
             if(el.hover && $.isFunction(el.hover)) {
                 $('#'+el.DOMid).hover(
                     function () {
                         if(el.state.drag) { return; }
-                        else { el.hover(this_.ctx); }
+                        else { el.hover(_VUC.ctx); }
                     },
                     function () {
                         if(el.state.drag) { return; }
-                        else { el.unhover(this_.ctx); }
+                        else { el.unhover(_VUC.ctx); }
                     }
                 );
             }
@@ -446,48 +447,48 @@ VUController.prototype = {
 	addElement			: function (el) {
 		// add an element to the DOM
 		if(el) {
-			el.addToDOM(this.options.container_id);
+			el.addToDOM(_VUC.options.container_id);
 		}
 		// add all elements to the DOM
 		else {
-			var this_ = this;
-			$.each(this.elems, function (id, el) {
-				this_.addElement(el);
+			//var _VUC = this;
+			$.each(_VUC.elems, function (id, el) {
+				_VUC.addElement(el);
 			});
 		}
 	},
 	getData				: function () {
-		var this_ = this;
+		//var _VUC = this;
 		// expecting format: [ { element_alias : { element_config_object }, ... ]
-		$.getJSON(this.options.data_url, function (data){
-			this_.data = data;
+		$.getJSON(_VUC.options.data_url, function (data){
+			_VUC.data = data;
 			// initialize the view controller
-			this_.init(true);
+			_VUC.init(true);
 		});
 	},
 	init				: function (loaded) {
-		if(!loaded) {
+		if(!loaded || loaded === 'reload') {
 			// get the data
-			this.getData();
+			_VUC.getData();
 		} else {
 			// create the elements
-			this.createNodes();
+			_VUC.createNodes();
 			// initialize the canvas
-			if(this.initCanvas()) {
-				var this_ = this;
+			if(_VUC.initCanvas()) {
+				//var _VUC = this;
 				// iterate over the elements and create the GUI
-				$.each(this.elems, function (id, el) {
+				$.each(_VUC.elems, function (id, el) {
 					// appending a div for each element to the canvas container
-					this_.addElement(el);
+					_VUC.addElement(el);
 					// position the element inside the container
-					this_.position(el);
+					_VUC.position(el);
 					// set it as draggable
-					this_.setDraggable(el);
+					_VUC.setDraggable(el);
                     // set other event handlers
-                    this_.setEventHandlers(el);
+                    _VUC.setEventHandlers(el);
 				});
 				// we have initialized the canvas so draw the element
-				this.draw();
+				_VUC.draw();
 			} else {
 				alert('No canvas context.');
 			}
@@ -499,41 +500,41 @@ VUController.prototype = {
 		}
 	},
 	setDrag				: function (id) {
-		this.drag = this.elems[id];
+		_VUC.drag = _VUC.elems[id];
 	},
 	draw				: function (isGrip) {
-		var this_ = this;
-		this.ctx.clearRect(0, 0, this.options.width, this.options.height);
-		$.each(this.elems, function (id, el) {
+		//var _VUC = this;
+		_VUC.ctx.clearRect(0, 0, _VUC.options.width, _VUC.options.height);
+		$.each(_VUC.elems, function (id, el) {
 			if(isGrip) {
-				if(id != this_.drag.config.alias+'_'+this_.drag.config.id) {
-					el.draw(this_.ctx);
+				if(id != _VUC.drag.config.alias+'_'+_VUC.drag.config.id) {
+					el.draw(_VUC.ctx);
 				}
 			} else {
-				el.draw(this_.ctx);
+				el.draw(_VUC.ctx);
 			}
 		});
 	},
 	grip				: function () {
-		$('#'+this.drag.config.alias+'_'+this.drag.config.id).addClass('dragon');
-		this.draw(true);
+		$('#'+_VUC.drag.config.alias+'_'+_VUC.drag.config.id).addClass('dragon');
+		_VUC.draw(true);
 	},
 	drop				: function () {
-		$('#'+this.drag.config.alias+'_'+this.drag.config.id).removeClass('dragon');
-		this.draw();
-		this.updatePresentation();
+		$('#'+_VUC.drag.config.alias+'_'+_VUC.drag.config.id).removeClass('dragon');
+		_VUC.draw();
+		_VUC.updatePresentation();
 	},
 	updatePresentation	: function () {
-		var this_ = this;
+		//var _VUC = this;
 		/*$.each(this.elems, function (id, el){
-			this_.data[id] = el.serialize();
+			_VUC.data[id] = el.serialize();
 		});*/
-		this.data = this.drag.serialize();
+		_VUC.data = _VUC.drag.serialize();
 		
 		$.ajax({
 			type		: "POST",
-			url			: this_.options.update_url,
-			data		: this_.data,
+			url			: _VUC.options.update_url,
+			data		: _VUC.data,
 			success		: function (msg){
 				//alert(msg);
 			}
@@ -547,7 +548,8 @@ VUController.prototype = {
  *  ( sort of an inheritance :P )
  */
 DiscussionController = function (VuController, options) {
-	this.options = {};
+	_VUC = this;
+    this.options = {};
 	// inheriting Node class
 	var dummy = $.extend(true, VuController, this);
 	$.extend(true, this, dummy);
@@ -557,31 +559,31 @@ DiscussionController = function (VuController, options) {
     this.metaData = {};
 };
 DiscussionController.prototype = {
-    getData				: function () {
-		var this_ = this;
+    getData				: function () {alert('GETTING');
+		//var _DiscC = this;
 		// expecting format: [ { element_alias : { element_config_object }, ... ]
-		$.getJSON(this.options.data_url, function (data){
-			this_.data = data;
+		$.getJSON(_VUC.options.data_url, function (data){
+			_VUC.data = data;
 			// get the Visualization's meta data
-			this_.getVisualizationMetaData();
+			_VUC.getVisualizationMetaData();
 		});
 	},
 	getVisualizationMetaData: function () {
-		var this_ = this;
-		$.getJSON(this.options.meta_url, function (json) {
+		//var _DiscC = this;
+		$.getJSON(_VUC.options.meta_url, function (json) {
             // apply the received data
-            this_.metaData = json;
+            _VUC.metaData = json;
             // initialize the view controller
-            this_.init(true);
+            _VUC.init(true);
 		});
 	},
     initVisualization   : function () {
-        var this_ = this;
+        //var _DiscC = this;
         // setting the speech act containers
-        $.each(this.metaData, function (i, item) {
+        $.each(_VUC.metaData, function (i, item) {
             switch(item.fields.story_type) {
                 case 1: { // story
-                    $('#'+this_.options.container_id).append('<div id="'+item.fields.name+'_container" class="stories_container"></div>');
+                    $('#'+_VUC.options.container_id).append('<div id="'+item.fields.name+'_container" class="stories_container"></div>');
                     $('#'+item.fields.name+'_container').append('<h2>'+item.fields.name+'</h2>');
                 } break;
                 case 2: { // opinion
@@ -591,41 +593,41 @@ DiscussionController.prototype = {
             }
         });
         // set some style options
-        //$('#'+this_.options.container_id).css('position', 'relative');
-        $('.stories_container').height(this_.options.height)
-                               .width(this_.options.width * 0.25 - 1);
+        //$('#'+_VUC.options.container_id).css('position', 'relative');
+        $('.stories_container').height(_VUC.options.height)
+                               .width(_VUC.options.width * 0.25 - 1);
     },
 	initCanvas			: function () {
-		var o = this.options;
+		var o = _VUC.options;
 		$('#'+o.container_id).empty()
                              .append('<canvas id="'+o.canvas_id+'" width="'+o.width+'" height="'+o.height+'"></canvas>');
-		this.ctx = document.getElementById(o.canvas_id).getContext('2d');
-        if(this.metaData.length != 0) {
-            this.initVisualization();
+		_VUC.ctx = document.getElementById(o.canvas_id).getContext('2d');
+        if(_VUC.metaData.length != 0) {
+            _VUC.initVisualization();
         }
-		return (this.ctx !== null);
+		return (_VUC.ctx);
 	},
 	addElement			: function (el) {
 		// add an element to the DOM
 		if(el) {
 			if(el instanceof Opinion) { el.container().addToDOM(); }
-								 else { el.addToDOM(this.options.container_id); }
+								 else { el.addToDOM(_VUC.options.container_id); }
 		}
 		// add all elements to the DOM
 		else {
-			var this_ = this;
-			$.each(this.elems, function (id, el) {
-				this_.addElement(el);
+			//var _DiscC = this;
+			$.each(_VUC.elems, function (id, el) {
+				_VUC.addElement(el);
 			});
 		}
 	},
 	drawText			: function (text,x,y,maxWidth,rotation) {
     // if text is short enough - put it in 1 line. if not, search for the middle space, and split it there (only splits to 2 lines).
-        this.ctx.translate(x,y);
-        this.ctx.save();
-        this.ctx.rotate(rotation);        
-        if (this.ctx.measureText(text).width <= maxWidth*0.8){ 
-            this.ctx.fillText(text,0,0);
+        _VUC.ctx.translate(x,y);
+        _VUC.ctx.save();
+        _VUC.ctx.rotate(rotation);
+        if (_VUC.ctx.measureText(text).width <= maxWidth*0.8){
+            _VUC.ctx.fillText(text,0,0);
         } else {
             var spl = text.split('-');
             var len = Math.floor(spl.length/2);
@@ -635,10 +637,210 @@ DiscussionController.prototype = {
             }            
             var text1 = text.substring(0,pos);
             var text2 = text.substring(pos);
-            this.ctx.fillText(text1,0,-10);
-            this.ctx.fillText(text2,0,+10);
+            _VUC.ctx.fillText(text1,0,-10);
+            _VUC.ctx.fillText(text2,0,+10);
         }
-        this.ctx.restore();
-        this.ctx.translate(-x,-y);
+        _VUC.ctx.restore();
+        _VUC.ctx.translate(-x,-y);
     }
+};
+
+/*
+ *  Class FormController
+ *
+ * Note on Validation :
+ *
+ * Each field that should be validated will be
+ * added a class with the value of the name of
+ * the requested validation function.break
+ * e.g.:
+ * this input:
+ * <input type="text" class="is_value" />
+ * will be checked that it is not empty.
+ */
+FormController = function() {
+	this.f_html		= null;
+	this.f_jq		= null;
+	this.options	= {};
+	this.elements	= {};
+};
+FormController.prototype = {
+	/**
+	 * gets an object that maps form name to a config object
+	 * iterates over the object and adds the submit event
+	 * listener to every form
+	 * @param Object configs : a map of { name : config }
+	 * @return
+	 */
+	bind				: function (configs) {
+		var this_ = this;
+		$.each(configs, function(name, config){
+			$(document.forms[name]).find(':button[type=submit],:input[type=submit]').bind('click', function(e){
+				if($(e.target).attr('name').length && $(e.target).attr('name') == 'action') {
+					$.extend(config, { action : $(e.target).val() });
+				};
+				return this_.submit(this.form, config);
+			});
+		});
+	},
+	init				: function (form, options) {
+		this.f_html		= form || {};
+		this.f_jq		= $(form) || {};
+		this.options	= $.extend(true, {
+	        validation	: {},
+			url			: this.f_jq.attr('action') || '/',
+	        type		: this.f_jq.attr('method') || 'POST',
+	        dont_post	: false,
+	        data_type	: 'text',
+	        editor		: {}
+	    }, options || {});
+		/* for YUI Rich Text Editor
+		if(this.options.editor && this.options.editor.saveHTML) {
+			this.options.editor.saveHTML();
+		}*/
+		this.elements = {};
+		if(this.f_html.elements) {
+			var this_ = this;
+			$.each(this.f_html.elements, function (i, el) {
+				if($(el).attr('name')) {
+					this_.elements[$(el).attr('name')] = el;
+				}
+			});
+		}
+	},
+	validate			: function () {
+		var valid = true;
+		this.extractValidation();
+		if(this.options.validation && typeof this.options.validation != 'undefined') {
+			var this_ = this;
+			$.each(this.options.validation, function(field, method){
+				// first check that there's a field with this name and that it's not disabled
+				if(this_.elements[field] != null && !this_.elements[field].disabled) {
+					try {
+						if(this_[method] && $.isFunction(this_[method])) {
+							if(!this_[method](field)) {
+								this_.alert_field(field);
+								valid = false;
+							} else {
+								this_.clear_alert(field);
+							}
+						}
+					} catch(e){alert(e);}
+				} else if(this_.elements[field+'[]'] != null && !this_.elements[field+'[]'].disabled) {
+					try {
+						/*
+						 * in case there's a specification for a validation of checkboxes
+						 * run an 'OR' test to verify that at least one is checked
+						 */
+						var _checked = false;
+						$.each(this_.elements[field+'[]'], function(index, box){
+							_checked = _checked || box.checked;
+						});
+						valid = _checked;
+					} catch(e){alert(e);}
+				}
+			});
+		} else {
+			valid = false;
+			throw new Error("Form's validation map is missing.");
+		}
+		return valid;
+	},
+	/**
+	 * the function that is called on the onsubmit event fire
+	 * of the form object
+	 * @return Boolean false : !! must return false to prevent from redirect to the action url
+	 */
+	submit				: function (form, options) {
+		this.init(form, options);
+		if(this.validate()) {
+			if(this.before()) {
+				if(this.options.dont_post) {
+					this.after(this.f_jq.serialize());
+				} else {
+					this.send();
+				}
+			}
+		}
+		return false;
+	},
+	/**
+	 * handles the ajax request
+	 * @return Object response : the server's response
+	 */
+	send				: function () {
+		var this_ = this;
+		$.ajax({
+			type	: this_.options.type,
+			url		: this_.options.url,
+			data	: this_.f_jq.serialize(),
+			dataType: this_.options.data_type,
+			success	: function(response){
+				this_.after(response);
+			}
+		});
+	},
+	/**
+	 * a handler for pre ajax request logic
+	 * @return Boolean continue : whether to continue to send
+	 */
+	before				: function () {
+		// enable catching form's multiple submit and passing it to send
+		if(this.options.action != null && this.options.action != '') {
+			this.options.url = this.options.url + this.options.action;
+		}
+		return true;
+	},
+	/**
+	 * a handler for ajax response logic and calling callbacks
+	 * @return Object
+	 */
+	after				: function (response) {
+		if(this.options.callback && typeof this.options.callback == 'function') {
+			this.options.callback(response);
+		} else {
+			alert(response);
+		}
+	},
+	extractValidation	: function () {
+		var additional_validation = {};
+		$.each(this.elements, function (el_name, el) {
+			// disabled fields are not counted
+			if(!el.disabled) {
+				var classes = $(el).attr('class').split(' ');
+				$.each(classes, function(i, _class) {
+					// allowing one check per field
+					if(_class && _class.indexOf('is_') === 0) {
+						additional_validation[el_name] = _class;
+					}
+				});
+			}
+		});
+		$.extend(this.options.validation, additional_validation);
+	},
+	alert_field			: function (el_name) {
+		$(this.elements[el_name]).addClass('field_alert');
+	},
+	clear_alert			: function (el_name) {
+		$(this.elements[el_name]).removeClass('field_alert');
+	},
+	/*
+	 * validation functions :
+	 */
+	is_value			: function (el_name) {
+		var val = $(this.elements[el_name]).val();
+		return val && $.trim(val) != '' && typeof val != 'undefined';
+	},
+	is_alpha			: function (el_name) {
+		return this._validate($(this.elements[el_name]), /[^a-zA-Z\s_-]/g);
+	},
+	is_numeric			: function (el_name) {
+		return this._validate($(this.elements[el_name]), /[\D]/g);
+	},
+	is_alphanumeric		: function (el_name) {
+		return this._validate($(this.elements[el_name]), /[^\w\s-]/g);
+	},
+	_validate			: function (el, pat ){
+		return this.is_value(el.attr('name')) ? !pat.test(el.val()) : false;
+	}
 };

@@ -63,7 +63,7 @@ def add_story(request, discussion, user, title, slug, speech_act):
     story.slug = slug
     story.speech_act = speech_act
     story.save()
-    return HttpResponse("OK")
+    return HttpResponse("reload")
 
 def add_opinion(request, discussion, user, title, slug, speech_act):
     opinion = Opinion()
@@ -74,7 +74,7 @@ def add_opinion(request, discussion, user, title, slug, speech_act):
     opinion.speech_act = speech_act
     # TODO get the story this opinion refers to
     opinion.save()
-    return HttpResponse("OK")
+    return HttpResponse("reload")
 
 def add_relation(request, discussion, user, title, slug, speech_act):
     relation = Relation()
@@ -85,7 +85,7 @@ def add_relation(request, discussion, user, title, slug, speech_act):
     relation.speech_act = speech_act
     # TODO get the from & to stories this relation refers to
     relation.save()
-    return HttpResponse("OK")
+    return HttpResponse("reload")
 
 
 def get_stories_view_json(request, discussion_slug):
