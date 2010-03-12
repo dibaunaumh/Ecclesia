@@ -1,0 +1,24 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"></script>
+<script type="text/javascript" src="http://localhost:8000/static/js/visualize.js"></script>
+<script type="text/javascript">	
+	A = ['a1',['b1','b2'],'a3'];
+	var arr = [];
+	a = function() {
+		(function(ar,z) {
+			ar.push(z);
+			return arguments.callee;
+		})(arr,'a')(arr,'b');
+		return arr;
+	};
+	//alert(a());
+	var p = $('#container').append('<p>HALLO</p>');
+	alert(p.append);
+</script>	
+</head>
+<body>
+<div id="container"></div>
+</body>
+</html>
