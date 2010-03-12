@@ -102,7 +102,8 @@ class Story(BaseStory):
         return "http://%s/story/%s/" % (get_domain(), self.slug)
 
     def __unicode__(self):
-        return _("%(user)s's %(speechact)s (#%(id)s)") % {'user':self.created_by.get_full_name(), 'speechact':self.speech_act.name, 'id':self.id}
+        return self.title
+        #return _("%(title) - %(user)s's %(speechact)s (#%(id)s)") % {'title': self.title, 'user':self.created_by.get_full_name(), 'speechact':self.speech_act.name, 'id':self.id}
 
     def name_with_link(self):
         return _('<a href="%(url)s">%(user)s\'s %(speechact)s (#%(id)s)</a>') % {'user':self.created_by.get_full_name(), 'speechact':self.speech_act.name, 'id':self.id, 'url':self.get_absolute_url()}
