@@ -2,11 +2,11 @@
 
 #buttons_container {float: right; padding-left: 15px}
 #canvasContainer {position: relative; float: left; margin: 0; padding: 0}
-#storysvu {position: absolute; left: 0; top: 0; margin: 0; padding: 0; border: thin solid #417690}
-#course_of_action_container{border-right: 1px solid #417690}
-#goal_condition_container{border-right: 1px solid #417690}
+#storysvu {position: absolute; left: 0; top: 0; margin: 0; padding: 0; border: thin solid #5B80B2}
+#course_of_action_container{border-right: 1px solid #5B80B2}
+#goal_condition_container{border-right: 1px solid #5B80B2}
 #goal_container{}
-#possible_result_container{border-right: 1px solid #417690}
+#possible_result_container{border-right: 1px solid #5B80B2}
 div.relation {display:none}
 div.opinion {display:none}
 
@@ -26,7 +26,7 @@ a.member img {width: 50px; height: 50px; margin: 2px; border: 1px solid #933}
 .opinion_container_bg{ position: absolute; left: 0; top: 0 }
 
 /* Story Input Form */
-fieldset{padding:2px;border:1px solid #417690}
+fieldset{padding:2px;border:1px solid #5B80B2}
 #story_input-submit{position:absolute;right:4px;bottom:2px}
 #story_input-title{position:relative}
 #story_input-title textarea{width:700px;height:51px}
