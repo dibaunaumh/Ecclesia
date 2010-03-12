@@ -7,10 +7,6 @@
 #goal_condition_container{border-right: 1px solid #417690}
 #goal_container{}
 #possible_result_container{border-right: 1px solid #417690}
-#story_input-submit{position:absolute;right:0;bottom:0}
-#story_input-title{position:relative}
-#story_input-title textarea{width:700px;height:50px}
-#story_input-types{float:left}
 div.relation {display:none}
 div.opinion {display:none}
 
@@ -28,3 +24,10 @@ a.member img {width: 50px; height: 50px; margin: 2px; border: 1px solid #933}
 .opinions { display:none; position: absolute; width: 24px; height: 24px }
 .opinions a { position: relative; left: 0; top: 3px; color: #222 }
 .opinion_container_bg{ position: absolute; left: 0; top: 0 }
+
+/* Story Input Form */
+fieldset{padding:2px;border:1px solid #417690}
+#story_input-submit{position:absolute;right:4px;bottom:2px}
+#story_input-title{position:relative}
+#story_input-title textarea{width:700px;height:51px}
+#story_input-types{float:left}

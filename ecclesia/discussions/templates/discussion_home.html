@@ -18,6 +18,15 @@
         var DC	= new DiscussionController(VUC, {});
         DC.init();
         $(document).ready(function () {
+            $('button').filter('.ekkli-button').hover(
+                function () {
+                    $(this).addClass('ui-state-hover');
+                },
+                function () {
+                    $(this).removeClass('ui-state-hover');
+                }
+            );
+
             var formConfigs = {
                 story_input : {
                     callback : DC.init
@@ -45,7 +54,7 @@
 {% block content %}
 <div id="buttons_container"><div id="log"></div>
 {% if user_in_group %}
-	<input id="create" class="ui-button ui-state-default ui-corner-all" type="button" value="{% trans 'Create Story' %}"/><br clear="all"/>
+	<!--input id="create" class="ui-button ui-state-default ui-corner-all" type="button" value="{% trans 'Create Story' %}"/><br clear="all"/-->
 {% endif %}
 	<input type="button" value="{% trans 'Stories List' %}" onclick="document.location.href='/stories_list/{{discussion.slug}}/'"/>
 </div>
@@ -78,6 +87,7 @@
 
 <hr/>
 {% block story_input %}
+{% if user_in_group %}
 <form name="story_input" method="POST" action="/discussions/add_story/">
     <input type="hidden" name="discussion" value="{{ discussion.id }}">
 	<div id="story_input-types">
@@ -99,10 +109,11 @@
 	<fieldset id="story_input-title">
 		<legend>{% trans 'Title:' %}</legend>
 		<textarea name="title" class="is_value"></textarea>
-		<input type="submit" value="{% trans 'Submit' %}" id="story_input-submit"/>
+		<button type="submit" id="story_input-submit" class="ui-state-default ui-corner-all ekkli-button">{% trans 'Create' %}</button>
 	</fieldset>
 </form>
 <hr/>
+{% endif %}
 {% endblock %}
 <!--
 <h3>Current members</h3>
