@@ -559,7 +559,7 @@ DiscussionController = function (VuController, options) {
     this.metaData = {};
 };
 DiscussionController.prototype = {
-    getData				: function () {alert('GETTING');
+    getData				: function () {
 		//var _DiscC = this;
 		// expecting format: [ { element_alias : { element_config_object }, ... ]
 		$.getJSON(_VUC.options.data_url, function (data){
