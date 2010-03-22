@@ -36,6 +36,23 @@ def visualize(request, discussion_slug):
     speech_acts = SpeechAct.objects.filter(story_type=1) # 'story' as default
     return render_to_response('discussion_home.html', locals())
 
+
+def get_stories_json(request):
+    """
+    Used by an AJAX call from the story adding GUI.
+    """
+    result = HttpResponse('[]')
+    if request.GET:
+        discussion_slug = request.GET.get('discussion_slug', None)
+        if discussion_slug is None:
+            return result
+        discussion = Discussion.objects.get(slug=discussion_slug)
+        stories = Story.objects.filter(discussion=discussion.pk)
+        json = serializers.serialize('json', stories, ensure_ascii=False)
+        result = HttpResponse(json)
+    return result
+
+
 def add_base_story(request):
     #saving new story
     if request.POST:
@@ -66,24 +83,32 @@ def add_story(request, discussion, user, title, slug, speech_act):
     return HttpResponse("reload")
 
 def add_opinion(request, discussion, user, title, slug, speech_act):
+    parent_story = request.POST.get('parent_story', None)
+    if parent_story is None:
+        return HttpResponse("Did not get parent story.")
     opinion = Opinion()
     opinion.discussion = discussion
     opinion.created_by = user
     opinion.title = title
     opinion.slug = slug
     opinion.speech_act = speech_act
-    # TODO get the story this opinion refers to
+    opinion.parent_story = Story.objects.get(pk=parent_story)
     opinion.save()
     return HttpResponse("reload")
 
 def add_relation(request, discussion, user, title, slug, speech_act):
-    relation = Relation()
+    from_story = request.POST.get('from_story', None)
+    to_story = request.POST.get('to_story', None)
+    if from_story is None or to_story is None:
+        return HttpResponse("Did not get from and to stories.")
+    relation = StoryRelation()
     relation.discussion = discussion
     relation.created_by = user
     relation.title = title
     relation.slug = slug
     relation.speech_act = speech_act
-    # TODO get the from & to stories this relation refers to
+    relation.from_story = Story.objects.get(pk=from_story)
+    relation.to_story = Story.objects.get(pk=to_story)
     relation.save()
     return HttpResponse("reload")
 

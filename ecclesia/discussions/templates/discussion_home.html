@@ -36,17 +36,52 @@
             FC.bind(formConfigs);
             
             $("input[name='story-class']").change(function () {
+                var type = $(this).val();
+                var data = 'story_type='+type+'&discussion_slug={{ discussion.slug }}';
+                var parseJsonToOptions = function (json, field_name) {
+                	var html = '';
+                	$.each(json, function (i, item) {
+						html += '<option value="'+item.pk+'">'+item.fields[field_name]+'</option>';
+					});
+					return html;
+				}
                 $.getJSON(
                     '/discussions/get_speech_acts_by_story_type/',
-                    'story_type='+$(this).val(),
+                    data,
                     function (response) {
-                        var html = '';
-                        $.each(response, function (i, item) {
-                            html += '<option value="'+item.pk+'">'+item.fields.name+'</option>';
-                        });
-                        $("select[name='speech_act']").html(html);
+                        $("select[name='speech_act']").html(parseJsonToOptions(response, 'name'));
                     }
                 );
+                if(type != '1') {
+					$.getJSON(
+						'/discussions/get_stories_json/',
+						data,
+						function (response) {
+							switch(type) {
+								case '3': {
+									$('#story_input-from-story').show()
+									                            .children('select')
+																.html(parseJsonToOptions(response, 'title'));
+									$('#story_input-to-story').show()
+															  .children('select')
+															  .html(parseJsonToOptions(response, 'title'));
+									$('#story_input-on-story').hide();
+								} break;
+								case '2': {
+									$('#story_input-on-story').show()
+															  .children('select')
+															  .html(parseJsonToOptions(response, 'title'));
+									$('#story_input-from-story').hide();
+									$('#story_input-to-story').hide();
+								} break;
+							}
+						}
+					)
+				} else {
+					$('#story_input-from-story').hide();
+					$('#story_input-on-story').hide();
+					$('#story_input-to-story').hide();
+				}
             });
         });
     </script>
@@ -106,9 +141,29 @@
 			</select>
 		</fieldset>
 	</div>
+	<div id="story_input-stories">
+		<fieldset id="story_input-from-story">
+			<legend>{% trans 'From story:' %}</legend>
+			<select name="from_story">
+
+			</select>
+		</fieldset>
+		<fieldset id="story_input-to-story">
+			<legend>{% trans 'To story:' %}</legend>
+			<select name="to_story">
+
+			</select>
+		</fieldset>
+		<fieldset id="story_input-on-story">
+			<legend>{% trans 'On story:' %}</legend>
+			<select name="parent_story">
+
+			</select>
+		</fieldset>
+	</div>
 	<fieldset id="story_input-title">
 		<legend>{% trans 'Title:' %}</legend>
-		<textarea name="title" class="is_value"></textarea>
+		<textarea name="title" class="is_value"></textarea><br/>
 		<button type="submit" id="story_input-submit" class="ui-state-default ui-corner-all ekkli-button">{% trans 'Send' %}</button>
 	</fieldset>
 </form>

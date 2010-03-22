@@ -27,7 +27,11 @@ a.member img {width: 50px; height: 50px; margin: 2px; border: 1px solid #933}
 
 /* Story Input Form */
 fieldset{padding:2px;border:1px solid #5B80B2}
-#story_input-submit{position:absolute;right:4px;bottom:2px}
+#story_input-from-story{display:none}
+#story_input-on-story{display:none}
+#story_input-to-story{display:none}
+#story_input-stories{float:left}
+#story_input-submit{float:right}
 #story_input-title{position:relative}
-#story_input-title textarea{width:700px;height:51px}
+#story_input-title textarea{width:99%;height:51px}
 #story_input-types{float:left}
