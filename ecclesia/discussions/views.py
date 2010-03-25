@@ -1,6 +1,6 @@
 from ecclesia.groups.models import GroupProfile, GroupPermission, MissionStatement
 from ecclesia.discussions.forms import StoryForm
-from ecclesia.discussions.models import Discussion,SpeechAct,Story,StoryRelation,Opinion
+from ecclesia.discussions.models import *
 from django.contrib.auth.models import Group, User
 from django.shortcuts import render_to_response,get_object_or_404
 from django.http import HttpResponse, Http404, HttpResponseRedirect
@@ -11,12 +11,13 @@ from django.core import serializers
 from django.template.defaultfilters import slugify
 
 def visualize(request, discussion_slug):
+    user=request.user
     discussion = Discussion.objects.get(slug=discussion_slug)
     group = GroupProfile.objects.get(group=Group.objects.get(id=discussion.group.pk))
     stories = Story.objects.filter(discussion=discussion.pk)
     user_in_group = False
     try:
-        user_in_group = request.user.groups.filter(id=group.group.id).count() > 0
+        user_in_group = user.groups.filter(id=group.group.id).count() > 0
     except:
         pass
     #initializing the form
@@ -26,7 +27,7 @@ def visualize(request, discussion_slug):
     if request.POST:
         story_form = StoryForm(request.POST)
         if story_form.is_valid():
-            save_story_from_form(story_form, discussion, request.user)
+            save_story_from_form(story_form, discussion, user)
             story_form = StoryForm()
         else:
             show_errors_in_form = True

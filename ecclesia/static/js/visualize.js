@@ -150,21 +150,29 @@ Story = function (node_class, config) {
 };
 Story.prototype = {
 	serialize	: function () {
+        var dims = this.config.dimensions;
+
 		return $.param(this.config.dimensions) + '&model_name=' + this.config.model_name + '&pk=' + this.config.id;
 	},
 	addToDOM	: function () {
 		var c = this.config;
 		$('#'+c.type+'_container').append('<div class="'+c.alias+'" id="'+this.DOMid+'"><a href="'+c.url+'" class="'+c.alias+'_title">'+c.name+'</a></div>');
-		this.wrapTitle($('#'+this.DOMid));
 	},
 	position	: function () {
-		var c = this.config;
-		var id_selector = '#'+this.DOMid
-		$(id_selector).css('left', c.dimensions.x+'px');
-		$(id_selector).css('top', c.dimensions.y+'px');
+		var dims = this.config.dimensions;
+		var id_selector = '#'+this.DOMid;
+        var offset_left = $('#'+this.config.type+'_container').position().left;
+        // if the new story is positioned outside the container fit it inside
+        if(dims.x < offset_left) {
+            dims.x = offset_left;
+        }
+		$(id_selector).css('left', dims.x+'px');
+		$(id_selector).css('top', dims.y+'px');
 	},
 	draw		: function (ctx) {
 		var dims = this.config.dimensions;
+        var el = $('#'+this.DOMid).height(dims.h+'px').width(dims.w+'px');
+        this.wrapTitle(el);
         var state = this.state.hover ? 'hover' : 'normal';
 		this.roundedRect(ctx, dims.x, dims.y, dims.w, dims.h, 5, this.config['fill_'+state], this.config['stroke_'+state]);
 	},
@@ -233,7 +241,7 @@ Opinion = function (node_class, config) {
 	this.config = {
 		alias		: 'opinion',
 		model_name	: 'Opinion',
-		type		: 'for',
+		type		: 'good',
 		parent_id	: -1,
 		parent		: {},
 		container_id: '',
@@ -297,14 +305,17 @@ Opinion.prototype = {
 			throw new Error('No parent element is set for: '+c.id);
 		}
 	},
-	position	: function () {},
+	position	    : function () {},
 	draw		    : function () {
-        if(!this.config.added) {
-			var opns = parseInt($('a', '#'+this.config.container_id).text());
+        var c = this.config;
+        if(!c.added) {
+			var anchor = $('a', '#'+c.container_id);
+            var opns = parseInt(anchor.text());
 			if(!opns) { opns = 1; }
 				 else { opns += 1; }
-			$('a', '#'+this.config.container_id).text(opns);
-			this.config.added = true;
+			anchor.text(opns);
+            anchor.attr('title', c.type+': '+opns);
+			c.added = true;
 		}
 	},
     drawContainerBg : function (container_id) {
@@ -330,7 +341,7 @@ VUController = function (options) {
     this.options = {
 		width		: 958,
 		height		: 600,
-		container_id: 'canvasContainer',
+        container_id: 'canvasContainer',
 		canvas_id	: 'groupsvu',
 		data_url	: '/get_groups_view_json/',
 		update_url	: '/common/update_presentation/',
@@ -356,9 +367,9 @@ VUController.prototype = {
 			}
 		});
 	},
-	createNodes			: function () {
+    createNodes			: function () {
 		//var _VUC = this;
-		$.each(_VUC.data, function (i, item) {
+        $.each(_VUC.data, function (i, item) {
 			$.each(item, function (key, val) {
 				var node = new Node({});
 				switch(key) {
@@ -378,12 +389,13 @@ VUController.prototype = {
 						node = new Opinion(node, val);
 						break;
 				}
-				var id = node.config.alias+'_'+node.config.id;
+				var c = node.config;
+                var id = c.alias+'_'+c.id;
 				// add the Node instance to the controller's elements
 				_VUC.elems[id] = node;
-				// set a load event listener to the element's background image to initialy draw it
-				if(node.config.bg_image) {
-					$(node.config.bg_image).load(function () {
+                // set a load event listener to the element's background image to initialy draw it
+				if(c.bg_image) {
+					$(c.bg_image).load(function () {
 						node.draw(_VUC.ctx);
 					});
 				}
@@ -487,7 +499,6 @@ VUController.prototype = {
                     // set other event handlers
                     _VUC.setEventHandlers(el);
 				});
-				// we have initialized the canvas so draw the element
 				_VUC.draw();
 			} else {
 				alert('No canvas context.');
@@ -593,7 +604,6 @@ DiscussionController.prototype = {
             }
         });
         // set some style options
-        //$('#'+_VUC.options.container_id).css('position', 'relative');
         $('.stories_container').height(_VUC.options.height)
                                .width(_VUC.options.width * 0.25 - 1);
     },
@@ -675,12 +685,14 @@ FormController.prototype = {
 	bind				: function (configs) {
 		var this_ = this;
 		$.each(configs, function(name, config){
-			$(document.forms[name]).find(':button[type=submit],:input[type=submit]').bind('click', function(e){
-				if($(e.target).attr('name').length && $(e.target).attr('name') == 'action') {
-					$.extend(config, { action : $(e.target).val() });
-				};
-				return this_.submit(this.form, config);
-			});
+			if(document.forms[name]) {
+                $(':button[type=submit],:input[type=submit]', document.forms[name]).bind('click', function(e){
+                    if($(e.target).attr('name').length && $(e.target).attr('name') == 'action') {
+                        $.extend(config, { action : $(e.target).val() });
+                    };
+                    return this_.submit(this.form, config);
+                });
+            }
 		});
 	},
 	init				: function (form, options) {

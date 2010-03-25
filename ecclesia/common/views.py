@@ -15,6 +15,8 @@ def update_presentation(request):
         pk = request.POST.get('pk', None)
         if pk is not None:
             object = model_class.objects.get(pk=pk)
+            object.h = int(request.POST.get('h', object.h))
+            object.w = int(request.POST.get('w', object.w))
             object.x = int(request.POST.get('x', object.x))
             object.y = int(request.POST.get('y', object.y))
             object.save()

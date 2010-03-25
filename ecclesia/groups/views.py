@@ -43,8 +43,9 @@ def get_groups_view_json(request):
     json = json.strip(',')
     return HttpResponse('[%s]' % json)
 
-def get_discussions_view_json(request):
-    discussions = Discussion.objects.all()
+def get_discussions_view_json(request, group_slug):
+    group = GroupProfile.objects.get(slug=group_slug).group
+    discussions = Discussion.objects.filter(group=group)
     json = ',';
     for discussion in discussions:
         json = '%s{"discussion":{"id":%s,"url":"%s","name":"%s","dimensions":{"x":%s,"y":%s,"w":%s,"h":%s}}},' % (json, discussion.id, discussion.get_absolute_url(), discussion.name, discussion.x, discussion.y, discussion.w, discussion.h)
