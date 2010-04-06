@@ -1,6 +1,6 @@
 {% extends 'admin/base_site.html' %}
 {% load i18n %}
-{% block breadcrumbs %}<div class="breadcrumbs"><a href="/">{% trans 'Home' %}</a> &rsaquo; {% trans "Groups List" %}</div>{% endblock %}
+{% block breadcrumbs %}<div class="breadcrumbs"><a href="/">{% trans 'Home' %}</a> &rsaquo; <a href="{{ group.group.get_absolute_url }}">{{ group.group.name }}{% trans "'s Home" %}</a> &rsaquo; {% trans "Discussions List" %}</div>{% endblock %}
 {% block userlinks %}<a href="/admin/password_change/">{% trans 'Change password' %}</a> / <a href="/admin/logout/">{% trans 'Log out' %}</a>{% endblock %}
 {% block title %}{% trans "Groups List" %}{% endblock %}
 {% block coltype %}diagram{% endblock %}
@@ -21,10 +21,10 @@
 			<table border="0" cellpadding="0" cellspacing="0" class="sortable">
 				<thead>
 				<tr>
-					<th width="20">ID</th>	
-					<th width="100">Name</th>	
-					<th width="100">Description</th>	
-					<th width="100">Type</th>	
+					<th width="20">ID</th>
+					<th width="100">Name</th>
+					<th width="100">Description</th>
+					<th width="100">Type</th>
 					<th width="100">Created by</th>
 					<th width="100">Created at</th>
 					<th width="100">Updated at</th>
@@ -32,7 +32,7 @@
 				</tr>
 				</thead>
 				<tbody>
-				
+
 				{% for obj in my_items.object_list %}
 				<tr class="ref_{{forloop.counter|divisibleby:"2"}}">
 					<td align="left">{{ obj.pk }}</td>
@@ -44,7 +44,7 @@
 					<td>{{obj.updated_at}}</td>
 					{% ifequal user_permission_type 1 %}
 						<td>
-							<form action="/discussion-delete/{{obj.pk}}/" method="post">      
+							<form action="/discussion-delete/{{obj.pk}}/" method="post">
 						        <input type="image" onclick="if(confirm('Are you sure you want to delete discussion?')) {this.form.submit();} else { return false; }" src="/static/icons/delete.png">Delete Discussion</input>
 						    </form>
 						</td>
