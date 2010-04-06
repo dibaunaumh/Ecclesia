@@ -22,7 +22,7 @@
 				<thead>
 				<tr>
 					<th width="20">ID</th>
-					<th width="100">Name</th>
+					<th width="100">Title</th>
 					<th width="100">Content</th>
 					<th width="100">Speech act</th>
 					<th width="100">Created by</th>
@@ -36,7 +36,7 @@
 				{% for obj in my_items.object_list %}
 				<tr class="ref_{{forloop.counter|divisibleby:"2"}}">
 					<td align="left">{{ obj.pk }}</td>
-					<td><a href="{{ obj.get_absolute_url }}">{{ obj.name }}</a></td>
+					<td><a href="{{ obj.get_absolute_url }}">{{ obj.title }}</a></td>
 					<td><div{% if user_in_group %} class="edit" id="story_{{ obj.pk }}"{% endif %}>{{obj.content}}</div></td>
 					<td>{{obj.speech_act}}</td>
 					<td>{{obj.created_by}}</td>
