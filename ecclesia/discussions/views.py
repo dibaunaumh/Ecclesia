@@ -167,12 +167,13 @@ def discussions_list(request, group_slug):
     if group.count() == 0:
         raise Http404("Can't find a group with the slug: %s" % group_slug)
     else:
+        group = group[0]
         user=request.user
         if str(user) != 'AnonymousUser':
-            if GroupPermission.objects.filter(group=group[0]).filter(user=user):
-                permission = GroupPermission.objects.filter(group=group[0]).filter(user=user)[0]
+            if GroupPermission.objects.filter(group=group).filter(user=user):
+                permission = GroupPermission.objects.filter(group=group).filter(user=user)[0]
                 user_permission_type = permission.permission_type
-    discussions = Discussion.objects.filter(group=group[0])
+    discussions = Discussion.objects.filter(group=group)
     (my_items, get_parameters, f) = search_filter_paginate('discussion', discussions, request)
     return render_to_response('discussions_list.html', locals())
 
@@ -184,20 +185,23 @@ def delete_discussion(request, discussion_pk):
 
 def stories_list(request, discussion_slug):
     discussion = Discussion.objects.filter(slug=discussion_slug)
+    group = discussion[0].group
     if discussion.count() == 0:
         raise Http404("Can't find a discussion with the slug: %s" % discussion_slug)
     else:
+        discussion = discussion[0]
+        group = discussion.group
         user=request.user
         if str(user) != 'AnonymousUser':
-            if GroupPermission.objects.filter(group=discussion[0].group).filter(user=user):
-                permission = GroupPermission.objects.filter(group=discussion[0].group).filter(user=user)[0]
+            if GroupPermission.objects.filter(group=discussion.group).filter(user=user):
+                permission = GroupPermission.objects.filter(group=discussion.group).filter(user=user)[0]
                 user_permission_type = permission.permission_type
         user_in_group = False
         try:
-            user_in_group = user.groups.filter(id=discussion[0].group.id).count() > 0
+            user_in_group = user.groups.filter(id=discussion.group.id).count() > 0
         except:
             pass
-    stories = Story.objects.filter(discussion=discussion[0])
+    stories = Story.objects.filter(discussion=discussion)
     (my_items, get_parameters, f) = search_filter_paginate('story', stories, request)
     return render_to_response('stories_list.html', locals())
 
