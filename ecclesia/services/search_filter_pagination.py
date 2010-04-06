@@ -18,7 +18,7 @@ def search_filter_paginate(entity_name, all_objects, request):
         if entity_name == 'discussion':
             i = get_query(request.GET['search'].strip(), ['name', 'description', 'type'])
         if entity_name == 'story':
-            i = get_query(request.GET['search'].strip(), ['name', 'content'])
+            i = get_query(request.GET['search'].strip(), ['title', 'content'])
         items_search = all_objects.filter(i)
 
     #filter
@@ -69,7 +69,7 @@ def analyze_filters_parameters(entity_name, request):
         if 'type' in request.GET:
             get_parameters = "?type=%s&created_by=%s&" % \
             (request.GET['type'], request.GET['created_by'])
-    if entity_name == 'discussion':
+    if entity_name == 'story':
         if 'speech_act' in request.GET:
             get_parameters = "?speech_act=%s&created_by=%s&" % \
             (request.GET['speech_act'], request.GET['created_by'])
