@@ -4,7 +4,53 @@
 {% block userlinks %}<a href="/admin/password_change/">{% trans 'Change password' %}</a> / <a href="/admin/logout/">{% trans 'Log out' %}</a>{% endblock %}
 {% block title %}{{ group.group.name }}{% trans "'s Home" %}{% endblock %}
 {% block coltype %}diagram{% endblock %}
+{% block extrastyle %}
+    <link rel="stylesheet" type="text/css" href="/static/css/group-home.css" />
+{% endblock %}
+{% block extrahead %}
+<script type="text/javascript">
+    var config = {
+        canvas_id	: 'discsvu',
+        data_url	: '/get_discussions_view_json/{{ group.slug }}'
+    }
+    var VUC = new VUController(config);
+    VUC.init();
 
+	$(function() {
+		$("#mission_statement_dialog").dialog({
+			bgiframe: true,
+            autoOpen: false,
+			height: 402,
+			width: 787,
+			modal: true,
+			buttons: {
+				'Create': function() {
+					$("#mission_statement_form").submit();
+				},
+
+				Cancel: function() {
+					$(this).dialog('close');
+				}
+			},
+			close: function() {
+				window.location = window.location;
+			}
+		});
+
+		$('#add_mission').click(function() {
+			$('#mission_statement_dialog').dialog('open');
+		})
+	});
+</script>
+
+{% if show_errors_in_mission_statement_form %}
+	<script>
+		$(document).ready(function() {
+			$('#mission_statement_dialog').dialog('open');
+		});
+	</script>
+{% endif %}
+{% endblock %}
 {% block content %}
 <div id="buttons_container">
 <div id="create_container" {% if not user_in_group %}style="display:none"{% endif %}>
@@ -63,63 +109,6 @@
 
 <h3>Featured Discussions</h3>
 <div id="canvasContainer"></div>
-<style type="text/css">
-#buttons_container {float: right; padding-left: 15px}
-#content{width:960px;margin:10px auto}
-#ui_container {float: left; width: 145px; padding-left: 15px}
-#canvasContainer {position: relative; margin: 0; padding: 0; float: left}
-#discsvu {margin: 0; padding: 0; border: thin solid #5B80B2}
-.disc {position: absolute; width: 150px; height: 100px; margin: 0; padding: 0; font-size: 12pt; font-weight: bold; overflow: hidden; cursor: move}
-.disc a {display: block; float: left; padding: 5px; color: #000}
-.disc a:hover {color: #033; text-decoration: underline}
-.dragon { border: thin solid #033;opacity:.6; -moz-opacity:.6}
-.selecton { border: 2px solid #033 }
-img.disc {width: 150px; height: 100px}
-a.member img {width: 50px; height: 50px; margin: 2px; border: 1px solid #5B80B2}
-</style>
-<script type="text/javascript">
-var config = {
-	canvas_id	: 'discsvu',
-	data_url	: '/get_discussions_view_json/{{ group.slug }}'
-}
-var VUC = new VUController(config);
-VUC.init();
-</script>
-<script>
-	$(function() {
-		$("#mission_statement_dialog").dialog({
-			bgiframe: true,
-            autoOpen: false,
-			height: 402,
-			width: 787,
-			modal: true,
-			buttons: {
-				'Create': function() {
-					$("#mission_statement_form").submit();
-				},
-
-				Cancel: function() {
-					$(this).dialog('close');
-				}
-			},
-			close: function() {
-				window.location = window.location;
-			}
-		});
-
-		$('#add_mission').click(function() {
-			$('#mission_statement_dialog').dialog('open');
-		})
-	});
-</script>
-
-{% if show_errors_in_mission_statement_form %}
-	<script>
-		$(document).ready(function() {
-			$('#mission_statement_dialog').dialog('open');
-		});
-	</script>
-{% endif %}
 
 <div id="create_dialog" style="display:none" title="Create new Discussion">
 	<form method="POST" action="" id="create_form">

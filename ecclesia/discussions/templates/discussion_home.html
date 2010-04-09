@@ -14,8 +14,8 @@
             data_url	: '/discussions/get_stories_view_json/{{ discussion.slug }}',
             meta_url	: '/discussions/get_visualization_meta_data/'
         };
-        var VUC = new VUController(config);
-        var DC	= new DiscussionController(VUC, {});
+        VUC = new VUController(config);
+        DC	= new DiscussionController(VUC, {});
         DC.init();
         $(document).ready(function () {
             $('button').filter('.ekkli-button').hover(
@@ -87,7 +87,7 @@
     </script>
 {% endblock %}
 {% block content %}
-<div id="buttons_container"><div id="log"></div>
+<div id="buttons_container">
 {% if user_in_group %}
 	<!--input id="create" class="ui-button ui-state-default ui-corner-all" type="button" value="{% trans 'Create Story' %}"/><br clear="all"/-->
 {% endif %}
@@ -111,7 +111,7 @@
 	{{ discussion.description }}
 </p>
 
-<div class="container">
+
 <div id="create_dialog" style="display:none" title="Create new Story">
 	<form method="POST" action="" id="create_form">
 	{{ story_form.as_p }}
@@ -178,7 +178,7 @@
 {% endfor %}
 </div>
 -->
-</div>
+
 
 <hr/>
 <!--ul>

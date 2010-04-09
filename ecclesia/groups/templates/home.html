@@ -1,7 +1,14 @@
 {% extends 'admin/base_site.html' %}
 {% load i18n %}
-
-
+{% block extrastyle %}
+    <link rel="stylesheet" type="text/css" href="/static/css/home.css" />
+{% endblock %}
+{% block extrahead %}
+<script type="text/javascript">
+	var VUC = new VUController();
+	VUC.init();
+</script>
+{% endblock %}
 {% block content %}
 
 <h2>
@@ -25,35 +32,6 @@
 
 <h3>Current groups</h3>
 <div id="canvasContainer"></div>
-
-<style type="text/css">
-#buttons_container {float: right; padding-left: 15px}
-#content{width:960px;margin:10px auto}
-#canvasContainer {position: relative; margin: 0; padding: 0; float: left}
-#groupsvu {margin: 0; padding: 0; border: thin solid #5B80B2}
-.group{position: absolute; width: 150px; height: 100px; margin: 0; padding: 0; font-size: 12pt; font-weight: bold; overflow: hidden; cursor: move}
-.group a {display: block; float: left; padding: 10px; color: #000}
-.group a:hover {color: #033; text-decoration: underline}
-.dragon { border: thin solid #033; background: url(/static/img/cork_board.jpg) left top no-repeat;opacity:.6; -moz-opacity:.6}
-.selecton { border: 2px solid #033 }
-
-#dialog { font-size: 82.5%; }
-#dialog label, input { display:block; }
-#dialog input.text { margin-bottom:12px; width:95%; padding: .4em; }
-#dialog fieldset { padding:0; border:0; margin-top:25px; }
-div#users-contain {  width: 350px; margin: 20px 0; }
-div#users-contain table { margin: 1em 0; border-collapse: collapse; width: 100%; }
-div#users-contain table td, div#users-contain table th { border: 1px solid #eee; padding: .6em 10px; text-align: left; }
-.ui-button { outline: 0; margin:0; padding: .4em 1em .5em; text-decoration:none; cursor:pointer; position: relative; text-align: center; }
-.ui-dialog .ui-state-highlight, .ui-dialog .ui-state-error { padding: .3em;  }
-
-</style>
-
-<script type="text/javascript">
-var VUC = new VUController();
-VUC.init();
-</script>
-
 <div id="create_dialog" style="display:none" title="Create new Group">
 	<form method="POST" action="" id="create_form">
 	{{ group_form.as_p }}
