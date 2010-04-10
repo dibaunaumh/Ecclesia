@@ -1,0 +1,27 @@
+{% extends 'admin/base_site.html' %}
+{% load i18n %}
+{% block breadcrumbs %}<div class="breadcrumbs"><a href="/">{% trans 'Home' %}</a> &rsaquo; <a href="{{ group.get_absolute_url }}">{{ group.group.name }}{% trans "'s Home" %}</a> &rsaquo; <a href="{{ discussion.get_absolute_url }}">{{ discussion.name }}</a> &rsaquo; {{ story.title }}</div>{% endblock %}
+{% block userlinks %}<a href="/admin/password_change/">{% trans 'Change password' %}</a> / <a href="/admin/logout/">{% trans 'Log out' %}</a>{% endblock %}
+{% block title %}{{ discussion.name }}{{ discussion.type.name }}{% endblock %}
+{% block extrastyle %}
+    <link rel="stylesheet" type="text/css" href="/static/css/story.css" />
+{% endblock %}
+{% block content %}
+<div id="content">
+    <h1>{{ story.title }}</h1>
+    <div>
+        <h3>By: {{ story.created_by }}, at: {{ story.created_at }}</h3>
+    </div>
+    <hr/>
+    <p>
+        {{ story.content }}
+    </p>
+    <hr/>
+    <ul id="opinions">
+    {% for opinion in opinions %}
+        <li><span class="opinion opinion_{{ opinion.speech_act }}">[{{ opinion.speech_act }}]</span> {{ opinion.title }}</li>
+    {% endfor %}
+    </ul>
+    <hr/>
+</div>
+{% endblock %}

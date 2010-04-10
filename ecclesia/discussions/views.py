@@ -228,3 +228,11 @@ def get_inline_field(request):
         mission_statement.mission_statement = request.POST['value']
         mission_statement.save()
         return HttpResponse("%s" % mission_statement.mission_statement)
+
+def story_home(request, story_slug):
+    story = Story.objects.get(slug=story_slug)
+    discussion = Discussion.objects.get(id=story.discussion.pk)
+    group = GroupProfile.objects.get(group=Group.objects.get(id=discussion.group.pk))
+    user = request.user
+    opinions = Opinion.objects.filter(parent_story=story).order_by('speech_act')
+    return render_to_response('story_home.html', locals())

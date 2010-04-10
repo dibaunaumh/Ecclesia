@@ -1,0 +1,9 @@
+.clear {overflow:hidden;height:0;clear:both}
+.opinion {display:inline-block;width:42px;text-align:center;font-weight:bold}
+.opinion_false {background-color:#ffc}
+.opinion_true {background-color:#ccf}
+.opinion_bad {background-color:#fcc}
+.opinion_good {background-color:#cfc}
+#content{width:975px;margin:10px auto}
+#opinions {padding:0; list-style:none}
+#opinions li {list-style:none}

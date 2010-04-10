@@ -9,4 +9,5 @@ urlpatterns = patterns('',
     (r'^get_stories_json/$', 'ecclesia.discussions.views.get_stories_json'),
     #(r'^submit/$', 'ecclesia.discussions.views.submit_story'),
     (r'^add_story/$', 'ecclesia.discussions.views.add_base_story'),
+    (r'^story/(?P<story_slug>.*)/$', 'ecclesia.discussions.views.story_home'),
 )

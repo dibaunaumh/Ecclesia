@@ -99,7 +99,7 @@ class Story(BaseStory):
         return "%s_%d" % ('story', self.id)
 		
     def get_absolute_url(self):
-        return "http://%s/story/%s/" % (get_domain(), self.slug)
+        return "http://%s/discussions/story/%s/" % (get_domain(), self.slug)
 
     def __unicode__(self):
         return self.title
