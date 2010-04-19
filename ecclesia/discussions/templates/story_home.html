@@ -17,14 +17,14 @@
 {% endblock %}
 {% block content %}
 <div id="content">
-    <h1><span class="edit">{{ story.title }}</span> ({{ story.speech_act }})</h1>
+    <h1><span {% if user_in_group %} class="edit" id="storytitle_{{ story.pk }}"{% endif %}>{{story.title}}</span> ({{ story.speech_act }})</h1>
     <h4 id="discussion-name-header">Under discussion: {{ discussion.name }}</h4>
     <div>
         <h3>By: {{ story.created_by }}, at: {{ story.created_at }}</h3>
     </div>
     <hr/>
     <p>
-        <span class="edit">{{ story.content }}</span>
+        <span {% if user_in_group %} class="edit" id="storycontent_{{ story.pk }}"{% endif %}>{{story.content}}</span>
     </p>
     <hr/>
     <ul id="opinions">

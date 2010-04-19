@@ -37,7 +37,7 @@
 				<tr class="ref_{{forloop.counter|divisibleby:"2"}}">
 					<td align="left">{{ obj.pk }}</td>
 					<td><a href="{{ obj.get_absolute_url }}">{{ obj.title }}</a></td>
-					<td><div{% if user_in_group %} class="edit" id="story_{{ obj.pk }}"{% endif %}>{{obj.content}}</div></td>
+					<td><span{% if user_in_group %} class="edit" id="storycontent2_{{ obj.pk }}"{% endif %}>{{obj.content}}</span></td>
 					<td>{{obj.speech_act}}</td>
 					<td>{{obj.created_by}}</td>
 					<td>{{obj.created_at}}</td>

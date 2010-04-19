@@ -196,11 +196,7 @@ def stories_list(request, discussion_slug):
             if GroupPermission.objects.filter(group=discussion.group).filter(user=user):
                 permission = GroupPermission.objects.filter(group=discussion.group).filter(user=user)[0]
                 user_permission_type = permission.permission_type
-        user_in_group = False
-        try:
-            user_in_group = user.groups.filter(id=discussion.group.id).count() > 0
-        except:
-            pass
+        user_in_group = check_if_user_in_group(user, discussion)
     stories = Story.objects.filter(discussion=discussion)
     (my_items, get_parameters, f) = search_filter_paginate('story', stories, request)
     return render_to_response('stories_list.html', locals())
@@ -218,7 +214,12 @@ def get_inline_field(request):
         discussion.name = request.POST['value']
         discussion.save()
         return HttpResponse("%s" % discussion.name)
-    if fieldname.split("_")[0] == 'story':
+    if fieldname.split("_")[0] == 'storytitle':
+        story = Story.objects.get(pk=fieldname.split("_")[1])
+        story.title = request.POST['value']
+        story.save()
+        return HttpResponse("%s" % story.title)
+    if fieldname.split("_")[0] == 'storycontent' or fieldname.split("_")[0] == 'storycontent2':
         story = Story.objects.get(pk=fieldname.split("_")[1])
         story.content = request.POST['value']
         story.save()
@@ -229,10 +230,19 @@ def get_inline_field(request):
         mission_statement.save()
         return HttpResponse("%s" % mission_statement.mission_statement)
 
+def check_if_user_in_group(user, discussion):
+    user_in_group = False
+    try:
+        user_in_group = user.groups.filter(id=discussion.group.id).count() > 0
+    except:
+        pass
+    return user_in_group
+
 def story_home(request, story_slug):
     story = Story.objects.get(slug=story_slug)
     discussion = Discussion.objects.get(id=story.discussion.pk)
     group = GroupProfile.objects.get(group=Group.objects.get(id=discussion.group.pk))
     user = request.user
     opinions = Opinion.objects.filter(parent_story=story).order_by('speech_act')
+    user_in_group = check_if_user_in_group(user, discussion)
     return render_to_response('story_home.html', locals())
