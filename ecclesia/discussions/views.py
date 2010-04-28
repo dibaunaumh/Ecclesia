@@ -2,7 +2,7 @@ from ecclesia.groups.models import GroupProfile, GroupPermission, MissionStateme
 from ecclesia.discussions.forms import StoryForm
 from ecclesia.discussions.models import *
 from django.contrib.auth.models import Group, User
-from django.shortcuts import render_to_response,get_object_or_404
+from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django import forms
 from forms import *
@@ -246,3 +246,41 @@ def story_home(request, story_slug):
     opinions = Opinion.objects.filter(parent_story=story).order_by('speech_act')
     user_in_group = check_if_user_in_group(user, discussion)
     return render_to_response('story_home.html', locals())
+
+def merge_stories(story1_slug, story2_slug):
+    story1 = get_object_or_404(Story, slug=story1_slug)
+    story2 = get_object_or_404(Story, slug=story2_slug)
+    if not story1.parent: #story1 is not a group
+        story1.parent = story2
+        story2.merged_to = True
+        change_from_relation(story1, story2)
+    else:
+        if not story2.parent: #story1 - group, story2 - not
+            story2.parent = story1.parent
+            change_from_relation(story2, story1)
+        else: #both stories are group stories
+            for story in Story.objects.filter(parent=story1):
+                story.parent = story2
+                story.save()
+                change_from_relation(story, story2)
+            story1.parent = story2
+            story1.merged_to = False
+            change_from_relation(story1, story2)
+    story1.save()
+    story2.save()
+   
+def extract_stories(story1, story2_slug):
+    #how to return merged relations?
+    pass
+ 
+def change_from_relation(story1, story2):
+    for relation in StoryRelation.objects.filter(from_story=story1):
+        relation.from_story=story2
+        relation.save()
+    
+    
+    
+    
+    
+    
+    

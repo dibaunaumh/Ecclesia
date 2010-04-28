@@ -85,7 +85,8 @@ class Story(BaseStory):
     """
     discussion = models.ForeignKey(Discussion, related_name='stories', verbose_name=_('discussion'), null=False, blank=False, help_text=_('The discussion this story is a part of.'))
     speech_act = models.ForeignKey(SpeechAct, related_name='stories', verbose_name=_('speech act'), null=False, blank=False, help_text=_("Which speech act this story represents."))
-	
+    parent = models.ForeignKey("Story", default=None, related_name='group_parent', verbose_name=_('parent'), null=True, blank=True, help_text=_("Parent story if the story belong to story group"))
+    merged_to = models.BooleanField(default=False, verbose_name=_('merged_to'), help_text=_("Boolean field that tells us if the story is a parent of stories group"))
     # Generic foreign key machinery follows
     # content_type = models.ForeignKey(ContentType)
     # object_id = models.PositiveIntegerField()
