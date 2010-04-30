@@ -361,14 +361,17 @@ Opinion.prototype = {
 VUController = function (options) {
     _VUC = this;
 	this.options = {
-		width		: 958,
-		height		: 600,
-        container_id: 'canvasContainer',
-		canvas_id	: 'groupsvu',
-		data_url	: '/get_groups_view_json/',
-		update_url	: '/common/update_presentation/',
-		meta_url	: '',
-		zoom_slider	: {
+		width		        : 958,
+		height		        : 598,
+        container_id        : 'canvasContainer',
+		canvas_id	        : 'groupsvu',
+		data_url	        : '/get_groups_view_json/',
+		update_db_url   	: '/common/update_presentation/',
+		update_status_url	: null,
+		meta_url	        : '',
+        last_changed        : '',
+        update_timeout      : 5000,
+		zoom_slider	        : {
 			change		: _VUC.zoom,
 			orientation	: 'vertical',
             animate     : 'fast',
@@ -387,17 +390,95 @@ VUController = function (options) {
 	this.ctx = null;
 };
 VUController.prototype = {
-	setElementsRelations: function () {
+	init				: function (loaded) {
+        if(!loaded || loaded === 'reload') {
+			// get the data
+			_VUC.getData();
+		} else {
+			// create the elements
+			_VUC.createNodes();
+			// initialize the canvas
+			if(_VUC.initCanvas()) {
+				// appending a scaling slider
+				if($.isPlainObject(_VUC.options.zoom_slider) && $.isFunction(_VUC.options.zoom_slider.change)) {
+					_VUC.initZoom();
+				}
+				//var _VUC = this;
+				// iterate over the elements and create the GUI
+				$.each(_VUC.elems, function (id, el) {
+					// appending a div for each element to the canvas container
+					_VUC.addElement(el);
+					// position the element inside the container
+					_VUC.position(el);
+					// set it as draggable
+					_VUC.setDraggable(el);
+                    // set other event handlers
+                    _VUC.setEventHandlers(el);
+				});
+				_VUC.draw();
+                // initialize the visualization updater
+                setTimeout(_VUC.updateView, _VUC.options.update_timeout);
+			} else {
+				alert('No canvas context.');
+			}
+		}
+	},
+    getData				: function () {
 		//var _VUC = this;
-		$.each(_VUC.elems, function (key, el) {
-			var c = _VUC.elems[key].config;
-			if(el instanceof Relation) {
-				c.from = _VUC.elems[c.from_id];
-				c.to = _VUC.elems[c.to_id];
-			} else if(el instanceof Opinion) {
-				c.parent = _VUC.elems[c.parent_id];
+		// expecting format: [ { element_alias : { element_config_object }, ... ]
+		$.getJSON(_VUC.options.data_url, function (data){
+			_VUC.data = data;
+			// initialize the view controller
+			_VUC.init(true);
+		});
+	},
+    updateView             : function () {
+        if(!_VUC.options.update_status_url) { return; } // ignore and don't update
+        $.ajax({
+            type    : 'POST',
+            url     : _VUC.options.update_status_url,
+            data    : { last_changed : _VUC.options.last_changed },
+            //timeout : _VUC.options.update_timeout,
+            success : function (response) {
+                if(response) {
+                    if(_VUC.options.last_changed !== response) {
+                        _VUC.options.last_changed = response;
+                        _VUC.init('reload');
+                    } else {
+                        setTimeout(_VUC.updateView, _VUC.options.update_timeout);
+                    }
+                }
+            },
+            error   : function (xhr, status, error) {
+                alert(status+' : '+error);
+            }
+        });
+    },
+    updateDB	: function () {
+		//var _VUC = this;
+		_VUC.data = _VUC.drag.serialize();
+		$.ajax({
+			type		: "POST",
+			url			: _VUC.options.update_db_url,
+			data		: _VUC.data,
+			success		: function (response){
+				_VUC.options.last_changed = response;
 			}
 		});
+	},
+    initCanvas			: function () {
+		//var _VUC = this;
+        var o = _VUC.options;
+		$('#'+o.container_id).empty().height(o.height).width(o.width);
+		$('#'+o.container_id).append('<canvas id="'+o.canvas_id+'" width="'+o.width+'" height="'+o.height+'"></canvas>');
+		this.ctx = document.getElementById(o.canvas_id).getContext('2d');
+		return (_VUC.ctx);
+	},
+	initZoom			: function () {
+		if($('#vuslider').length == 0) {
+			$('#'+_VUC.options.container_id).after('<div id="vuslider"></div>');
+			$('#vuslider').slider(_VUC.options.zoom_slider);
+		}
 	},
     createNodes			: function () {
 		//var _VUC = this;
@@ -437,22 +518,33 @@ VUController.prototype = {
 		});
 		this.setElementsRelations();
 	},
-	initCanvas			: function () {
-		//var _VUC = this;
-        var o = _VUC.options;
-		$('#'+o.container_id).empty().height(o.height).width(o.width);
-		$('#'+o.container_id).append('<canvas id="'+o.canvas_id+'" width="'+o.width+'" height="'+o.height+'"></canvas>');
-		this.ctx = document.getElementById(o.canvas_id).getContext('2d');
-		return (_VUC.ctx);
-	},
-	initZoom			: function () {
-		if($('#vuslider').length == 0) {
-			$('#'+_VUC.options.container_id).after('<div id="vuslider"></div>');
-			$('#vuslider').slider(_VUC.options.zoom_slider);
+    addElement			: function (el) {
+        // add an element to the DOM
+		if(el) {
+			el.addToDOM(_VUC.options.container_id);
+		}
+		// add all elements to the DOM
+		else {
+			//var _VUC = this;
+            $.each(_VUC.elems, function (id, el) {
+				_VUC.addElement(el);
+			});
 		}
 	},
+    setElementsRelations: function () {
+		//var _VUC = this;
+		$.each(_VUC.elems, function (key, el) {
+			var c = _VUC.elems[key].config;
+			if(el instanceof Relation) {
+				c.from = _VUC.elems[c.from_id];
+				c.to = _VUC.elems[c.to_id];
+			} else if(el instanceof Opinion) {
+				c.parent = _VUC.elems[c.parent_id];
+			}
+		});
+	},
 	setDraggable		: function (el) {
-		var _VUC = this;
+		//var _VUC = this;
 		// set a specific element as draggable
 		if(el) {
 			var id = el.config.alias+'_'+el.config.id;
@@ -497,59 +589,6 @@ VUController.prototype = {
             }
         }
     },
-	addElement			: function (el) {
-        // add an element to the DOM
-		if(el) {
-			el.addToDOM(_VUC.options.container_id);
-		}
-		// add all elements to the DOM
-		else {
-			//var _VUC = this;
-            $.each(_VUC.elems, function (id, el) {
-				_VUC.addElement(el);
-			});
-		}
-	},
-	getData				: function () {
-		//var _VUC = this;
-		// expecting format: [ { element_alias : { element_config_object }, ... ]
-		$.getJSON(_VUC.options.data_url, function (data){
-			_VUC.data = data;
-			// initialize the view controller
-			_VUC.init(true);
-		});
-	},
-	init				: function (loaded) {
-        if(!loaded || loaded === 'reload') {
-			// get the data
-			_VUC.getData();
-		} else {
-			// create the elements
-			_VUC.createNodes();
-			// initialize the canvas
-			if(_VUC.initCanvas()) {
-				// appending a scaling slider
-				if($.isPlainObject(_VUC.options.zoom_slider) && $.isFunction(_VUC.options.zoom_slider.change)) {
-					_VUC.initZoom();
-				}
-				//var _VUC = this;
-				// iterate over the elements and create the GUI
-				$.each(_VUC.elems, function (id, el) {
-					// appending a div for each element to the canvas container
-					_VUC.addElement(el);
-					// position the element inside the container
-					_VUC.position(el);
-					// set it as draggable
-					_VUC.setDraggable(el);
-                    // set other event handlers
-                    _VUC.setEventHandlers(el);
-				});
-				_VUC.draw();
-			} else {
-				alert('No canvas context.');
-			}
-		}
-	},
 	position			: function (el) {
 		if(el.position) {
 			el.position();
@@ -578,32 +617,19 @@ VUController.prototype = {
 	drop				: function () {
         $('#'+_VUC.drag.config.alias+'_'+_VUC.drag.config.id).removeClass('dragon');
 		_VUC.draw();
-		_VUC.updatePresentation();
+		_VUC.updateDB();
 	},
 	zoom				: function (event, ui) {
 		_VUC.options.scale = ui.value;
         // resize titles
 		$('#'+_VUC.options.container_id).animate( { fontSize: 16*ui.value+'px' }, 'fast');
 		_VUC.init('reload');
-	},
-	updatePresentation	: function () {
-		//var _VUC = this;
-		_VUC.data = _VUC.drag.serialize();
-		$.ajax({
-			type		: "POST",
-			url			: _VUC.options.update_url,
-			data		: _VUC.data,
-			success		: function (msg){
-				//alert(msg);
-			}
-		});
 	}
 };
 /*
  *	A controller class that handles Discussions GUI.
  *	Accepts a VUController object instance and inherits it
  *	using jQuery.extend()
- *  ( sort of an inheritance :P )
  */
 DiscussionController = function (VuController, options) {
     this.options = {};
@@ -725,8 +751,7 @@ FormController.prototype = {
 	 * gets an object that maps form name to a config object
 	 * iterates over the object and adds the submit event
 	 * listener to every form
-	 * @param Object configs : a map of { name : config }
-	 * @return
+	 * @param  Object   configs : a map of { name : config }
 	 */
 	bind				: function (configs) {
 		var this_ = this;

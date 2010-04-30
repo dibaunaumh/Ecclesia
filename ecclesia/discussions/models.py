@@ -7,6 +7,7 @@ from django.core import urlresolvers
 from groups.models import GroupProfile
 from common.models import Presentable
 from common.utils import get_domain
+import datetime
 
 SPEECH_ACT_CHOICES = (
                       # These are the types of speech acts available in the system:
@@ -78,6 +79,12 @@ class BaseStory(Presentable):
     class Meta:
         abstract = True
 
+    def get_view_container_object(self, set_to_now):
+        if set_to_now:
+            self.discussion.last_related_update = datetime.datetime.now()
+            self.discussion.save()
+        return self.discussion
+
 		
 class Story(BaseStory):
     """
@@ -85,8 +92,8 @@ class Story(BaseStory):
     """
     discussion = models.ForeignKey(Discussion, related_name='stories', verbose_name=_('discussion'), null=False, blank=False, help_text=_('The discussion this story is a part of.'))
     speech_act = models.ForeignKey(SpeechAct, related_name='stories', verbose_name=_('speech act'), null=False, blank=False, help_text=_("Which speech act this story represents."))
-    parent = models.ForeignKey("Story", default=None, related_name='group_parent', verbose_name=_('parent'), null=True, blank=True, help_text=_("Parent story if the story belong to story group"))
-    merged_to = models.BooleanField(default=False, verbose_name=_('merged_to'), help_text=_("Boolean field that tells us if the story is a parent of stories group"))
+    parent = models.ForeignKey("Story", default=None, related_name='parent story', verbose_name=_('parent'), null=True, blank=True, help_text=_("Parent story if the story belong to story group"))
+    is_parent = models.BooleanField(default=False, verbose_name=_('is parent'), help_text=_("Boolean field that tells us if the story is a parent of stories group"))
     # Generic foreign key machinery follows
     # content_type = models.ForeignKey(ContentType)
     # object_id = models.PositiveIntegerField()
@@ -147,3 +154,14 @@ class Opinion(BaseStory):
 
     def __unicode__(self):
         return self.title
+
+
+def last_changed_updater(sender, instance, **kwargs):
+    discussion = Discussion.objects.get(id=instance.discussion.pk)
+    discussion.last_related_update = datetime.datetime.now()
+    print 'updating %s to %s' % (discussion.name, datetime.datetime.now())
+    discussion.save()
+
+# connecting post_save signal of stories and opinions to update their parent discussion's last_related_update field 
+models.signals.post_save.connect(last_changed_updater, sender=Story)
+models.signals.post_save.connect(last_changed_updater, sender=Opinion)

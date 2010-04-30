@@ -10,8 +10,8 @@
 {% block extrahead %}
 <script type="text/javascript">
     var config = {
-        canvas_id	: 'discsvu',
-        data_url	: '/get_discussions_view_json/{{ group.slug }}'
+        canvas_id	        : 'discsvu',
+        data_url	        : '/get_discussions_view_json/{{ group.slug }}'
     }
     var VUC = new VUController(config);
     VUC.init();
@@ -24,7 +24,7 @@
 			width: 787,
 			modal: true,
 			buttons: {
-				'Create': function() {
+				Create: function() {
 					$("#mission_statement_form").submit();
 				},
 

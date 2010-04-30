@@ -10,9 +10,11 @@
 {% block extrahead %}
     <script type="text/javascript">
         var config = {
-            canvas_id	: 'storysvu',
-            data_url	: '/discussions/get_stories_view_json/{{ discussion.slug }}',
-            meta_url	: '/discussions/get_visualization_meta_data/'
+            canvas_id	        : 'storysvu',
+            data_url	        : '/discussions/get_stories_view_json/{{ discussion.slug }}',
+            meta_url	        : '/discussions/get_visualization_meta_data/',
+            update_status_url	: '/discussions/status/{{ discussion.slug }}',
+            last_changed        : '{{ last_related_update }}'
         };
         VUC = new VUController(config);
         DC	= new DiscussionController(VUC, {});

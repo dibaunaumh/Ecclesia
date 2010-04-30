@@ -10,6 +10,7 @@ def update_presentation(request):
     Update the presentation feilds of elements on the featured view
     """
     model_name = request.POST.get('model_name', None)
+    timestamp = ''
     if model_name is not None:
         model_class = globals()[model_name]
         pk = request.POST.get('pk', None)
@@ -23,7 +24,11 @@ def update_presentation(request):
             print "Coordinates updated successfully."
         else:
             print "Object's pk not specified."
+        if hasattr(object, 'get_view_container_object'):
+            container_obj = object.get_view_container_object(True)
+            timestamp = container_obj.last_related_update
+            print '%s.last_related_update=%s' % (container_obj, timestamp)
     else:
         print "Model name not specified."
-    return HttpResponse('OK')
+    return HttpResponse(str(timestamp))
 

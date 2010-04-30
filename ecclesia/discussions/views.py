@@ -9,6 +9,7 @@ from forms import *
 from services.search_filter_pagination import search_filter_paginate
 from django.core import serializers
 from django.template.defaultfilters import slugify
+import datetime
 
 def visualize(request, discussion_slug):
     user=request.user
@@ -35,6 +36,7 @@ def visualize(request, discussion_slug):
     for key in story_form.fields:
         story_form.fields[key].widget.attrs["class"] = "text ui-widget-content ui-corner-all"
     speech_acts = SpeechAct.objects.filter(story_type=1) # 'story' as default
+    last_related_update = str(discussion.last_related_update) # set an initial value for the update timestamp
     return render_to_response('discussion_home.html', locals())
 
 
@@ -141,6 +143,22 @@ def get_speech_acts_by_story_type(request):
     speech_acts = SpeechAct.objects.filter(story_type=story_type)
     json = serializers.serialize('json', speech_acts, ensure_ascii=False)
     return HttpResponse(json)
+
+def status(request, discussion_slug):
+    datetime_format = '%Y-%m-%d %H:%M:%S.%f'
+    discussion = Discussion.objects.get(slug=discussion_slug)
+    last_changed_db = discussion.last_related_update
+    last_changed_client = request.POST.get('last_changed', None)
+    if not last_changed_client:
+        return HttpResponse(str(last_changed_db))
+    else:
+        try:
+            last_changed_client = datetime.datetime.strptime(last_changed_client, datetime_format)
+            if last_changed_client < last_changed_db:
+                last_changed_client = last_changed_db
+            return HttpResponse(str(last_changed_client))
+        except: # probably the last_changed value isn't in the right format
+            return HttpResponse(str(last_changed_db))
 
 def save_story_from_form(story_form, discussion, user):
     story = Story()
@@ -252,20 +270,20 @@ def merge_stories(story1_slug, story2_slug):
     story2 = get_object_or_404(Story, slug=story2_slug)
     if not story1.parent: #story1 is not a group
         story1.parent = story2
-        story2.merged_to = True
-        change_from_relation(story1, story2)
+        story2.is_parent = True
+        #change_from_relation(story1, story2)
     else:
         if not story2.parent: #story1 - group, story2 - not
             story2.parent = story1.parent
-            change_from_relation(story2, story1)
+            #change_from_relation(story2, story1)
         else: #both stories are group stories
             for story in Story.objects.filter(parent=story1):
                 story.parent = story2
                 story.save()
-                change_from_relation(story, story2)
+                #change_from_relation(story, story2)
             story1.parent = story2
-            story1.merged_to = False
-            change_from_relation(story1, story2)
+            story1.is_parent = False
+            #change_from_relation(story1, story2)
     story1.save()
     story2.save()
    
@@ -277,10 +295,3 @@ def change_from_relation(story1, story2):
     for relation in StoryRelation.objects.filter(from_story=story1):
         relation.from_story=story2
         relation.save()
-    
-    
-    
-    
-    
-    
-    
