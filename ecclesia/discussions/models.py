@@ -165,3 +165,4 @@ def last_changed_updater(sender, instance, **kwargs):
 # connecting post_save signal of stories and opinions to update their parent discussion's last_related_update field 
 models.signals.post_save.connect(last_changed_updater, sender=Story)
 models.signals.post_save.connect(last_changed_updater, sender=Opinion)
+models.signals.post_save.connect(last_changed_updater, sender=StoryRelation)
