@@ -1,0 +1,880 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2010-05-05 14:35-0500\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: common/models.py:5
+msgid "x position"
+msgstr "מיקום אופקי"
+
+#: common/models.py:5
+msgid "Horizontal posinition in view from left border."
+msgstr "מיקום אופקי משמאל"
+
+#: common/models.py:6
+msgid "y position"
+msgstr "מיקום אנכי"
+
+#: common/models.py:6
+msgid "Vertical posinition in view from top border."
+msgstr "מיקום אנכי מלמעלה"
+
+#: common/models.py:7
+msgid "width"
+msgstr "רוחב"
+
+#: common/models.py:7
+msgid "Object's width."
+msgstr "רוחב אוביקט"
+
+#: common/models.py:8
+msgid "height"
+msgstr "גובה"
+
+#: common/models.py:8
+msgid "Object's height."
+msgstr "גובה אובייקט"
+
+#: common/models.py:9
+msgid "related last updated at"
+msgstr "עודכן לאחרונה"
+
+#: common/models.py:9
+msgid "When was the object's elements last updated."
+msgstr "מתי האוביקט עודכן לאחרונה?"
+
+#: discussions/models.py:14 discussions/models.py:64 discussions/models.py:146
+msgid "opinion"
+msgstr "דעה"
+
+#: discussions/models.py:15
+msgid "support"
+msgstr "תמיכה"
+
+#: discussions/models.py:16
+msgid "contradiction"
+msgstr "סתירה"
+
+#: discussions/models.py:22 discussions/models.py:37 discussions/models.py:62
+#: goals/models.py:15 goals/models.py:43 goals/models.py:68
+msgid "name"
+msgstr "שם"
+
+#: discussions/models.py:22
+msgid "The name of the discussion type."
+msgstr "שם סוג הדיון"
+
+#: discussions/models.py:25 discussions/models.py:39 discussions/models.py:63
+msgid "discussion type"
+msgstr "סוג הדיון"
+
+#: discussions/models.py:26
+msgid "discussion types"
+msgstr "סוגי הדיון"
+
+#: discussions/models.py:36 groups/models.py:28 groups/models.py:104
+msgid "group"
+msgstr "קבוצה"
+
+#: discussions/models.py:36
+msgid "The group profile containing this discussion."
+msgstr "פרופיל הקבוצה המכיל את הדיון הזה"
+
+#: discussions/models.py:37
+msgid "The name of the discussion."
+msgstr "שם הדיון"
+
+#: discussions/models.py:38 discussions/models.py:73 groups/models.py:29
+msgid "slug"
+msgstr "כתובת הדיון"
+
+#: discussions/models.py:38
+msgid ""
+"The url representation of the discussion's name. No whitespaces allowed - "
+"use hyphen/underscore to separate words"
+msgstr ""
+"הייצוג של שם הדיון ב־URL. אין להשתמש ברווחים - יש להשתמש בסימן מינוס או מקף "
+"תחתון להפרדה בין מלים"
+
+#: discussions/models.py:39
+msgid "The discussion's type."
+msgstr "סוג הדיון"
+
+#: discussions/models.py:40 goals/models.py:16 goals/models.py:44
+#: goals/models.py:69
+msgid "short description"
+msgstr "תיאור קצר"
+
+#: discussions/models.py:40
+msgid "A short description of the discussion."
+msgstr "תיאור קצר של הדיון"
+
+#: discussions/models.py:45 discussions/models.py:77 goals/models.py:20
+#: goals/models.py:49 goals/models.py:74 goals/models.py:95
+#: goals/models.py:116 groups/models.py:36 groups/models.py:81
+msgid "created by"
+msgstr "נוצר על ידי"
+
+#: discussions/models.py:45
+msgid "The user that created the discussion."
+msgstr "המשתמש שיצר את הדיון"
+
+#: discussions/models.py:46 discussions/models.py:75 goals/models.py:21
+#: goals/models.py:50 goals/models.py:75 goals/models.py:96
+#: goals/models.py:117 groups/models.py:37 groups/models.py:82
+msgid "created at"
+msgstr "נוצר ב"
+
+#: discussions/models.py:46
+msgid "When was the discussion created."
+msgstr "מתי הדיון נוצר"
+
+#: discussions/models.py:47 discussions/models.py:76 discussions/models.py:164
+#: goals/models.py:22 goals/models.py:51 goals/models.py:76 goals/models.py:97
+#: goals/models.py:118 groups/models.py:38 groups/models.py:83
+msgid "updated at"
+msgstr "עודכן ב"
+
+#: discussions/models.py:47
+msgid "When was the discussion last updated."
+msgstr "מתי הדיון עודכן לאחרונה"
+
+#: discussions/models.py:50 discussions/models.py:93 discussions/models.py:121
+#: discussions/models.py:141 discussions/models.py:161
+msgid "discussion"
+msgstr "דיון"
+
+#: discussions/models.py:51
+msgid "discussions"
+msgstr "דיונים"
+
+#: discussions/models.py:62
+msgid "The name of the speech act."
+msgstr "שם האופציה"
+
+#: discussions/models.py:63
+msgid "The type of discussion that allows this speech act."
+msgstr "סוג הדיון שמאפשר את האופציה הזאת"
+
+#: discussions/models.py:64
+msgid "story type"
+msgstr "סוג הסיפור"
+
+#: discussions/models.py:64 discussions/models.py:103
+#: discussions/models.py:162
+msgid "story"
+msgstr "סיפור"
+
+#: discussions/models.py:64
+msgid "relation"
+msgstr "קשר"
+
+#: discussions/models.py:65
+msgid "DOM ordinal"
+msgstr "מספור DOM"
+
+#: discussions/models.py:65
+msgid "Order of appearance of this speech act in the DOM."
+msgstr "סדר ההופעה של האופציה ב־DOM"
+
+#: discussions/models.py:72
+msgid "title"
+msgstr "כותרת"
+
+#: discussions/models.py:72
+msgid "A title for story."
+msgstr "כותרת הסיפור"
+
+#: discussions/models.py:73
+msgid ""
+"The url representation of the story's title. No whitespaces allowed - use "
+"hyphen/underscore to separate words"
+msgstr ""
+"הייצוג של שם הסיפור ב־URL. אין להשתמש ברווחים - יש להשתמש בסימן מינוס או מקף "
+"תחתון להפרדה בין מלים"
+
+#: discussions/models.py:74
+msgid "content"
+msgstr "תוכן"
+
+#: discussions/models.py:74
+msgid "The user content"
+msgstr "התוכן של המשתמש"
+
+#: discussions/models.py:75
+msgid "When the speech act was made."
+msgstr "מתי האופציה נוצרה?"
+
+#: discussions/models.py:76 discussions/models.py:164
+msgid "When the speech act was last updated."
+msgstr "מתי האופציה עודכנה לאחרונה"
+
+#: discussions/models.py:77
+msgid "The user that made the speech act."
+msgstr "המשתמש ביצר את האופציה"
+
+#: discussions/models.py:93 discussions/models.py:121
+#: discussions/models.py:141
+msgid "The discussion this story is a part of."
+msgstr "הדיון שהסיפור הוא חלק ממנו"
+
+#: discussions/models.py:94 discussions/models.py:122
+#: discussions/models.py:142
+msgid "speech act"
+msgstr "אופציה"
+
+#: discussions/models.py:94 discussions/models.py:122
+#: discussions/models.py:142
+msgid "Which speech act this story represents."
+msgstr "איזה אופציה הסיפור הזה מייצג"
+
+#: discussions/models.py:95 goals/models.py:17 goals/models.py:45
+#: goals/models.py:70 groups/models.py:31
+msgid "parent"
+msgstr "הורה"
+
+#: discussions/models.py:95
+msgid "Parent story if the story belong to story group"
+msgstr "סיפור-הורה אם הסיפור שייך לסיפור-קבוצה"
+
+#: discussions/models.py:96
+msgid "is parent"
+msgstr "זה הורה"
+
+#: discussions/models.py:96
+msgid "Boolean field that tells us if the story is a parent of stories group"
+msgstr "שדה בולאני שאומר לנו אם הסיפור הוא הורה של קבוצת סיפורים"
+
+#: discussions/models.py:104 goals/models.py:24
+msgid "stories"
+msgstr "סיפורים"
+
+#: discussions/models.py:117
+#, python-format
+msgid "<a href=\"%(url)s\">%(user)s's %(speechact)s (#%(id)s)</a>"
+msgstr "<a href=\"%(url)s\">%(speechact)s של %(user)s (#%(id)s)</a>"
+
+#: discussions/models.py:123
+msgid "from_relation"
+msgstr "מתוך קשר"
+
+#: discussions/models.py:123
+msgid "The story this story relation flows from."
+msgstr "הסיפור שאליו קשור קישור-סיפור זה"
+
+#: discussions/models.py:124
+msgid "to_relation"
+msgstr "ל_קישור"
+
+#: discussions/models.py:124
+msgid "The story this story relation directs to."
+msgstr "הסיפור שאליו מכוון קישור-סיפור זה"
+
+#: discussions/models.py:127
+msgid "story relation"
+msgstr "קישור-סיפור"
+
+#: discussions/models.py:128
+msgid "story relations"
+msgstr "קישורי סיפורים"
+
+#: discussions/models.py:143
+msgid "parent story"
+msgstr "סיפור הורה"
+
+#: discussions/models.py:143
+msgid "The parent story containing this opinion."
+msgstr "סיפור ההורה המכיל דעה זאת"
+
+#: discussions/models.py:147
+msgid "opinions"
+msgstr "דעות"
+
+#: discussions/models.py:167
+msgid "discussion conclusion"
+msgstr "סיכום דיון"
+
+#: discussions/models.py:168
+msgid "discussion conclusions"
+msgstr "סיכומי דיון"
+
+#: discussions/templates/discussion_home.html:3
+#: discussions/templates/discussions_list.html:3
+#: discussions/templates/stories_list.html:3
+#: discussions/templates/story_home.html:3
+#: groups/templates/edit_profile.html:4 groups/templates/group_home.html:3
+#: groups/templates/groups_list.html:3 groups/templates/members_list.html:3
+#: groups/templates/user_home.html:4 templates/visualize_canvas.html:3
+#: templates/admin/base.html:173
+#: templates/registration/registration_form.html:3
+msgid "Home"
+msgstr "דף בית"
+
+#: discussions/templates/discussion_home.html:3
+#: discussions/templates/discussions_list.html:3
+#: discussions/templates/stories_list.html:3
+#: discussions/templates/story_home.html:3
+#: groups/templates/edit_profile.html:4 groups/templates/edit_profile.html:6
+#: groups/templates/group_home.html:3 groups/templates/group_home.html.py:5
+#: groups/templates/group_home.html:63 groups/templates/user_home.html:4
+#: groups/templates/user_home.html.py:6
+msgid "'s Home"
+msgstr ""
+
+#: discussions/templates/discussion_home.html:4
+#: discussions/templates/discussions_list.html:4
+#: discussions/templates/stories_list.html:4
+#: discussions/templates/story_home.html:4
+#: groups/templates/edit_profile.html:5 groups/templates/group_home.html:4
+#: groups/templates/groups_list.html:4 groups/templates/members_list.html:4
+#: groups/templates/user_home.html:5 templates/visualize_canvas.html:4
+#: templates/admin/base.html:158
+msgid "Change password"
+msgstr "שינוי סיסמא"
+
+#: discussions/templates/discussion_home.html:4
+#: discussions/templates/discussions_list.html:4
+#: discussions/templates/stories_list.html:4
+#: discussions/templates/story_home.html:4
+#: groups/templates/edit_profile.html:5 groups/templates/group_home.html:4
+#: groups/templates/groups_list.html:4 groups/templates/members_list.html:4
+#: groups/templates/user_home.html:5 templates/visualize_canvas.html:4
+#: templates/admin/base.html:158
+msgid "Log out"
+msgstr "התנתקות"
+
+#: discussions/templates/discussion_home.html:94
+msgid "Create Story"
+msgstr "יצירת סיפור"
+
+#: discussions/templates/discussion_home.html:96
+#: discussions/templates/stories_list.html:3
+#: discussions/templates/stories_list.html:16
+msgid "Stories List"
+msgstr "רשימת סיפורים"
+
+#: discussions/templates/discussion_home.html:132
+msgid "Story type:"
+msgstr "סוג סיפור"
+
+#: discussions/templates/discussion_home.html:133
+msgid "Story"
+msgstr "סיפור"
+
+#: discussions/templates/discussion_home.html:134
+msgid "Relation"
+msgstr "קשר"
+
+#: discussions/templates/discussion_home.html:135
+msgid "Opinion"
+msgstr "דעה"
+
+#: discussions/templates/discussion_home.html:138
+msgid "Speech act:"
+msgstr "תכנון דרך"
+
+#: discussions/templates/discussion_home.html:148
+msgid "From story:"
+msgstr "מסיפור"
+
+#: discussions/templates/discussion_home.html:154
+msgid "To story:"
+msgstr "לסיפור"
+
+#: discussions/templates/discussion_home.html:160
+msgid "On story:"
+msgstr "על סיפור"
+
+#: discussions/templates/discussion_home.html:167
+msgid "Title:"
+msgstr "כותרת"
+
+#: discussions/templates/discussion_home.html:169
+msgid "Send"
+msgstr "שליחה"
+
+#: discussions/templates/discussion_home.html:188
+#: groups/templates/group_home.html:88 groups/templates/members_list.html:16
+msgid "Members List"
+msgstr "רשימת חברים/ות"
+
+#: discussions/templates/discussions_list.html:3
+#: discussions/templates/discussions_list.html:16
+#: groups/templates/group_home.html:59
+msgid "Discussions List"
+msgstr "רשימת דיונים"
+
+#: discussions/templates/discussions_list.html:5
+#: discussions/templates/stories_list.html:5
+#: groups/templates/groups_list.html:3 groups/templates/groups_list.html:5
+#: groups/templates/groups_list.html:16 groups/templates/home.html:28
+#: groups/templates/members_list.html:3 groups/templates/members_list.html:5
+msgid "Groups List"
+msgstr "רשימת קבוצות"
+
+#: goals/models.py:14 groups/models.py:41 groups/models.py:79
+msgid "group profile"
+msgstr "מאפייני קבוצה"
+
+#: goals/models.py:14
+msgid "The goal's group"
+msgstr "מטרת הקבוצה"
+
+#: goals/models.py:15
+msgid ""
+"The name of the goal. No whitespaces allowed - use hyphen to separate words."
+msgstr "שם המשימה. אל תשתמש/י ברווחים. השתמש/י בקו תחתון"
+
+#: goals/models.py:16 goals/models.py:44 goals/models.py:69
+msgid "A short description of the goal."
+msgstr "תיאור קצר של המטרה"
+
+#: goals/models.py:17 goals/models.py:45 goals/models.py:70
+msgid "The parent goal containing this goal"
+msgstr "מטרת העל שכולל מטרה זאת"
+
+#: goals/models.py:18 goals/models.py:46 goals/models.py:71
+#: groups/models.py:32
+msgid "forked from"
+msgstr "פוצל מ"
+
+#: goals/models.py:18 goals/models.py:46 goals/models.py:71
+msgid "The goal from which this goal forked"
+msgstr "המטרה שמתוכה פוצלה מטרה זאת"
+
+#: goals/models.py:20 goals/models.py:49 goals/models.py:74 goals/models.py:95
+#: goals/models.py:116
+msgid "The user that created the goal"
+msgstr "המשתמש/ת שיצר/ה את המטרה"
+
+#: goals/models.py:21 goals/models.py:50 goals/models.py:75 goals/models.py:96
+#: goals/models.py:117
+msgid "When was the goal created"
+msgstr "מתי המטרה נוצרה"
+
+#: goals/models.py:22 goals/models.py:51 goals/models.py:76 goals/models.py:97
+#: goals/models.py:118
+msgid "When was the goal last updated"
+msgstr "מתי המטרה עודכנה לאחרונה"
+
+#: goals/models.py:27 goals/models.py:42 goals/models.py:67
+#: goals/models.py:114
+msgid "goal"
+msgstr "מטרה"
+
+#: goals/models.py:28 goals/models.py:72
+msgid "goals"
+msgstr "מטרות"
+
+#: goals/models.py:42 goals/models.py:67
+msgid "The course of action's goal"
+msgstr "המטרה של דרך הפעולה"
+
+#: goals/models.py:43 goals/models.py:68
+msgid ""
+"The name of the course of action. No whitespaces allowed - use hyphen to "
+"separate words."
+msgstr "שם דרך הפעולה. אל תשתשמש/י ברווחים. השתמש/י בקו תחתון לחבר בין מילים"
+
+#: goals/models.py:47
+msgid "possible results"
+msgstr "תוצואת אפשריות"
+
+#: goals/models.py:54 goals/models.py:92
+msgid "course of action"
+msgstr "דרך פעולה"
+
+#: goals/models.py:55
+msgid "courses of action"
+msgstr "דרכי פעולה"
+
+#: goals/models.py:79 goals/models.py:80 goals/models.py:93
+#: goals/models.py:113
+msgid "possible result"
+msgstr "תוצאות אפשריות"
+
+#: goals/models.py:106
+msgid "causing relation"
+msgstr "יחס של סיבה"
+
+#: goals/models.py:107
+msgid "causing relations"
+msgstr "יחסי סיבה"
+
+#: goals/models.py:127
+msgid "leading relation"
+msgstr "קשר מוביל"
+
+#: goals/models.py:128
+msgid "leading relations"
+msgstr "קשרים מובילים"
+
+#: groups/models.py:12 groups/models.py:105 registration/models.py:213
+msgid "user"
+msgstr "משתמש/ת"
+
+#: groups/models.py:12
+msgid ""
+"The internal User entity. Add this entity before you create a profile and "
+"set a User for it."
+msgstr "ישות המשתמש/ת הפנימית. הוסף ישות זאת לפני שאתה יוצר פרופיל והגדרת משתשמש/ת עבורו"
+
+#: groups/models.py:13
+msgid "The name of the image file."
+msgstr "שם הקבוץ של התמונה"
+
+#: groups/models.py:28
+msgid ""
+"The internal Group entity. If you are adding a Profile Group, please create "
+"a new Group & don't select an existing one"
+msgstr "ישות הקבוצה הפנימית. אם את/ה מוסיפ/ה מאפייני קבוצה, אנא צרו קבוצה חדשה ואל תשכחו לבחור קבוצה קיימת"
+
+#: groups/models.py:29
+msgid ""
+"The url representation of the group's name. No whitespaces allowed - use "
+"hyphen/underscore to separate words."
+msgstr "ההיפר-קישר מייצג את שם הקבוצה. נא לא להוסיף רווחים. השתמשו בקווים תחתונים בין המילים"
+
+#: groups/models.py:30
+msgid "description"
+msgstr "תיאור"
+
+#: groups/models.py:30
+msgid "The group's description"
+msgstr "תיאור הקבוצה"
+
+#: groups/models.py:31
+msgid "The parent group containing this group"
+msgstr "קבוצת האם שמכילה את הקבוצה הזאת"
+
+#: groups/models.py:32
+msgid "The group from which this group forked"
+msgstr "הקבוצה שממנה התפצלה קבוצה זאת"
+
+#: groups/models.py:33
+msgid "location"
+msgstr "מיקום"
+
+#: groups/models.py:33
+msgid "Where is the group located"
+msgstr "היכן ממוקמת קבוצה זאת"
+
+#: groups/models.py:36
+msgid "The user that created the group"
+msgstr "המשתמש/ת שיצר/ה את הקבוצה"
+
+#: groups/models.py:37
+msgid "When was the group created"
+msgstr "מתי נוצרה הקבוצה"
+
+#: groups/models.py:38
+msgid "When was the group last updated"
+msgstr "מתי לאחרוה עודכנה הקבוצה"
+
+#: groups/models.py:42
+msgid "group profiles"
+msgstr "מאפייני הקבוצות"
+
+#: groups/models.py:79
+msgid "The groupd subject of this mission statement"
+msgstr "נושאה הקבוצה בהגדרת המשימה הזאת"
+
+#: groups/models.py:80 groups/models.py:87 groups/models.py:96
+msgid "mission statement"
+msgstr "הגדרת משימה"
+
+#: groups/models.py:80
+msgid "The suggested mission statement of the group"
+msgstr "הצעת המשימה של הקבוצה הזאת"
+
+#: groups/models.py:81
+msgid "The user that created the mission statement"
+msgstr "המתשמש/ת שיצר/ה את ההגדרת המשימה"
+
+#: groups/models.py:82
+msgid "When was the mission statement created"
+msgstr "מתי הגדרת המשימה נוצרה"
+
+#: groups/models.py:83
+msgid "When was the mission statement last updated"
+msgstr "מתי הגדרת המשימה עודכנה"
+
+#: groups/models.py:88
+msgid "mission statements"
+msgstr "הגדרות משימה"
+
+#: groups/models.py:104
+msgid "Group entity"
+msgstr "ישות קבוצה"
+
+#: groups/models.py:105
+msgid "The user that has the permissions"
+msgstr "המשתמש/ת בעל/ת ההרשאות"
+
+#: groups/models.py:109
+msgid "group permission"
+msgstr "הרשאת קבוצה"
+
+#: groups/models.py:110
+msgid "group permissions"
+msgstr "הרשאות קבוצה"
+
+#: groups/templates/create_group_miniform.html:6 groups/templates/home.html:26
+#: groups/templates/home_canvas.html:26
+msgid "Create Group"
+msgstr "צור/צרי קבוצה"
+
+#: groups/templates/edit_profile.html:12 groups/templates/user_home.html:13
+#: templates/admin/base.html:158
+msgid "Edit profile"
+msgstr "ערוך/ערכי מאפיינים"
+
+#: groups/templates/edit_profile.html:16
+#, python-format
+msgid "Please correct the error%(form.errors|pluralize)s below."
+msgstr "נא לתקן את השגיאות שלהלן."
+
+#: groups/templates/edit_profile.html:26
+msgid "To change your password"
+msgstr "לשנות את סיסמסתך"
+
+#: groups/templates/group_home.html:57
+msgid "Create Discussion"
+msgstr "צור/צרי דיון"
+
+#: groups/templates/group_home.html:73 groups/templates/group_home.html:95
+msgid "Add Mission Statement"
+msgstr "הגדיר/י משימה"
+
+#: groups/templates/home.html:15 groups/templates/home_canvas.html:9
+msgid "Welcome to Ekkli"
+msgstr "ברוכים הבאים לאקלי"
+
+#: groups/templates/home.html:19 groups/templates/home_canvas.html:13
+msgid ""
+"\n"
+"\t   Ekkli is a social/political platform for helping people organize and "
+"meet their common goals.\n"
+msgstr ""
+"\n"
+"\t   אקלי היא פלטפורמה שנועדה לעזור לאנשים להתארגן ולנה את צרכיהם המשותפים בקלות וביעילות.\n"
+
+#: groups/templates/user_home.html:20
+#: templates/registration/password_change_form.html:8
+#: templates/registration/password_reset_confirm.html:11
+#: templates/registration/password_reset_form.html:8
+#: templates/registration/registration_form.html:12
+msgid "Submit"
+msgstr ""
+
+#: registration/forms.py:38
+msgid "username"
+msgstr "שם משתמש"
+
+#: registration/forms.py:41
+msgid "email address"
+msgstr "כתובת אימייל"
+
+#: registration/forms.py:43
+msgid "password"
+msgstr "סיסמא"
+
+#: registration/forms.py:45
+msgid "password (again)"
+msgstr "סיסמא (שוב)"
+
+#: registration/forms.py:57
+msgid "This username is already taken. Please choose another."
+msgstr "שם משתמש זה קיים, אנא בחר שם משתמש אחר"
+
+#: registration/forms.py:69
+msgid "You must type the same password each time"
+msgstr "עליך להקיש את אותה סיסמא בכל שדה"
+
+#: registration/forms.py:98
+msgid "I have read and agree to the Terms of Service"
+msgstr "קראתי והסכמתי לתנאים"
+
+#: registration/forms.py:115
+msgid ""
+"This email address is already in use. Please supply a different email "
+"address."
+msgstr "כתובת האימייל הזאת תפוסה, אנא מלא כתובת אחרת"
+
+#: registration/forms.py:141
+msgid ""
+"Registration using free email addresses is prohibited. Please supply a "
+"different email address."
+msgstr "שימוש באימייל חינמי אינו אפשרי, אנא מלא/י אימייל בתשלום"
+
+#: registration/models.py:214
+msgid "activation key"
+msgstr "קוד הפעלה"
+
+#: registration/models.py:219
+msgid "registration profile"
+msgstr "פרופיל הרשמה"
+
+#: registration/models.py:220
+msgid "registration profiles"
+msgstr "פרופלים - הרשמה"
+
+#: templates/create_course_of_action_miniform.html:6
+msgid "Create course of action"
+msgstr "צרו מסלול פעולה"
+
+#: templates/visualize_canvas.html:3
+#, python-format
+msgid "%(group_name)s's Home"
+msgstr "דף הבית של %(group_name)s"
+
+#: templates/visualize_canvas.html:3
+#, python-format
+msgid "%(goal_name)s path resolution"
+msgstr "יעד - מסלול של %(goal_name)s"
+
+#: templates/visualize_canvas.html:51 templates/visualize_canvas.html:314
+#: templates/visualize_canvas.html:319
+msgid "Please wait"
+msgstr "אנא חכה/י"
+
+#: templates/visualize_canvas.html:251
+msgid "Add new action"
+msgstr "הוסיפ/י פעולה חדשה"
+
+#: templates/visualize_canvas.html:261
+msgid "Add new result"
+msgstr "הוסיפ/י תוצאה חדשה"
+
+#: templates/visualize_canvas.html:329
+msgid "Thank you!"
+msgstr "תודה רבה!"
+
+#: templates/visualize_canvas.html:332
+msgid "Added!"
+msgstr "הוסף!"
+
+#: templates/visualize_canvas.html:341
+msgid "Ecclesia"
+msgstr "אקלי"
+
+#: templates/visualize_canvas.html:343
+#, python-format
+msgid "How to get to %(goal_name)s?"
+msgstr "איך להגיע אל %(goal_name)s?"
+
+#: templates/visualize_canvas.html:343
+msgid "Click on an item to add your ideas and opinions regarding it."
+msgstr ""
+
+#: templates/visualize_canvas.html:351
+#, python-format
+msgid "Read %(num_stories)s stories"
+msgstr "קרא %(num_stories)s סיפורים"
+
+#: templates/visualize_canvas.html:351
+msgid "Write new story"
+msgstr "כתוב/כתבי סיפור חדש"
+
+#: templates/write_story_miniform.html:6
+msgid "Submit Story"
+msgstr "שלח/י סיפור"
+
+#: templates/admin/base.html:158
+msgid "Welcome,"
+msgstr "ברוכים הבאים"
+
+#: templates/admin/base.html:158
+msgid "Documentation"
+msgstr "רישום"
+
+#: templates/admin/base.html:165
+msgid "Login"
+msgstr "הרשמה"
+
+#: templates/admin/base.html:166
+msgid "Sign-up"
+msgstr "הירשמ/י"
+
+#: templates/admin/base_site.html:4 templates/admin/base_site.html.py:7
+msgid "Ekkli"
+msgstr "אקלי"
+
+#: templates/admin/login.html:25
+msgid "Username:"
+msgstr "שם משתמש/ת"
+
+#: templates/admin/login.html:28
+msgid "Password:"
+msgstr "סיסמא:"
+
+#: templates/admin/login.html:32 templates/registration/activate.html:10
+#: templates/registration/login.html:8
+#: templates/registration/password_reset_complete.html:8
+msgid "Log in"
+msgstr "כניסה"
+
+#: templates/registration/activate.html:8
+msgid "Account successfully activated"
+msgstr "החשבון הופעל בהצלחה"
+
+#: templates/registration/activate.html:14
+msgid "Account activation failed"
+msgstr "הפעלת החשבון נכשלה"
+
+#: templates/registration/login.html:12
+msgid "Forgot password"
+msgstr "שכחתי סיסמא"
+
+#: templates/registration/login.html:12
+msgid "Reset it"
+msgstr "עדכני מחדש את הסיסמא"
+
+#: templates/registration/login.html:13
+msgid "Not member"
+msgstr "לא חבר/ה"
+
+#: templates/registration/login.html:13
+msgid "Register"
+msgstr "הישמ/י"
+
+#: templates/registration/logout.html:5
+msgid "Logged out"
+msgstr "יציאה"
+
+#: templates/registration/password_change_done.html:5
+msgid "Password changed"
+msgstr "סיסמא שונתה"
+
+#: templates/registration/password_reset_complete.html:6
+msgid "Password reset successfully"
+msgstr "סיסמא שונתה בהצלחה"
+
+#: templates/registration/password_reset_confirm.html:16
+msgid "Password reset failed"
+msgstr "אתחול סיסמא נכשל"
+
+#: templates/registration/password_reset_done.html:5
+msgid "Email with password reset instructions has been sent."
+msgstr "דואר אלקטרוני עם הוראות עידכון סיסמא נשלח"
+
+#: templates/registration/password_reset_email.html:2
+#, python-format
+msgid "Reset password at %(site_name)s"
+msgstr "אתחל סיסמא ב־%(site_name)s"
+
+#: templates/registration/registration_complete.html:5
+msgid "You are now registered. Activation email sent."
+msgstr "עכשיו את/ה רשום/ה. דואר אלקטרוני נשלח"
