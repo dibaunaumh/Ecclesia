@@ -52,6 +52,9 @@ LOGIN_REDIRECT_URL='/'
 # Examples: "http://foo.com/media/", "/media/".
 ADMIN_MEDIA_PREFIX = '/media/'
 
+#EMAIL_HOST = 'localhost'
+#EMAIL_PORT = 1025
+
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = 'vo%ti0wyf#vx@d+5rnk^0rk%gi2l8ls4-i9#l5q_(b+**f43oj'
 
@@ -66,7 +69,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-#    'django.contrib.csrf.middleware.CsrfMiddleware',
+    'django.contrib.csrf.middleware.CsrfMiddleware',
 )
 
 ROOT_URLCONF = 'ecclesia.urls'
@@ -93,6 +96,7 @@ INSTALLED_APPS = (
     'discussions',
     'operations',
     'common',
+    'notifications'
 )
 
 AUTH_PROFILE_MODULE = 'groups.UserProfile'

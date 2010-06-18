@@ -1,6 +1,7 @@
 from ecclesia.groups.models import GroupProfile, GroupPermission, MissionStatement
 from ecclesia.discussions.forms import StoryForm
 from ecclesia.discussions.models import *
+from ecclesia.notifications.models import Notification
 from django.contrib.auth.models import Group, User
 from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponse, Http404, HttpResponseRedirect
@@ -82,7 +83,10 @@ def add_story(request, discussion, user, title, slug, speech_act):
     story.title = title
     story.slug = slug
     story.speech_act = speech_act
-    story.save()
+    story.save()    
+    notification = Notification(text="There is a new story in %s discussion: %s" % (discussion.slug, title), 
+                 discussion=discussion)
+    notification.save()
     return HttpResponse("reload")
 
 def add_opinion(request, discussion, user, title, slug, speech_act):
@@ -97,6 +101,9 @@ def add_opinion(request, discussion, user, title, slug, speech_act):
     opinion.speech_act = speech_act
     opinion.parent_story = Story.objects.get(pk=parent_story)
     opinion.save()
+    notification = Notification(text="There is a new opinion in %s discussion: %s" % (discussion.slug, title), 
+                 discussion=discussion)
+    notification.save()
     return HttpResponse("reload")
 
 def add_relation(request, discussion, user, title, slug, speech_act):
