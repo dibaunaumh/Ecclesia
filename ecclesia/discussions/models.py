@@ -1,21 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import User, Group
-from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes import generic
 from django.utils.translation import gettext_lazy as _
-from django.core import urlresolvers
-from groups.models import GroupProfile
+import datetime
+from discussion_actions import evaluate_stories
 from common.models import Presentable
 from common.utils import get_domain
-import datetime
-
-SPEECH_ACT_CHOICES = (
-                      # These are the types of speech acts available in the system:
-                      (0, _('opinion')),
-                      (1, _('support')),
-                      (2, _('contradiction'))
-                      #TODO: think of good items to put here and revise the list
-                      )
 
 
 class DiscussionType(models.Model):
@@ -156,13 +145,33 @@ class Opinion(BaseStory):
         return self.title
 
 
+
+class DiscussionConclusion(models.Model):
+    discussion = models.ForeignKey(Discussion, verbose_name=_("discussion"))
+    story = models.ForeignKey(Story, verbose_name=_("story"))
+    score = models.IntegerField()
+    updated_at = models.DateTimeField(_('updated at'), auto_now=True, help_text=_('When the speech act was last updated.'))
+
+    class Meta:
+        verbose_name = _("discussion conclusion")
+        verbose_name_plural = _("discussion conclusions")
+
+    def __unicode__(self):
+        return "Discussion conclusion of %s" % self.discussion
+
+
 def last_changed_updater(sender, instance, **kwargs):
     discussion = Discussion.objects.get(id=instance.discussion.pk)
     discussion.last_related_update = datetime.datetime.now()
     print 'updating %s to %s' % (discussion.name, datetime.datetime.now())
     discussion.save()
+    evaluate_stories(instance.discussion)
+
+
 
 # connecting post_save signal of stories and opinions to update their parent discussion's last_related_update field 
 models.signals.post_save.connect(last_changed_updater, sender=Story)
 models.signals.post_save.connect(last_changed_updater, sender=Opinion)
 models.signals.post_save.connect(last_changed_updater, sender=StoryRelation)
+
+

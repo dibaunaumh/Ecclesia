@@ -69,7 +69,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-#    'django.contrib.csrf.middleware.CsrfMiddleware',
+    'django.contrib.csrf.middleware.CsrfMiddleware',
 )
 
 ROOT_URLCONF = 'ecclesia.urls'

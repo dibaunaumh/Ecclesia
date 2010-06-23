@@ -38,10 +38,14 @@ class OpinionAdmin(admin.ModelAdmin):
     list_filter = ('parent_story', 'discussion', 'speech_act', 'created_at', 'created_by')
     search_fields = ('parent_story', 'title', 'content', 'slug')
     ordering = ('parent_story', 'title', 'discussion', 'speech_act', 'slug', 'created_at', 'updated_at')
-	
+
+class DiscussionConclusionAdmin(admin.ModelAdmin):
+    pass
+
 admin.site.register(Story, StoryAdmin)
 admin.site.register(StoryRelation, StoryRelationAdmin)
 admin.site.register(SpeechAct, SpeechActAdmin)
 admin.site.register(Opinion, OpinionAdmin)
 admin.site.register(DiscussionType, DiscussionTypeAdmin)
 admin.site.register(Discussion, DiscussionAdmin)
+admin.site.register(DiscussionConclusion, DiscussionConclusionAdmin)

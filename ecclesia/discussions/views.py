@@ -11,6 +11,7 @@ from services.search_filter_pagination import search_filter_paginate
 from django.core import serializers
 from django.template.defaultfilters import slugify
 import datetime
+import discussion_actions
 
 def visualize(request, discussion_slug):
     user=request.user
@@ -39,6 +40,13 @@ def visualize(request, discussion_slug):
     speech_acts = SpeechAct.objects.filter(story_type=1) # 'story' as default
     last_related_update = str(discussion.last_related_update) # set an initial value for the update timestamp
     return render_to_response('discussion_home.html', locals())
+
+
+def evaluate(request, discussion_slug):
+    discussion = get_object_or_404(Discussion, slug=discussion_slug)
+    conclusions = discussion_actions.evaluate_stories(discussion)
+    json = serializers.serialize('json', conclusions, ensure_ascii=False)
+    return HttpResponse(json)
 
 
 def get_stories_json(request):
@@ -126,9 +134,14 @@ def add_relation(request, discussion, user, title, slug, speech_act):
 def get_stories_view_json(request, discussion_slug):
     discussion = Discussion.objects.get(slug=discussion_slug)
     stories = Story.objects.filter(discussion=discussion)
+    conclusions = DiscussionConclusion.objects.filter(discussion=discussion)
+    conclusions_map = {}
+    for c in conclusions:
+        conclusions_map[c.story.id] = True
     json = ','
     for story in stories:
-        json = '%s{"story":{"id":%s,"url":"%s","name":"%s","type":"%s","dimensions":{"x":%s,"y":%s,"w":%s,"h":%s}}},' % (json, story.id, story.get_absolute_url(), story.title, story.speech_act, story.x, story.y, story.w, story.h)
+        is_conclusion = "true" if story.id in conclusions_map else "false"
+        json = '%s{"story":{"id":%s,"url":"%s","name":"%s","type":"%s","is_conclusion":"%s","dimensions":{"x":%s,"y":%s,"w":%s,"h":%s}}},' % (json, story.id, story.get_absolute_url(), story.title, story.speech_act, is_conclusion, story.x, story.y, story.w, story.h)
     relations = StoryRelation.objects.filter(discussion=discussion)
     for relation in relations:
         json = '%s{"relation":{"id":%s,"url":"%s","name":"%s","type":"%s","from_id":"%s","to_id":"%s"}},' % (json, relation.id, relation.get_absolute_url(), relation.title, relation.speech_act, relation.from_story.unique_id(), relation.to_story.unique_id())
