@@ -119,6 +119,7 @@ def group_home(request, group_slug):
         discussion_form.fields[key].widget.attrs["class"] = "text ui-widget-content ui-corner-all"
     for key in mission_statement_form.fields:
         mission_statement_form.fields[key].widget.attrs["class"] = "text ui-widget-content ui-corner-all"
+    #last_related_update = str(group.last_related_update) # set an initial value for the update timestamp
     return render_to_response('group_home.html', locals())
 
 def save_discussion_from_form(discussion_form, group, user):

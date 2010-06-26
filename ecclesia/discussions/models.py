@@ -48,7 +48,7 @@ class Discussion(Presentable):
 
 
 class SpeechAct(models.Model):
-    name = models.SlugField(_('name'), max_length=50, unique=True, blank=False, help_text=_('The name of the speech act.'))
+    name = models.SlugField(_('name'), max_length=50, blank=False, help_text=_('The name of the speech act.'))
     discussion_type = models.ForeignKey(DiscussionType, verbose_name=_('discussion type'), related_name='speech_acts', help_text=_('The type of discussion that allows this speech act.'))
     story_type = models.IntegerField(_('story type'), default=1, choices=((1,_('story')),(2,_('opinion')),(3,_('relation'))))
     ordinal = models.IntegerField(_('DOM ordinal'), default=0, help_text=_('Order of appearance of this speech act in the DOM.'))

@@ -16,10 +16,10 @@ class DiscussionAdmin(admin.ModelAdmin):
     ordering = ('name', 'slug', 'group', 'type', 'created_at', 'updated_at')
 	
 class SpeechActAdmin(admin.ModelAdmin):
-    list_display = ('name', 'ordinal')
-    list_filter = ('name',)
+    list_display = ('name', 'story_type', 'discussion_type', 'ordinal')
+    list_filter = ('name', 'story_type', 'discussion_type')
     search_fields = ('name',)
-    ordering = ('name',)
+    ordering = ('name', 'story_type', 'discussion_type')
 	
 class StoryAdmin(admin.ModelAdmin):
     list_display = ('title', 'slug', 'speech_act', 'discussion', 'created_by', 'created_at', 'updated_at', 'content')

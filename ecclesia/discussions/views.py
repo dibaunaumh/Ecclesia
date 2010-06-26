@@ -154,13 +154,16 @@ def get_stories_view_json(request, discussion_slug):
     return HttpResponse('[%s]' % json)
 
 def get_visualization_meta_data(request):
-    speech_acts = SpeechAct.objects.order_by('story_type','ordinal')
+    discussion_type = request.GET.get('discussion_type', 1)
+    print discussion_type
+    speech_acts = SpeechAct.objects.filter(discussion_type=discussion_type).order_by('story_type','ordinal')
     json = serializers.serialize('json', speech_acts, ensure_ascii=False)
     return HttpResponse(json)
 
 def get_speech_acts_by_story_type(request):
+    discussion_type = request.GET.get('discussion_type', 1)
     story_type = request.GET.get('story_type', 1)
-    speech_acts = SpeechAct.objects.filter(story_type=story_type)
+    speech_acts = SpeechAct.objects.filter(discussion_type=discussion_type, story_type=story_type)
     json = serializers.serialize('json', speech_acts, ensure_ascii=False)
     return HttpResponse(json)
 
