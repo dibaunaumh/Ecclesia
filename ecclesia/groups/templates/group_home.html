@@ -10,8 +10,9 @@
 {% block extrahead %}
 <script type="text/javascript">
     var config = {
-        canvas_id	        : 'discsvu',
-        data_url	        : '/get_discussions_view_json/{{ group.slug }}'
+        canvas_id   : 'discsvu',
+        data_url    : '/get_discussions_view_json/{{ group.slug }}',
+        dialog_title: '{% trans 'Create Discussion' %}'
     }
     var VUC = new VUController(config);
     VUC.init();

@@ -10,14 +10,16 @@
 {% block extrahead %}
     <script type="text/javascript">
         var config = {
+            bg_pic              : '/static/img/whiteboard.jpg',
             canvas_id	        : 'storysvu',
             data_url	        : '/discussions/get_stories_view_json/{{ discussion.slug }}',
             meta_url	        : '/discussions/get_visualization_meta_data/',
             update_status_url	: '/discussions/status/{{ discussion.slug }}',
-            last_changed        : '{{ last_related_update }}'
+            last_changed        : '{{ last_related_update }}',
+            discussion_type     : {{ discussion.type.id }}
         };
-        VUC = new VUController(config);
-        DC	= new DiscussionController(VUC, {});
+        VUC = new VUController({});
+        DC	= new DiscussionController(VUC, config);
         DC.init();
         $(document).ready(function () {
             $('button').filter('.ekkli-button').hover(
@@ -28,18 +30,10 @@
                     $(this).removeClass('ui-state-hover');
                 }
             );
-
-            var formConfigs = {
-                story_input : {
-                    callback : DC.init
-                }
-            };
-            var FC = new FormController();
-            FC.bind(formConfigs);
             
             $("input[name='story-class']").change(function () {
                 var type = $(this).val();
-                var data = 'story_type='+type+'&discussion_slug={{ discussion.slug }}';
+                var data = 'discussion_type={{ discussion.type.id }}&story_type='+type+'&discussion_slug={{ discussion.slug }}';
                 var parseJsonToOptions = function (json, field_name) {
                 	var html = '';
                 	$.each(json, function (i, item) {
@@ -127,7 +121,7 @@
 {% if user_in_group %}
 <form name="story_input" method="POST" action="/discussions/add_story/">
     <input type="hidden" name="discussion" value="{{ discussion.id }}">
-	<div id="story_input-types">
+	<!--div id="story_input-types">
 		<fieldset id="story_input-story-type">
 			<legend>{% trans 'Story type:' %}</legend>
 			<input type="radio" name="story-class" id="story" value="1" checked="checked" /><label for="story"> {% trans 'Story' %}</label>
@@ -142,7 +136,7 @@
 				{% endfor %}
 			</select>
 		</fieldset>
-	</div>
+	</div-->
 	<div id="story_input-stories">
 		<fieldset id="story_input-from-story">
 			<legend>{% trans 'From story:' %}</legend>
@@ -163,10 +157,12 @@
 			</select>
 		</fieldset>
 	</div>
+	<input type="hidden" name="story-class" value="1" />
+	<input type="hidden" name="speech_act" value="1" />
 	<fieldset id="story_input-title">
 		<legend>{% trans 'Title:' %}</legend>
-		<textarea name="title" class="is_value"></textarea><br/>
-		<button type="submit" id="story_input-submit" class="ui-state-default ui-corner-all ekkli-button">{% trans 'Send' %}</button>
+		<textarea name="title" class="is_value"></textarea>
+		<!--button type="submit" id="story_input-submit" class="ui-state-default ui-corner-all ekkli-button">{% trans 'Send' %}</button-->
 	</fieldset>
 </form>
 <hr/>

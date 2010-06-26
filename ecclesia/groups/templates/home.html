@@ -5,6 +5,9 @@
 {% endblock %}
 {% block extrahead %}
 <script type="text/javascript">
+	var config = {
+	  dialog_title : '{% trans 'Create Group' %}'
+	};
 	var VUC = new VUController();
 	VUC.init();
 </script>

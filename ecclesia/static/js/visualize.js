@@ -1,3 +1,69 @@
+$.extend({
+	distance    : function (x, y, x1, y1, x2, y2) {
+		return Math.round(Math.abs((x2-x1)*(y1-y)-(x1-x)*(y2-y1))/Math.sqrt(Math.pow(x2-x1,2)+Math.pow(y2-y1,2)));
+	},
+	clickOffset : function (e) {
+		if(!e || !e.type || e.type !== 'click') {return this;}
+		var offset = $(e.target).offset();
+			x = parseInt(e.pageX - offset.left),
+			y = parseInt(e.pageY - offset.top);
+			return {left:x, top:y};
+	},
+    bindFn      : function (scope, fn) {
+        return function () {
+            fn.apply(scope, arguments);
+        };
+    }
+});
+ContextMenu = function(config) {
+	this.config = {};
+    this.menu = {};
+    var getDefaults = function () {
+        var o = $.extend(true, {
+            container_id: 'vu-context-menu',
+            element     : $('#canvasContainer'),
+            position	: {left: 0, top: 0},
+            actions     : {}
+        }, config || {});
+        return o;
+    };
+    this.initialize = function (_config) {
+        this.config = getDefaults();
+        $.extend(true, this.config, _config || {});
+		return this;
+    };
+};
+ContextMenu.prototype = {
+	pop			: function (config) {
+		this.initialize(config)
+			.buildMenu()
+            .menu.css('left', this.config.position.left)
+                 .css('top', this.config.position.top)
+                 .show();
+        return this;
+	},
+	buildMenu	: function () {
+		var c = this.config,
+            that = this;
+		this.config.element.append('<ul id="'+c.container_id+'"></ul>');
+		var ul = this.menu = $('#'+c.container_id).empty();
+		$.each(c.actions, function (action_name, callback) {
+			ul.append('<li/>');
+			$('li', ul).last().append('<a href="#">'+action_name+'</a>');
+            $('li > a', ul).click(function (e) {
+                that.close();
+                callback();
+                return false;
+            });
+		});
+        return this;
+	},
+    close       : function () {
+        this.menu.detach();
+        return this;
+    }
+};
+
 Node = function (config) {
 	this.config = {
 		dimensions	: {},
@@ -8,7 +74,8 @@ Node = function (config) {
 	};
     this.state = {
         hover   : false,
-        drag    : false
+        drag    : false,
+        click   : false
     };
 	$.extend(true, this.config, config || {});
 };
@@ -16,6 +83,11 @@ Node.prototype = {
 	toString	: function () {
 		return this.config.name;
 	},
+    clicked     : function (x, y) {
+		var s = this.config.scale,
+			dims = this.config.dimensions;
+        return ((x >= dims.x*s && x <= (dims.x+dims.w)*s) && (y >= dims.y*s && y <= (dims.y+dims.h)*s));
+    },
 	serialize	: function () {
 		return $.param(this.config.dimensions) + '&pk=' + this.config.id;
 	},
@@ -84,10 +156,10 @@ Group.prototype = {
 		$('#'+container).append('<div class="'+c.alias+'" id="'+this.DOMid+'"><a href="'+c.url+'" class="'+c.alias+'_title">'+c.name+'</a></div>');
 	},
 	position	: function () {
-		var c = this.config;
-		var id_selector = '#'+this.DOMid;
-		$(id_selector).css('left', c.dimensions.x+'px');
-		$(id_selector).css('top', c.dimensions.y+'px');
+		var c = this.config,
+			id_selector = '#'+this.DOMid;
+		$(id_selector).css('left', c.dimensions.x+'px')
+					  .css('top', c.dimensions.y+'px');
 	},
 	draw		: function (ctx) {
 		var dims = this.config.dimensions;
@@ -99,7 +171,10 @@ Group.prototype = {
 			} catch(e){}
 			ctx.strokeRect(dims.x, dims.y, dims.w*s, dims.h*s);
 		}
-	}
+	},
+    clicked     : function (x, y) {
+		return false;
+    }
 };
 
 Discussion = function (node_class, config) {
@@ -128,10 +203,10 @@ Discussion.prototype = {
 		$('#'+container).append('<div class="'+c.alias+'" id="'+this.DOMid+'"><a href="'+c.url+'" class="'+c.alias+'_title">'+c.name+'</a></div>');
 	},
 	position	: function () {
-		var c = this.config;
-		var id_selector = '#'+this.DOMid;
-		$(id_selector).css('left', c.dimensions.x+'px');
-		$(id_selector).css('top', c.dimensions.y+'px');
+		var c = this.config,
+			id_selector = '#'+this.DOMid;
+		$(id_selector).css('left', c.dimensions.x+'px')
+					  .css('top', c.dimensions.y+'px');
 	},
 	draw		: function (ctx) {
 		var dims = this.config.dimensions;
@@ -173,20 +248,20 @@ Story.prototype = {
 		$('#'+c.type+'_container').append('<div class="'+c.alias+'" id="'+this.DOMid+'"><a href="'+c.url+'" class="'+c.alias+'_title">'+c.name+'</a></div>');
 	},
 	position	: function () {
-		var dims = this.config.dimensions;
-		var id_selector = '#'+this.DOMid;
-        var offset_left = $('#'+this.config.type+'_container').position().left;
+		var dims = this.config.dimensions,
+			id_selector = '#'+this.DOMid,
+			offset_left = $('#'+this.config.type+'_container').position().left;
         // if the new story is positioned outside the container fit it inside
         if(dims.x < offset_left) {
             dims.x = offset_left;
         }
-		$(id_selector).css('left', dims.x+'px');
-		$(id_selector).css('top', dims.y+'px');
+		$(id_selector).css('left', dims.x+'px')
+					  .css('top', dims.y+'px');
 	},
 	draw		: function (ctx) {
-		var dims = this.config.dimensions;
-		var s = this.config.scale;
-        var el = $('#'+this.DOMid).height(dims.h*s+'px').width(dims.w*s+'px');
+		var dims = this.config.dimensions,
+			s = this.config.scale,
+			el = $('#'+this.DOMid).height(dims.h*s+'px').width(dims.w*s+'px');
         this.wrapTitle(el);
         var state = this.state.hover ? 'hover' : 'normal';
 		this.roundedRect(ctx, dims.x, dims.y, dims.w*s, dims.h*s, 5, this.config['fill_'+state], this.config['stroke_'+state]);
@@ -200,6 +275,27 @@ Story.prototype = {
         this.state.hover = false;
         this.draw(ctx);
         //$('#'+this.DOMid).children('.opinions').hide();
+    },
+    clicked     : function (x, y) {
+		return false;
+    },
+	click		: function (event) {
+		var position = $.clickOffset(event),
+            that = this;
+			config = {
+				element : $('#'+that.DOMid),
+                actions	: {
+					add_relation: that.addRelation,
+                    add_opinion : {},
+                    edit_story  : {},
+                    delete_story: {}
+                },
+				position: position
+			};
+		return config;
+	},
+    addRelation : function () {
+        
     }
 };
 Relation = function (node_class, config) {
@@ -218,39 +314,127 @@ Relation = function (node_class, config) {
 	$.extend(this.config, config || {});
 };
 Relation.prototype = {
-	serialize	: function () {
+	serialize	    : function () {
 		return 'model_name=' + this.config.model_name + '&pk=' + this.config.id;
 	},
-	toString	: function () {
+	toString	    : function () {
 		return "("+this.from.toString()+","+this.to.toString()+")";
     },
-	bezier		: function (ctx,x1,y1,x2,y2,label) {
+    getBezierPoints : function () {
+        var s = this.config.scale;
+		// get the dimensions of the from and to elements
+		var from_dims = this.config.from.config.dimensions,
+			to_dims = this.config.to.config.dimensions;
+		// calculate the from and to points
+		var x1 = from_dims.x + from_dims.w*s,
+			y1 = from_dims.y + from_dims.h*s/2,
+			x2 = to_dims.x,
+			y2 = to_dims.y + to_dims.h*s/2;
+        return {x1:x1,x2:x2,y1:y1,y2:y2};
+    },
+    clicked         : function (x, y) {
+        // get the control points
+        var points = this.getBezierPoints();
+		// make sure we go from upper left to lower right
+		var padding = 2,
+			x1 = points.x1,
+			x2 = points.x2,
+			y1 = (points.y1 <= points.y2) ? points.y1 : points.y2,
+			y2 = (points.y2 > points.y1) ? points.y2 : points.y1;
+		y1 -= padding;
+		y2 += padding;
+		// check inside a rectangular around the relation
+        if((x >= x1 && x <= x2) && (y >= y1 && y <= y2)) {
+        	// check if it is close to the approximated diagonal
+        		// first calculate the points that create the diagonal
+        	var line_x1 = (3*points.x1+points.x2)/4,
+        		line_x2 = (points.x1+3*points.x2)/4;
+        	return $.distance(x, y, line_x1, points.y1, line_x2, points.y2) <= 3;
+        }
+        return false;
+    },
+    square			: function (ctx, x, y) {
+    	var d = 2;
+    	ctx.save();
+    	ctx.fillStyle = "rgb(200,0,0)";
+    	ctx.fillRect (x-d, y-d, 2*d, 2*d);
+    	ctx.restore();
+    },
+    contour			: function (ctx, x1, x2) {
+    	var points = this.getBezierPoints(),
+    		h = (this.config.from.config.dimensions.h/2)*this.config.scale;
+    	ctx.save();
+//    	ctx.strokeStyle="rgb(230,130,130)";
+    	var y1 = points.y1, y2 = points.y2;
+    	if(points.y1 <= points.y2) {
+    		y1 += h;
+    		y2 -= h;
+    	} else {
+    		y1 -= h;
+    		y2 += h;
+    	}
+    	ctx.moveTo(points.x1, points.y1);
+    	ctx.lineTo(points.x1, y1);
+    	ctx.lineTo(x1, y1);
+    	ctx.lineTo(x1, points.y1);
+    	ctx.lineTo(points.x1, points.y1);
+    	ctx.stroke();
+    	ctx.moveTo(points.x2, points.y2);
+    	ctx.lineTo(points.x2, y2);
+    	ctx.lineTo(x2, y2);
+    	ctx.lineTo(x2, points.y2);
+    	ctx.lineTo(points.x2, points.y2);
+    	ctx.stroke();
+    	this.diagonal(ctx, x1+(points.x1-x1)/2, points.y1, x2+(points.x2-x2)/2, points.y2);
+    	ctx.restore();
+    },
+    diagonal		: function (ctx, x1, y1, x2, y2) {
+    	ctx.save();
+    	ctx.moveTo(x1, y1);
+    	ctx.lineTo(x2, y2);
+    	ctx.stroke();
+    	ctx.restore();
+    },
+	bezier		    : function (ctx,x1,y1,x2,y2,label) {
 		ctx.save();
 		ctx.beginPath();
 		ctx.lineWidth = 2;
 		ctx.strokeStyle="rgb(130,130,200)";
 		ctx.moveTo(x1,y1);
+//		this.square(ctx, x1+(x2-x1)/2, y1);
+//		this.square(ctx, x2-(x2-x1)/2, y2);
 		ctx.bezierCurveTo(x1+(x2-x1)/2,y1,x2-(x2-x1)/2,y2,x2,y2);
 		ctx.stroke();
+//		this.contour(ctx, x1+(x2-x1)/2, x2-(x2-x1)/2);
 		//drawText(label,(x1+x2)/2, (y1+y2)/2, x2-x1,Math.atan2(y2-y1,x2-x1));
 		ctx.restore();
     },
-	addToDOM	: function (container) {
+	addToDOM	    : function (container) {
 		var c = this.config;
 		$('#'+container).append('<div class="'+c.alias+'" id="'+c.alias+'_'+c.id+'"><a href="'+c.url+'" class="'+c.alias+'_title">'+c.name+'</a></div>');
 	},
-	draw		: function (ctx) {
-		var s = this.config.scale;
-		// get the dimensions of the from and to elements
-		var from_dims = this.config.from.config.dimensions;
-		var to_dims = this.config.to.config.dimensions;
-		// calculate the from and to points
-		var x1 = from_dims.x + from_dims.w*s;
-		var y1 = from_dims.y + from_dims.h*s/2;
-		var x2 = to_dims.x
-		var y2 = to_dims.y + to_dims.h*s/2;
+	draw		    : function (ctx) {
+		//get the control points
+        var points = this.getBezierPoints();
 		// draw it
-		this.bezier(ctx, x1, y1, x2, y2);
+		this.bezier(ctx, points.x1, points.y1, points.x2, points.y2);
+	},
+	click			: function (event) {
+		alert(this.config.alias+'_'+this.config.id);
+	},
+	click		: function (event) {
+		var position = {left:event.pageX, top:event.pageY};
+			config = {
+				actions	: {
+					change_from     : {},
+                    change_to       : {},
+                    add_opinion     : {},
+                    edit_relation   : {},
+                    delete_relation : {}
+                },
+				position: position
+			};
+		return config;
 	}
 };
 Opinion = function (node_class, config) {
@@ -279,20 +463,20 @@ Opinion.prototype = {
 	},
 	container	: function () {
 		if(this.config.parent.config) {
-			var c = this.config;
-            var s = c.scale;
-			var pc = c.parent.config;
+			var c = this.config,
+				s = c.scale,
+				pc = c.parent.config;
 			c.container_id = pc.alias+'_'+pc.id+'_'+c.type;
 			// try getting the container from the DOM
-			var id_selector = '#'+c.container_id;
-			var container = $(id_selector);
+			var id_selector = '#'+c.container_id,
+				container = $(id_selector);
 			// check if it exists and return it if it does
 			if(container.length) { return this; }
 			// if it doesn't we create it
-            var parent_dims = pc.dimensions;
-			var margin = 3;
-			var opn_edge = Math.ceil(24*s);
-			var x,y;
+            var parent_dims = pc.dimensions,
+				margin = 3,
+				opn_edge = Math.ceil(24*s),
+				x,y;
 			$('#'+pc.alias+'_'+pc.id).append('<div class="opinions '+c.type+'_opinions" id="'+c.container_id+'"><canvas width="'+opn_edge+'" height="'+opn_edge+'" id="'+c.container_id+'_bg" class="opinion_container_bg"></canvas><a href="#"></a></div>');
 			// position the container and set its style
 			switch(c.type) {
@@ -359,53 +543,59 @@ Opinion.prototype = {
 };
 
 VUController = function (options) {
-    _VUC = this;
-	this.options = {
-		width		        : 958,
-		height		        : 598,
+	this.options = $.extend(true, {
+        width		        : 958,
+        height		        : 598,
+        bg_pic              : '',
         container_id        : 'canvasContainer',
-		canvas_id	        : 'groupsvu',
-		data_url	        : '/get_groups_view_json/',
-		update_db_url   	: '/common/update_presentation/',
-		update_status_url	: null,
-		meta_url	        : '',
+        canvas_id	        : 'groupsvu',
+        data_url	        : '/get_groups_view_json/',
+        update_db_url   	: '/common/update_presentation/',
+        update_status_url	: null,
+        meta_url	        : '',
         last_changed        : '',
         update_timeout      : 5000,
-		zoom_slider	        : {
-			change		: _VUC.zoom,
-			orientation	: 'vertical',
+        dialog_title        : '',
+        zoom_slider	        : {
+            change		: $.bindFn(this, this.zoom),
+            orientation	: 'vertical',
             animate     : 'fast',
-			step		: 0.1,
-			min			: 0.5,
-			max			: 1.5,
-			value		: 1
-		},
-		scale		: 1
-	};
-	$.extend(this.options, options || {});
-	
-	this.data = {};
+            step		: 0.1,
+            min			: 0.5,
+            max			: 1.5,
+            value		: 0.8
+        },
+        scale		: 0.8
+    }, options || {});
+    
+    this.data = {};
 	this.elems = {};
 	this.drag = {};
+	this.click = null;
 	this.ctx = null;
+	this.menu = new ContextMenu();
 };
 VUController.prototype = {
 	init				: function (loaded) {
         if(!loaded || loaded === 'reload') {
 			// get the data
-			_VUC.getData();
+			this.getData();
 		} else {
 			// create the elements
-			_VUC.createNodes();
+			this.createNodes();
 			// initialize the canvas
-			if(_VUC.initCanvas()) {
+			if(this.initCanvas()) {
+				// set the controls for the heart of the sun
+				this.setVUEvents();
 				// appending a scaling slider
-				if($.isPlainObject(_VUC.options.zoom_slider) && $.isFunction(_VUC.options.zoom_slider.change)) {
-					_VUC.initZoom();
+				if($.isPlainObject(this.options.zoom_slider) && $.isFunction(this.options.zoom_slider.change)) {
+					this.initZoom();
 				}
-				//var _VUC = this;
+                // initialize dialog box
+                this.initDialog();
+				var _VUC = this;
 				// iterate over the elements and create the GUI
-				$.each(_VUC.elems, function (id, el) {
+				$.each(this.elems, function (id, el) {
 					// appending a div for each element to the canvas container
 					_VUC.addElement(el);
 					// position the element inside the container
@@ -415,25 +605,26 @@ VUController.prototype = {
                     // set other event handlers
                     _VUC.setEventHandlers(el);
 				});
-				_VUC.draw();
+				this.draw();
                 // initialize the visualization updater
-                setTimeout(_VUC.updateView, _VUC.options.update_timeout);
+                setTimeout($.bindFn(this, this.updateView), this.options.update_timeout);
 			} else {
 				alert('No canvas context.');
 			}
 		}
 	},
     getData				: function () {
-		//var _VUC = this;
+		var _VUC = this;
 		// expecting format: [ { element_alias : { element_config_object }, ... ]
-		$.getJSON(_VUC.options.data_url, function (data){
+		$.getJSON(this.options.data_url, function (data){
 			_VUC.data = data;
 			// initialize the view controller
-			_VUC.init(true);
+			_VUC.init.call(_VUC, true);
 		});
 	},
     updateView             : function () {
-        if(!_VUC.options.update_status_url) { return; } // ignore and don't update
+        if(!this.options.update_status_url) { return; } // ignore and don't update
+        var _VUC = this;
         $.ajax({
             type    : 'POST',
             url     : _VUC.options.update_status_url,
@@ -443,9 +634,9 @@ VUController.prototype = {
                 if(response) {
                     if(_VUC.options.last_changed !== response) {
                         _VUC.options.last_changed = response;
-                        _VUC.init('reload');
+                        _VUC.init.call(_VUC, 'reload');
                     } else {
-                        setTimeout(_VUC.updateView, _VUC.options.update_timeout);
+                        setTimeout($.bindFn(_VUC, _VUC.updateView), _VUC.options.update_timeout);
                     }
                 }
             },
@@ -455,8 +646,8 @@ VUController.prototype = {
         });
     },
     updateDB	: function () {
-		//var _VUC = this;
-		_VUC.data = _VUC.drag.serialize();
+		var _VUC = this;
+		this.data = this.drag.serialize();
 		$.ajax({
 			type		: "POST",
 			url			: _VUC.options.update_db_url,
@@ -467,22 +658,81 @@ VUController.prototype = {
 		});
 	},
     initCanvas			: function () {
-		//var _VUC = this;
-        var o = _VUC.options;
+		var _VUC = this,
+            o = this.options;
 		$('#'+o.container_id).empty().height(o.height).width(o.width);
 		$('#'+o.container_id).append('<canvas id="'+o.canvas_id+'" width="'+o.width+'" height="'+o.height+'"></canvas>');
 		this.ctx = document.getElementById(o.canvas_id).getContext('2d');
+        // setting background
+        if(o.bg_pic != '') {
+            try {
+                var img = new Image();
+                img.src = o.bg_pic;
+                _VUC.ctx.drawImage(img, 0, 0, o.width, o.height);
+            } catch(e) {}
+        }
 		return (_VUC.ctx);
+	},
+	setVUEvents			: function () {
+		var _VUC = this;
+        $('#'+this.options.canvas_id).click(function (e) {
+			//  if the click property is set then unset it and clear the menu
+            if(_VUC.click) {
+                _VUC.click = null;
+                _VUC.menu.close.call(_VUC.menu, e);
+            } else {
+                var offset = $.clickOffset(e);
+                $.each(_VUC.elems, function (id, el) {
+                    if(el.clicked.call(el, offset.left, offset.top)) {
+                        if(el.click && $.isFunction(el.click)) {
+                            _VUC.click = el;
+                            _VUC.menu.pop.call(_VUC.menu, el.click.call(el, e));
+                        }
+                    }
+                });
+                // there was click, we should open the menu, but not on an element
+                // open it on the canvas
+                if(!_VUC.click) {
+                    // just to indicate that menu is popped
+                    _VUC.click = true;
+                    _VUC.menu.pop.call(_VUC.menu, _VUC.getClickConfig.call(_VUC, e));
+                }
+            }
+		});
 	},
 	initZoom			: function () {
 		if($('#vuslider').length == 0) {
-			$('#'+_VUC.options.container_id).after('<div id="vuslider"></div>');
-			$('#vuslider').slider(_VUC.options.zoom_slider);
+			// add a container element for the slider
+            $('#'+this.options.container_id).after('<div id="vuslider"></div>');
+            // init & bind the onChange callback to this controller
+            this.options.zoom_slider.change = $.bindFn(this, this.zoom);
+            // init slider
+			$('#vuslider').slider(this.options.zoom_slider);
 		}
 	},
+    initDialog          : function () {
+        var _VUC = this;
+        $('form[name=story_input]').dialog({
+			bgiframe: true,
+            autoOpen: false,
+			height: 402,
+			width: 787,
+			modal: true,
+            title: _VUC.options.dialog_title,
+			buttons: {
+				'Create': function() {
+					$(this).submit();
+				},
+
+				Cancel: function() {
+					$(this).dialog('close');
+				}
+			}
+		});
+    },
     createNodes			: function () {
-		//var _VUC = this;
-        $.each(_VUC.data, function (i, item) {
+		var _VUC = this;
+        $.each(this.data, function (i, item) {
 			$.each(item, function (key, val) {
 				var node = new Node({});
 				switch(key) {
@@ -505,7 +755,7 @@ VUController.prototype = {
 				var c = node.config;
                 var id = c.alias+'_'+c.id;
 				// rescale zoom
-				node.rescale(_VUC.options.scale);
+				node.rescale.call(node, _VUC.options.scale);
 				// add the Node instance to the controller's elements
 				_VUC.elems[id] = node;
                 // set a load event listener to the element's background image to initialy draw it
@@ -521,19 +771,19 @@ VUController.prototype = {
     addElement			: function (el) {
         // add an element to the DOM
 		if(el) {
-			el.addToDOM(_VUC.options.container_id);
+			el.addToDOM.call(el, this.options.container_id);
 		}
 		// add all elements to the DOM
 		else {
-			//var _VUC = this;
-            $.each(_VUC.elems, function (id, el) {
+			var _VUC = this;
+            $.each(this.elems, function (id, el) {
 				_VUC.addElement(el);
 			});
 		}
 	},
     setElementsRelations: function () {
-		//var _VUC = this;
-		$.each(_VUC.elems, function (key, el) {
+		var _VUC = this;
+		$.each(this.elems, function (key, el) {
 			var c = _VUC.elems[key].config;
 			if(el instanceof Relation) {
 				c.from = _VUC.elems[c.from_id];
@@ -544,87 +794,105 @@ VUController.prototype = {
 		});
 	},
 	setDraggable		: function (el) {
-		//var _VUC = this;
+		var _VUC = this;
 		// set a specific element as draggable
 		if(el) {
-			var id = el.config.alias+'_'+el.config.id;
-			$('#'+id).draggable({
-				containment: 'parent',
-				start: function (e, ui) {
-					_VUC.elems[id].state.drag = true;
-                    _VUC.setDrag(id);
-					_VUC.grip();
-				},
-				stop : function (e, ui) {
-					var position = $(this).position();
-					var el = _VUC.elems[id];
-                    el.state.drag = false;
-                    el.config.dimensions.x = parseInt(position.left);
-					el.config.dimensions.y = parseInt(position.top);
-					_VUC.drop();
-				}
-			});
+			if(el.DOMid) {
+				$('#'+el.DOMid).draggable({
+					containment: 'parent',
+					start: function (e, ui) {
+						el.state.drag = true;
+						_VUC.drag = el;
+						_VUC.grip.call(_VUC);
+					},
+					stop : function (e, ui) {
+						var position = $(this).position();
+	                    el.state.drag = false;
+	                    el.config.dimensions.x = parseInt(position.left);
+						el.config.dimensions.y = parseInt(position.top);
+						_VUC.drop.call(_VUC);
+					}
+				});
+			}
 		}
 		// set all elements as draggable
 		else {
-			$.each(_VUC.elems, function (id, el) {
+			$.each(this.elems, function (id, el) {
 				_VUC.setDraggable(el);
 			});
 		}
 	},
     setEventHandlers    : function (el) {
-        if(el) {
-            //var _VUC = this;
+        if(el && el.DOMid) {
+            var _VUC = this;
             if(el.hover && $.isFunction(el.hover)) {
                 $('#'+el.DOMid).hover(
                     function () {
                         if(el.state.drag) { return; }
-                        else { el.hover(_VUC.ctx); }
+                        else { el.hover.call(el, _VUC.ctx); }
                     },
                     function () {
                         if(el.state.drag) { return; }
-                        else { el.unhover(_VUC.ctx); }
+                        else { el.unhover.call(el, _VUC.ctx); }
                     }
                 );
             }
+			$('#'+el.DOMid).click(function (e) {
+				if(_VUC.click) {
+                    _VUC.menu.close.call(_VUC.menu);
+                    _VUC.click = null;
+                }
+                if(el.click && $.isFunction(el.click)) {
+                    _VUC.click = el;
+					_VUC.menu.pop.call(_VUC.menu, el.click.call(el, e));
+				}
+			});
         }
     },
 	position			: function (el) {
-		if(el.position) {
-			el.position();
+		if(el.position && $.isFunction(el.position)) {
+			el.position.call(el);
 		}
 	},
-	setDrag				: function (id) {
-        _VUC.drag = _VUC.elems[id];
-	},
 	draw				: function (isGrip) {
-		//var _VUC = this;
-		_VUC.ctx.clearRect(0, 0, _VUC.options.width, _VUC.options.height);
-		$.each(_VUC.elems, function (id, el) {
+		var _VUC = this;
+		this.ctx.clearRect(0, 0, this.options.width, this.options.height);
+		$.each(this.elems, function (id, el) {
 			if(isGrip) {
 				if(id != _VUC.drag.config.alias+'_'+_VUC.drag.config.id) {
-					el.draw(_VUC.ctx);
+					el.draw.call(el, _VUC.ctx);
 				}
 			} else {
-				el.draw(_VUC.ctx);
+				el.draw.call(el, _VUC.ctx);
 			}
 		});
+        return this;
 	},
 	grip				: function () {
-        $('#'+_VUC.drag.config.alias+'_'+_VUC.drag.config.id).addClass('dragon');
-		_VUC.draw(true);
+        $('#'+this.drag.config.alias+'_'+this.drag.config.id).addClass('dragon');
+		this.draw(true);
 	},
 	drop				: function () {
-        $('#'+_VUC.drag.config.alias+'_'+_VUC.drag.config.id).removeClass('dragon');
-		_VUC.draw();
-		_VUC.updateDB();
+        $('#'+this.drag.config.alias+'_'+this.drag.config.id).removeClass('dragon');
+		this.draw()
+		    .updateDB();
 	},
 	zoom				: function (event, ui) {
-		_VUC.options.scale = ui.value;
+		this.options.scale = ui.value;
         // resize titles
-		$('#'+_VUC.options.container_id).animate( { fontSize: 16*ui.value+'px' }, 'fast');
-		_VUC.init('reload');
-	}
+		$('#'+this.options.container_id).animate( { fontSize: 16*ui.value+'px' }, 'fast');
+		this.init('reload');
+	},
+    getClickConfig      : function (event) {
+        var position = $.clickOffset(event);
+        var config = {
+            actions	: {
+                add_group : function () { if($('#create').length) { $('#create').click(); } }
+            },
+            position: position
+        };
+        return config;
+    }
 };
 /*
  *	A controller class that handles Discussions GUI.
@@ -632,7 +900,10 @@ VUController.prototype = {
  *	using jQuery.extend()
  */
 DiscussionController = function (VuController, options) {
-    this.options = {};
+    this.options = {
+        discussion_type         : 1,
+        speech_container_class  : 'stories_container'
+    };
 	// inheriting Node class
 	var dummy = $.extend(true, VuController, this);
 	$.extend(true, this, dummy);
@@ -643,30 +914,30 @@ DiscussionController = function (VuController, options) {
 };
 DiscussionController.prototype = {
     getData				: function () {
-		var _VUC = this;
+		var _DC = this;
 		// expecting format: [ { element_alias : { element_config_object }, ... ]
 		$.getJSON(this.options.data_url, function (data){
-			_VUC.data = data;
+			_DC.data = data;
 			// get the Visualization's meta data
-			_VUC.getVisualizationMetaData();
+			_DC.getVisualizationMetaData.call(_DC);
 		});
 	},
 	getVisualizationMetaData: function () {
-		var _VUC = this;
-		$.getJSON(this.options.meta_url, function (json) {
+		var _DC = this;
+		$.getJSON(this.options.meta_url, {discussion_type:this.options.discussion_type}, function (json) {
             // apply the received data
-            _VUC.metaData = json;
+            _DC.metaData = json;
             // initialize the view controller
-            _VUC.init(true);
+            _DC.init.call(_DC, true);
 		});
 	},
     initVisualization   : function () {
-        var _VUC = this;
+        var _DC = this;
         // setting the speech act containers
         $.each(this.metaData, function (i, item) {
             switch(item.fields.story_type) {
                 case 1: { // story
-                    $('#'+_VUC.options.container_id).append('<div id="'+item.fields.name+'_container" class="stories_container"></div>');
+                    $('#'+_DC.options.container_id).append('<div id="'+item.fields.name+'_container" pk="'+item.pk+'" class="'+_DC.options.speech_container_class+'"></div>');
                     $('#'+item.fields.name+'_container').append('<h2>'+item.fields.name+'</h2>');
                 } break;
                 case 2: { // opinion
@@ -684,25 +955,93 @@ DiscussionController.prototype = {
 		$('#'+o.container_id).empty()
                              .append('<canvas id="'+o.canvas_id+'" width="'+o.width+'" height="'+o.height+'"></canvas>');
 		this.ctx = document.getElementById(o.canvas_id).getContext('2d');
+        // setting background
+        var _DC = this;
+        if(o.bg_pic != '' && false) {
+            try {
+                var img = new Image();
+                img.src = o.bg_pic;
+                $(img).load(function () {
+                    _DC.ctx.drawImage(img, 0, 0, o.width, o.height);
+                });
+            } catch(e) {}
+        }
         if(this.metaData.length != 0) {
             this.initVisualization();
         }
 		return (this.ctx);
 	},
+    initDialog          : function () {
+        var _DC = this;
+        $('form[name=story_input]').dialog({
+			bgiframe: true,
+            autoOpen: false,
+			height: 250,
+			width: 600,
+			modal: true,
+            title: 'Add Story',
+			buttons: {
+				'Create': function() {
+                    var config = {
+                        callback        : _DC.init,
+                        callback_context: _DC
+                    };
+                    var FC = new FormController();
+                    $(this).dialog('close');
+                    return FC.submit.call(FC, this, config);
+				},
+				Cancel: function() {
+					$(this).dialog('close');
+				}
+			}
+		});
+    },
 	addElement			: function (el) {
         // add an element to the DOM
 		if(el) {
-			if(el instanceof Opinion) { el.container().addToDOM(); }
-								 else { el.addToDOM(this.options.container_id); }
+			if(el instanceof Opinion) { el.container.call(el).addToDOM.call(el); }
+								 else { el.addToDOM.call(el, this.options.container_id); }
 		}
 		// add all elements to the DOM
 		else {
-            var _VUC = this;
+            var _DC = this;
 			$.each(this.elems, function (id, el) {
-				_VUC.addElement(el);
+				_DC.addElement(el);
 			});
 		}
 	},
+    getClickConfig      : function (event) {
+        var position = $.clickOffset(event);
+        var _DC = this;
+        var config = {
+            actions	: {
+                add_story : function () {
+                    _DC.click = null;
+                    $(_DC.getCreateForm(event)).dialog('open');
+                }
+            },
+            position: position
+        };
+        return config;
+    },
+    getCreateForm       : function (event) {
+        var form = $('form[name=story_input]'),
+            x = $.clickOffset(event).left,
+            input = $('input[name=speech_act]', form),
+            speech_act;
+        $('.'+this.options.speech_container_class).each( function () {
+            var this_left = $(this).position().left;
+            if(x > this_left && x <= this_left+$(this).outerWidth() ) {
+                speech_act = $(this).attr('pk');
+            }
+        });
+        if( ! input.length > 0) {
+            form.append('<input type="hidden" name="speech_act" value="'+speech_act+'" />');
+        } else {
+            input.val(speech_act);
+        }
+        return form;
+    },
 	drawText			: function (text,x,y,maxWidth,rotation) {
         // if text is short enough - put it in 1 line. if not, search for the middle space, and split it there (only splits to 2 lines).
         this.ctx.translate(x,y);
@@ -761,7 +1100,7 @@ FormController.prototype = {
                     if($(e.target).attr('name').length && $(e.target).attr('name') == 'action') {
                         $.extend(config, { action : $(e.target).val() });
                     };
-                    return this_.submit(this.form, config);
+                    return this_.submit.call(this_, this.form, config);
                 });
             }
 		});
@@ -770,12 +1109,14 @@ FormController.prototype = {
 		this.f_html		= form || {};
 		this.f_jq		= $(form) || {};
 		this.options	= $.extend(true, {
-	        validation	: {},
-			url			: this.f_jq.attr('action') || '/',
-	        type		: this.f_jq.attr('method') || 'POST',
-	        dont_post	: false,
-	        data_type	: 'text',
-	        editor		: {}
+	        validation	    : {},
+			url			    : this.f_jq.attr('action') || '/',
+	        type		    : this.f_jq.attr('method') || 'POST',
+	        dont_post	    : false,
+	        data_type	    : 'text',
+            callback        : null,
+            callback_context: null,
+	        editor		    : {}
 	    }, options || {});
 		/* for YUI Rich Text Editor
 		if(this.options.editor && this.options.editor.saveHTML) {
@@ -801,11 +1142,11 @@ FormController.prototype = {
 				if(this_.elements[field] != null && !this_.elements[field].disabled) {
 					try {
 						if(this_[method] && $.isFunction(this_[method])) {
-							if(!this_[method](field)) {
-								this_.alert_field(field);
+							if(!this_[method].call(this_, field)) {
+								this_.alert_field.call(this_, field);
 								valid = false;
 							} else {
-								this_.clear_alert(field);
+								this_.clear_alert.call(this_, field);
 							}
 						}
 					} catch(e){alert(e);}
@@ -859,7 +1200,7 @@ FormController.prototype = {
 			data	: this_.f_jq.serialize(),
 			dataType: this_.options.data_type,
 			success	: function(response){
-				this_.after(response);
+				this_.after.call(this_, response);
 			}
 		});
 	},
@@ -879,10 +1220,10 @@ FormController.prototype = {
 	 * @return Object
 	 */
 	after				: function (response) {
-		if(this.options.callback && typeof this.options.callback == 'function') {
-			this.options.callback(response);
+        if(this.options.callback && typeof this.options.callback == 'function') {
+			this.options.callback.call(this.options.callback_context, response);
 		} else {
-			alert(response);
+            alert(response);
 		}
 	},
 	extractValidation	: function () {
@@ -891,7 +1232,7 @@ FormController.prototype = {
 			// disabled fields are not counted
 			if(!el.disabled) {
 				var classes = $(el).attr('class').split(' ');
-				$.each(classes, function(i, _class) {
+				$.each(classes, function (i, _class) {
 					// allowing one check per field
 					if(_class && _class.indexOf('is_') === 0) {
 						additional_validation[el_name] = _class;
