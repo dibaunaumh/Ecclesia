@@ -64,6 +64,7 @@ def save_group_from_form(group_form, user):
     group_profile.group = group
     group_profile.slug = group_form.cleaned_data['slug']
     group_profile.description = group_form.cleaned_data['description']
+    group_profile.created_by = user
     group_profile.save()
     return
 

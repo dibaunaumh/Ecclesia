@@ -11,6 +11,8 @@ class UserProfile(models.Model):
 	"""
     user = models.ForeignKey(User, unique=True, verbose_name=_('user'), related_name='profile', help_text=_("The internal User entity. Add this entity before you create a profile and set a User for it."))
     picture = models.ImageField(max_length=100, upload_to='img/user_pics', help_text=_('The name of the image file.'))
+    #im_address = models.CharField(_('im_address'), max_length=500, null=True, blank=True, help_text=_('IM address of the user'))
+    #im_type = models.CharField(_('im type'), max_length=30, null=True, blank=True, choices = (("gtalk", "gtalk"),), help_text=_('IM type of the user'))
 
     def __unicode__(self):
         return "%s's profile" % (self.user.username,)
@@ -49,6 +51,9 @@ class GroupProfile(Presentable):
         super(GroupProfile, self).save()
         if self.created_by:
             if not GroupPermission.objects.filter(group=self.group).filter(user=self.created_by):
+                user = self.created_by
+                user.groups.add(self.group)
+                user.save()
                 group_permission = GroupPermission(group=self.group, user=self.created_by, permission_type=1)
                 group_permission.save()
 

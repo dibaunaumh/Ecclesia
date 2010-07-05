@@ -24,26 +24,31 @@ class Notification(models.Model):
     offline_recipients_only = models.BooleanField(default=False, verbose_name=_('offline recipients only'), 
                                                   help_text=_("Boolean field that tells us if to send the notification to offline recipients only"))
     
+    def deliver(self):
+        if instance.recipient and instance.recipient.email:
+            try:
+                send_mail('Email from ekkli', instance.text, 'ekkli@gmail.com',
+                          [instance.recipient.email], fail_silently=False)
+                instance.delivered_at = datetime.now()
+                instance.save()
+            except Exception as inst:
+                instance.delivered_at = None
+                instance.failed = True
+                instance.fail_reason = inst
+                instance.save()
+                print inst
+        elif not instance.recipient:
+            group = instance.discussion.group
+            members = GroupProfile.objects.filter(group=group)[0].get_group_members()
+            for member in members:
+                notification = Notification(text=instance.text, discussion=instance.discussion, recipient=member)
+                notification.save()
+        else:
+            pass
         
 def send_notification(sender, instance, **kwargs):
-    if instance.recipient and instance.recipient.email:
-        try:
-            send_mail('Email from ekkli', instance.text, 'ekkli@gmail.com',
-                      [instance.recipient.email], fail_silently=False)
-            instance.delivered_at = datetime.now()
-        except Exception as inst:
-            instance.failed = True
-            instance.fail_reason = inst
-            print inst
-    elif not instance.recipient:
-        group = instance.discussion.group
-        members = GroupProfile.objects.filter(group=group)[0].get_group_members()
-        for member in members:
-            print member
-            notification = Notification(text=instance.text, discussion=instance.discussion, recipient=member)
-            notification.save()
-    else:
-        pass
-
+    if instance.delivered_at is None:
+        instance.deliver()
+            
 # connecting post_save signal of Notifications to the function that sends emails 
 models.signals.post_save.connect(send_notification, sender=Notification)
