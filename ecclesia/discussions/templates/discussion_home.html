@@ -30,55 +30,6 @@
                     $(this).removeClass('ui-state-hover');
                 }
             );
-            
-            $("input[name='story-class']").change(function () {
-                var type = $(this).val();
-                var data = 'discussion_type={{ discussion.type.id }}&story_type='+type+'&discussion_slug={{ discussion.slug }}';
-                var parseJsonToOptions = function (json, field_name) {
-                	var html = '';
-                	$.each(json, function (i, item) {
-						html += '<option value="'+item.pk+'">'+item.fields[field_name]+'</option>';
-					});
-					return html;
-				}
-                $.getJSON(
-                    '/discussions/get_speech_acts_by_story_type/',
-                    data,
-                    function (response) {
-                        $("select[name='speech_act']").html(parseJsonToOptions(response, 'name'));
-                    }
-                );
-                if(type != '1') {
-					$.getJSON(
-						'/discussions/get_stories_json/',
-						data,
-						function (response) {
-							switch(type) {
-								case '3': {
-									$('#story_input-from-story').show()
-									                            .children('select')
-																.html(parseJsonToOptions(response, 'title'));
-									$('#story_input-to-story').show()
-															  .children('select')
-															  .html(parseJsonToOptions(response, 'title'));
-									$('#story_input-on-story').hide();
-								} break;
-								case '2': {
-									$('#story_input-on-story').show()
-															  .children('select')
-															  .html(parseJsonToOptions(response, 'title'));
-									$('#story_input-from-story').hide();
-									$('#story_input-to-story').hide();
-								} break;
-							}
-						}
-					)
-				} else {
-					$('#story_input-from-story').hide();
-					$('#story_input-on-story').hide();
-					$('#story_input-to-story').hide();
-				}
-            });
         });
     </script>
 {% endblock %}
@@ -108,7 +59,7 @@
 </p>
 
 
-<div id="create_dialog" style="display:none" title="Create new Story">
+<div id="create_dialog" class="hidden" title="Create new Story">
 	<form method="POST" action="" id="create_form">
 	{{ story_form.as_p }}
 	</form>
@@ -119,53 +70,65 @@
 <hr/>
 {% block story_input %}
 {% if user_in_group %}
-<form name="story_input" method="POST" action="/discussions/add_story/">
-    <input type="hidden" name="discussion" value="{{ discussion.id }}">
-	<!--div id="story_input-types">
-		<fieldset id="story_input-story-type">
+<form name="story_create" class="hidden" method="POST" action="/discussions/add_story/">
+    <input type="hidden" name="discussion" value="{{ discussion.id }}" />
+	<input type="hidden" name="story-class" value="1" />
+	<input type="hidden" name="speech_act" value="1" />
+	<fieldset class="story_input-title">
+		<legend>{% trans 'Title:' %}</legend>
+		<textarea name="title" class="is_value"></textarea>
+	</fieldset>
+</form>
+<form name="opinion_create" class="hidden" method="POST" action="/discussions/add_story/">
+    <input type="hidden" name="discussion" value="{{ discussion.id }}" />
+    <input type="hidden" name="story-class" value="2" />
+	<input type="hidden" name="parent_story" value="" />
+	<input type="hidden" name="parent_class" value="1" />
+	<div id="story_input-types">
+		<!--fieldset id="story_input-story-type">
 			<legend>{% trans 'Story type:' %}</legend>
 			<input type="radio" name="story-class" id="story" value="1" checked="checked" /><label for="story"> {% trans 'Story' %}</label>
 			<input type="radio" name="story-class" id="relation" value="3" /><label for="relation"> {% trans 'Relation' %}</label>
 			<input type="radio" name="story-class" id="opinion" value="2" /><label for="opinion"> {% trans 'Opinion' %}</label>
-		</fieldset>
-		<fieldset id="story_input-speech-act">
+		</fieldset-->
+		<fieldset>
 			<legend>{% trans 'Speech act:' %}</legend>
-			<select name="speech_act">
-				{% for sa in speech_acts %}
-					<option value="{{ sa.pk }}">{{ sa.name }}</option>
-				{% endfor %}
-			</select>
+			{% for sa in speech_acts %}
+                {% ifequal sa.story_type 2 %}
+			<input type="radio" name="speech_act" value="{{ sa.pk }}" id="opinion_{{ sa.name }}" /><label for="opinion_{{ sa.name }}"> {{ sa.name }}</label><br/>
+			    {% endifequal %}
+            {% endfor %}
 		</fieldset>
-	</div-->
+	</div>
+    <fieldset class="story_input-title">
+		<legend>{% trans 'Title:' %}</legend>
+		<textarea name="title" class="is_value"></textarea>
+	</fieldset>
+</form>
+<form name="relation_create" class="hidden" method="POST" action="/discussions/add_story/">
+    <input type="hidden" name="discussion" value="{{ discussion.id }}" />
+    <input type="hidden" name="story-class" value="3" />
+    <input type="hidden" name="from_story" value="" />
+    <input type="hidden" name="speech_act" value="{% for sa in speech_acts %}{% ifequal sa.story_type 3 %}{{ sa.pk }}{% endifequal %}{% endfor %}" />
 	<div id="story_input-stories">
-		<fieldset id="story_input-from-story">
+		<!--fieldset>
 			<legend>{% trans 'From story:' %}</legend>
 			<select name="from_story">
 
 			</select>
-		</fieldset>
-		<fieldset id="story_input-to-story">
+		</fieldset-->
+		<fieldset>
 			<legend>{% trans 'To story:' %}</legend>
 			<select name="to_story">
 
 			</select>
 		</fieldset>
-		<fieldset id="story_input-on-story">
-			<legend>{% trans 'On story:' %}</legend>
-			<select name="parent_story">
-
-			</select>
-		</fieldset>
 	</div>
-	<input type="hidden" name="story-class" value="1" />
-	<input type="hidden" name="speech_act" value="1" />
-	<fieldset id="story_input-title">
+	<fieldset class="story_input-title">
 		<legend>{% trans 'Title:' %}</legend>
 		<textarea name="title" class="is_value"></textarea>
-		<!--button type="submit" id="story_input-submit" class="ui-state-default ui-corner-all ekkli-button">{% trans 'Send' %}</button-->
 	</fieldset>
 </form>
-<hr/>
 {% endif %}
 {% endblock %}
 <!--

@@ -3,7 +3,7 @@ $.extend({
 		return Math.round(Math.abs((x2-x1)*(y1-y)-(x1-x)*(y2-y1))/Math.sqrt(Math.pow(x2-x1,2)+Math.pow(y2-y1,2)));
 	},
 	clickOffset : function (e) {
-		if(!e || !e.type || e.type !== 'click') {return this;}
+		if(!e || !e.type && (e.type === 'click' || e.type === 'mousedown' || e.type === 'mouseup')) {return this;}
 		var offset = $(e.target).offset();
 			x = parseInt(e.pageX - offset.left),
 			y = parseInt(e.pageY - offset.top);
@@ -18,11 +18,12 @@ $.extend({
 ContextMenu = function(config) {
 	this.config = {};
     this.menu = {};
+    this.context_controller = {};
     var getDefaults = function () {
         var o = $.extend(true, {
             container_id: 'vu-context-menu',
             element     : $('#canvasContainer'),
-            position	: {left: 0, top: 0},
+            position    : {left: 0, top: 0},
             actions     : {}
         }, config || {});
         return o;
@@ -34,8 +35,9 @@ ContextMenu = function(config) {
     };
 };
 ContextMenu.prototype = {
-	pop			: function (config) {
-		this.initialize(config)
+	pop			: function (config, context_controller) {
+		this.context_controller = context_controller;
+        this.initialize(config)
 			.buildMenu()
             .menu.css('left', this.config.position.left)
                  .css('top', this.config.position.top)
@@ -50,10 +52,14 @@ ContextMenu.prototype = {
 		$.each(c.actions, function (action_name, callback) {
 			ul.append('<li/>');
 			$('li', ul).last().append('<a href="#">'+action_name+'</a>');
-            $('li > a', ul).click(function (e) {
-                that.close();
-                callback();
-                return false;
+            $('li > a', ul).last().mousedown(function (e) {
+                e.stopImmediatePropagation();
+                $(this).mouseup(function () {
+                    $(this).unbind('mouseup');
+                    that.close();
+                    callback(that.context_controller);
+                    return false;
+                });
             });
 		});
         return this;
@@ -285,17 +291,85 @@ Story.prototype = {
 			config = {
 				element : $('#'+that.DOMid),
                 actions	: {
-					add_relation: that.addRelation,
-                    add_opinion : {},
-                    edit_story  : {},
-                    delete_story: {}
+					add_relation: $.bindFn(that, that.addRelation),
+                    add_opinion : $.bindFn(that, that.addOpinion),
+                    edit_story  : $.bindFn(that, that.editStory),
+                    delete_story: $.bindFn(that, that.deleteStory)
                 },
 				position: position
 			};
 		return config;
 	},
-    addRelation : function () {
-        
+    addRelation : function (context_controller) {
+        // TODO: move this form initialization into the view controller - by design
+        var form = context_controller.getCreateRelationForm.apply(context_controller, arguments),
+            dialog_config ={
+                bgiframe: true,
+                autoOpen: false,
+                height: 300,
+                width: 600,
+                modal: true,
+                title: 'Add Relation',
+                buttons: {
+                    'Create': function() {
+                        var config = {
+                            callback : $.bindFn(context_controller, context_controller.init)
+                        },
+                            FC = new FormController();
+                        $(this).dialog('close');
+                        return FC.submit.call(FC, this, config);
+                    },
+                    'Cancel': function() {
+                        $(this).dialog('close');
+                    }
+                }
+            };
+//            dialog_config = $.isPlainObject(config) ? $.extend(true, {}, defaults, config) : defaults;
+        form.dialog(dialog_config).dialog('open');
+    },
+    addOpinion  : function (context_controller) {
+        // TODO: move this form initialization into the view controller - by design
+        var form = context_controller.getCreateOpinionForm.apply(context_controller, arguments),
+            dialog_config ={
+                bgiframe: true,
+                autoOpen: false,
+                height: 300,
+                width: 600,
+                modal: true,
+                title: 'Add Opinion',
+                buttons: {
+                    'Create': function() {
+                        var config = {
+                            callback : $.bindFn(context_controller, context_controller.init)
+                        },
+                            FC = new FormController();
+                        $(this).dialog('close');
+                        return FC.submit.call(FC, this, config);
+                    },
+                    'Cancel': function() {
+                        $(this).dialog('close');
+                    }
+                }
+            };
+//            dialog_config = $.isPlainObject(config) ? $.extend(true, {}, defaults, config) : defaults;
+        form.dialog(dialog_config).dialog('open');
+    },
+    editStory   : function (context_controller) {
+        // TODO: improve this, create a real edit dialog
+//        var ref = $('#'+this.DOMid).children('a').first().attr('href');
+        window.location.href = this.config.url;
+    },
+    deleteStory : function (context_controller) {
+        // TODO: allow the confirm title to be translated
+        if(confirm('Are you sure you want to delete this story?')) {
+            $.post('/discussions/delete_story/'+this.config.id+'/', {}, function () {
+                if(context_controller) {
+                    $.bindFn(context_controller, context_controller.init)('reload');
+                }
+            });
+        } else {
+            return false;
+        }
     }
 };
 Relation = function (node_class, config) {
@@ -318,7 +392,7 @@ Relation.prototype = {
 		return 'model_name=' + this.config.model_name + '&pk=' + this.config.id;
 	},
 	toString	    : function () {
-		return "("+this.from.toString()+","+this.to.toString()+")";
+		return "("+this.config.from.toString()+","+this.config.to.toString()+")";
     },
     getBezierPoints : function () {
         var s = this.config.scale;
@@ -352,6 +426,60 @@ Relation.prototype = {
         	return $.distance(x, y, line_x1, points.y1, line_x2, points.y2) <= 3;
         }
         return false;
+    },
+    click           : function (event) {
+        var position = $.clickOffset(event),
+            that = this;
+			config = {
+                actions	: {
+                    add_opinion : $.bindFn(that, that.addOpinion),
+                    edit_relation: $.bindFn(that, that.editRelation),
+                    remove_relation: $.bindFn(that, that.deleteRelation)
+                },
+				position: position
+			};
+		return config;
+    },
+    addOpinion      : function (context_controller) {
+        // TODO: move this form initialization into the view controller - by design
+        var form = context_controller.getCreateOpinionForm.apply(context_controller, arguments),
+            dialog_config ={
+                bgiframe: true,
+                autoOpen: false,
+                height: 300,
+                width: 600,
+                modal: true,
+                title: 'Add Opinion',
+                buttons: {
+                    'Create': function() {
+                        var config = {
+                            callback : $.bindFn(context_controller, context_controller.init)
+                        },
+                            FC = new FormController();
+                        $(this).dialog('close');
+                        return FC.submit.call(FC, this, config);
+                    },
+                    'Cancel': function() {
+                        $(this).dialog('close');
+                    }
+                }
+            };
+//            dialog_config = $.isPlainObject(config) ? $.extend(true, {}, defaults, config) : defaults;
+        form.dialog(dialog_config).dialog('open');
+    },
+    editRelation    : function () {
+        window.location.href = this.config.url;
+    },
+    deleteRelation  : function (context_controller) {
+        if(confirm('Are you sure you want to delete this relation?')) {
+            $.post('/discussions/delete_relation/'+this.config.id+'/', {}, function () {
+                if(context_controller) {
+                    $.bindFn(context_controller, context_controller.init)('reload');
+                }
+            });
+        } else {
+            return false;
+        }
     },
     square			: function (ctx, x, y) {
     	var d = 2;
@@ -418,23 +546,6 @@ Relation.prototype = {
         var points = this.getBezierPoints();
 		// draw it
 		this.bezier(ctx, points.x1, points.y1, points.x2, points.y2);
-	},
-	click			: function (event) {
-		alert(this.config.alias+'_'+this.config.id);
-	},
-	click		: function (event) {
-		var position = {left:event.pageX, top:event.pageY};
-			config = {
-				actions	: {
-					change_from     : {},
-                    change_to       : {},
-                    add_opinion     : {},
-                    edit_relation   : {},
-                    delete_relation : {}
-                },
-				position: position
-			};
-		return config;
 	}
 };
 Opinion = function (node_class, config) {
@@ -574,11 +685,14 @@ VUController = function (options) {
 	this.click = null;
 	this.ctx = null;
 	this.menu = new ContextMenu();
+    this.timeoutID = 0;
 };
 VUController.prototype = {
 	init				: function (loaded) {
+        var _VUC = this;
+        this.elems = {};  // clean this object
         if(!loaded || loaded === 'reload') {
-			// get the data
+            // get the data
 			this.getData();
 		} else {
 			// create the elements
@@ -593,7 +707,6 @@ VUController.prototype = {
 				}
                 // initialize dialog box
                 this.initDialog();
-				var _VUC = this;
 				// iterate over the elements and create the GUI
 				$.each(this.elems, function (id, el) {
 					// appending a div for each element to the canvas container
@@ -607,7 +720,7 @@ VUController.prototype = {
 				});
 				this.draw();
                 // initialize the visualization updater
-                setTimeout($.bindFn(this, this.updateView), this.options.update_timeout);
+                this.timeoutID = setTimeout($.bindFn(this, this.updateView), this.options.update_timeout);
 			} else {
 				alert('No canvas context.');
 			}
@@ -634,9 +747,10 @@ VUController.prototype = {
                 if(response) {
                     if(_VUC.options.last_changed !== response) {
                         _VUC.options.last_changed = response;
+                        clearTimeout(_VUC.timeoutID);
                         _VUC.init.call(_VUC, 'reload');
                     } else {
-                        setTimeout($.bindFn(_VUC, _VUC.updateView), _VUC.options.update_timeout);
+                        _VUC.timeoutID = setTimeout($.bindFn(_VUC, _VUC.updateView), _VUC.options.update_timeout);
                     }
                 }
             },
@@ -675,30 +789,41 @@ VUController.prototype = {
 	},
 	setVUEvents			: function () {
 		var _VUC = this;
-        $('#'+this.options.canvas_id).click(function (e) {
-			//  if the click property is set then unset it and clear the menu
-            if(_VUC.click) {
-                _VUC.click = null;
-                _VUC.menu.close.call(_VUC.menu, e);
-            } else {
-                var offset = $.clickOffset(e);
-                $.each(_VUC.elems, function (id, el) {
-                    if(el.clicked.call(el, offset.left, offset.top)) {
-                        if(el.click && $.isFunction(el.click)) {
-                            _VUC.click = el;
-                            _VUC.menu.pop.call(_VUC.menu, el.click.call(el, e));
+        $('#'+this.options.canvas_id).mousedown(function (e) {
+            var event = e;
+            $(this).mouseup(function () {
+                $(this).unbind('mouseup');
+                //  if the click property is set then unset it and clear the menu
+                if(_VUC.click) {
+                    _VUC.click = null;
+                    _VUC.menu.close.call(_VUC.menu, e);
+                } else {
+                    // if this is a right click > start rolling
+                    if(event.which == 3) {
+                        var offset = $.clickOffset(e);
+                        $.each(_VUC.elems, function (id, el) {
+                            if(el.clicked.call(el, offset.left, offset.top)) {
+                                if(el.click && $.isFunction(el.click)) {
+                                    _VUC.click = el;
+                                    _VUC.menu.pop.call(_VUC.menu, el.click.call(el, e), _VUC);
+                                }
+                            }
+                        });
+                        // there was click, we should open the menu, but not on an element
+                        // open it on the canvas
+                        if(!_VUC.click) {
+                            // just to indicate that menu is popped
+                            _VUC.click = true;
+                            _VUC.menu.pop.call(_VUC.menu, _VUC.getClickConfig.call(_VUC, e), _VUC);
                         }
                     }
-                });
-                // there was click, we should open the menu, but not on an element
-                // open it on the canvas
-                if(!_VUC.click) {
-                    // just to indicate that menu is popped
-                    _VUC.click = true;
-                    _VUC.menu.pop.call(_VUC.menu, _VUC.getClickConfig.call(_VUC, e));
                 }
-            }
+            })
 		});
+        // turn off the context menu on the canvas
+        $('#'+this.options.canvas_id)[0].oncontextmenu = function() {
+            return false;
+        }
 	},
 	initZoom			: function () {
 		if($('#vuslider').length == 0) {
@@ -712,7 +837,7 @@ VUController.prototype = {
 	},
     initDialog          : function () {
         var _VUC = this;
-        $('form[name=story_input]').dialog({
+        $('form[name=story_create]').dialog({
 			bgiframe: true,
             autoOpen: false,
 			height: 402,
@@ -733,23 +858,23 @@ VUController.prototype = {
     createNodes			: function () {
 		var _VUC = this;
         $.each(this.data, function (i, item) {
-			$.each(item, function (key, val) {
+			$.each(item, function (key, conf) {
 				var node = new Node({});
 				switch(key) {
 					case 'group':
-						node = new Group(node, val);
+						node = new Group(node, conf);
 						break;
 					case 'discussion':
-						node = new Discussion(node, val);
+						node = new Discussion(node, conf);
 						break;
 					case 'story':
-						node = new Story(node, val);
+						node = new Story(node, conf);
 						break;
 					case 'relation':
-						node = new Relation(node, val);
+						node = new Relation(node, conf);
 						break;
 					case 'opinion':
-						node = new Opinion(node, val);
+						node = new Opinion(node, conf);
 						break;
 				}
 				var c = node.config;
@@ -825,8 +950,9 @@ VUController.prototype = {
     setEventHandlers    : function (el) {
         if(el && el.DOMid) {
             var _VUC = this;
+            var $el = $('#'+el.DOMid);
             if(el.hover && $.isFunction(el.hover)) {
-                $('#'+el.DOMid).hover(
+                $el.hover(
                     function () {
                         if(el.state.drag) { return; }
                         else { el.hover.call(el, _VUC.ctx); }
@@ -837,15 +963,41 @@ VUController.prototype = {
                     }
                 );
             }
-			$('#'+el.DOMid).click(function (e) {
-				if(_VUC.click) {
-                    _VUC.menu.close.call(_VUC.menu);
-                    _VUC.click = null;
+            // attach the event to all elements and their title
+			$el.add($el.children('.story_title')).mousedown(function (e) {
+                e.stopPropagation();
+                var event = e;
+                if(_VUC.click) {
+                    // if this is a click on the context menu on a Story
+                    if(_VUC.click instanceof Story && $(event.target).parents('ul').length) {
+                        if($(event.target).parents('ul')[0].id === _VUC.menu[0].id) {
+                            _VUC.click = null;
+                            $(event.target).mousedown();
+                            if(event.which === 3) {
+                                $(this)[0].oncontextmenu = function () {
+                                    return false;
+                                }
+                            }
+                            return false;
+                        }
+                    } else {
+                        _VUC.click = null;
+                        _VUC.menu.close.call(_VUC.menu);
+                    }
                 }
-                if(el.click && $.isFunction(el.click)) {
-                    _VUC.click = el;
-					_VUC.menu.pop.call(_VUC.menu, el.click.call(el, e));
-				}
+                $(this).mouseup(function () {
+                    $(this).unbind('mouseup');
+                    if(el.click && $.isFunction(el.click)) {
+                        // if this is a right click > start rolling
+                        if(event.which === 3) {
+                            _VUC.click = el;
+                            _VUC.menu.pop.call(_VUC.menu, el.click.call(el, event), _VUC);
+                        }
+                        $(this)[0].oncontextmenu = function () {
+                            return false;
+                        }
+                    }
+                });
 			});
         }
     },
@@ -913,7 +1065,7 @@ DiscussionController = function (VuController, options) {
     this.metaData = {};
 };
 DiscussionController.prototype = {
-    getData				: function () {
+    getData				    : function () {
 		var _DC = this;
 		// expecting format: [ { element_alias : { element_config_object }, ... ]
 		$.getJSON(this.options.data_url, function (data){
@@ -931,7 +1083,7 @@ DiscussionController.prototype = {
             _DC.init.call(_DC, true);
 		});
 	},
-    initVisualization   : function () {
+    initVisualization       : function () {
         var _DC = this;
         // setting the speech act containers
         $.each(this.metaData, function (i, item) {
@@ -950,7 +1102,7 @@ DiscussionController.prototype = {
         $('.stories_container').height(this.options.height)
                                .width(this.options.width * 0.25 - 1);
     },
-	initCanvas			: function () {
+	initCanvas			    : function () {
         var o = this.options;
 		$('#'+o.container_id).empty()
                              .append('<canvas id="'+o.canvas_id+'" width="'+o.width+'" height="'+o.height+'"></canvas>');
@@ -971,32 +1123,33 @@ DiscussionController.prototype = {
         }
 		return (this.ctx);
 	},
-    initDialog          : function () {
-        var _DC = this;
-        $('form[name=story_input]').dialog({
-			bgiframe: true,
-            autoOpen: false,
-			height: 250,
-			width: 600,
-			modal: true,
-            title: 'Add Story',
-			buttons: {
-				'Create': function() {
-                    var config = {
-                        callback        : _DC.init,
-                        callback_context: _DC
-                    };
-                    var FC = new FormController();
-                    $(this).dialog('close');
-                    return FC.submit.call(FC, this, config);
-				},
-				Cancel: function() {
-					$(this).dialog('close');
-				}
-			}
-		});
+    initDialog              : function (config) {
+        var _DC = this,
+            defaults ={
+                bgiframe: true,
+                autoOpen: false,
+                height: 250,
+                width: 600,
+                modal: true,
+                title: 'Add Story',
+                buttons: {
+                    'Create': function() {
+                        var _config = {
+                            callback : $.bindFn(_DC, _DC.init)
+                        },
+                            FC = new FormController();
+                        $(this).dialog('close');
+                        return FC.submit.call(FC, this, _config);
+                    },
+                    'Cancel': function() {
+                        $(this).dialog('close');
+                    }
+                }
+            },
+            dialog_config = $.isPlainObject(config) ? $.extend(true, {}, defaults, config) : defaults;
+        $('form[name=story_create]').dialog(dialog_config);
     },
-	addElement			: function (el) {
+	addElement			    : function (el) {
         // add an element to the DOM
 		if(el) {
 			if(el instanceof Opinion) { el.container.call(el).addToDOM.call(el); }
@@ -1010,22 +1163,22 @@ DiscussionController.prototype = {
 			});
 		}
 	},
-    getClickConfig      : function (event) {
+    getClickConfig          : function (event) {
         var position = $.clickOffset(event);
         var _DC = this;
         var config = {
             actions	: {
                 add_story : function () {
                     _DC.click = null;
-                    $(_DC.getCreateForm(event)).dialog('open');
+                    $(_DC.getCreateStoryForm(event)).dialog('open');
                 }
             },
             position: position
         };
         return config;
     },
-    getCreateForm       : function (event) {
-        var form = $('form[name=story_input]'),
+    getCreateStoryForm      : function (event) {
+        var form = $('form[name=story_create]'),
             x = $.clickOffset(event).left,
             input = $('input[name=speech_act]', form),
             speech_act;
@@ -1035,14 +1188,92 @@ DiscussionController.prototype = {
                 speech_act = $(this).attr('pk');
             }
         });
-        if( ! input.length > 0) {
+        if( ! (input.length > 0)) {
             form.append('<input type="hidden" name="speech_act" value="'+speech_act+'" />');
         } else {
             input.val(speech_act);
         }
         return form;
     },
-	drawText			: function (text,x,y,maxWidth,rotation) {
+    getCreateOpinionForm    : function () {
+        var form = $('form[name=opinion_create]'),
+            parent_id = this.click.config.id,
+            parent_class = this.click.config.alias,
+            class_input = $('input[name=parent_class]', form),
+            parent_input = $('input[name=parent_story]', form);
+        switch(parent_class) {
+            case 'relation':
+                parent_class = 3;
+                break;
+            case 'story':
+            default:
+                parent_class = 1;
+                break;
+        }
+        if( ! (class_input.length > 0)) {
+            form.append('<input type="hidden" name="parent_class" value="'+parent_class+'" />');
+        } else {
+            class_input.val(parent_class);
+        }
+        if( ! (parent_input.length > 0)) {
+            parent_input.append('<input type="hidden" name="parent_class" value="'+parent_id+'" />');
+        } else {
+            parent_input.val(parent_id);
+        }
+        return form;
+    },
+    getCreateRelationForm   : function () {
+        var form = $('form[name=relation_create]'),
+            from_story = this.click.config.id,
+            to_stories = this.getAllowedRelatedToList(),
+            from_input = $('input[name=from_story]', form),
+            to_input = $('select', form),
+            options = [],
+            i = 0;
+        if( ! (from_input.length > 0) ) {
+            form.append('<input type="hidden" name="from_story" value="'+from_story+'" />');
+        } else {
+            from_input.val(from_story);
+        }
+        if( to_input.length && to_stories) {
+            $.each(to_stories, function (n, el) {
+                options[i++] = '<option value="';
+                options[i++] = el.config.id;
+                options[i++] = '">';
+                options[i++] = el.toString();
+                options[i++] = '</option>';
+            });
+            to_input.html(options.join(''));
+        }
+        return form;
+    },
+    getAllowedRelatedToList : function () {
+        var type = this.click.config.type,
+            ordinal,
+            allowed_type = null,
+            list = [];
+        $.each(this.metaData, function (i, item) {
+            if(item.fields.name == type) {
+                ordinal = item.fields.ordinal+1;
+                return false; // break
+            }
+        });
+        $.each(this.metaData, function (i, item) {
+            if(item.fields.ordinal == ordinal) {
+                allowed_type = item.fields.name;
+                return false;
+            }
+        });
+        if(allowed_type) {
+            $.each(this.elems, function (id, el) {
+                if(el.config.type && el.config.type == allowed_type) {
+                    list.push(el);
+                }
+            });
+        }
+        return (allowed_type && list.length > 0) ? list : false;
+    },
+	drawText			    : function (text,x,y,maxWidth,rotation) {
         // if text is short enough - put it in 1 line. if not, search for the middle space, and split it there (only splits to 2 lines).
         this.ctx.translate(x,y);
         this.ctx.save();
@@ -1115,7 +1346,6 @@ FormController.prototype = {
 	        dont_post	    : false,
 	        data_type	    : 'text',
             callback        : null,
-            callback_context: null,
 	        editor		    : {}
 	    }, options || {});
 		/* for YUI Rich Text Editor
@@ -1221,7 +1451,7 @@ FormController.prototype = {
 	 */
 	after				: function (response) {
         if(this.options.callback && typeof this.options.callback == 'function') {
-			this.options.callback.call(this.options.callback_context, response);
+			this.options.callback(response);
 		} else {
             alert(response);
 		}

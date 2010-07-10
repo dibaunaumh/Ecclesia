@@ -37,7 +37,7 @@ def visualize(request, discussion_slug):
     #adding beautiful css
     for key in story_form.fields:
         story_form.fields[key].widget.attrs["class"] = "text ui-widget-content ui-corner-all"
-    speech_acts = SpeechAct.objects.filter(story_type=1) # 'story' as default
+    speech_acts = SpeechAct.objects.filter(discussion_type=discussion.type)
     last_related_update = str(discussion.last_related_update) # set an initial value for the update timestamp
     return render_to_response('discussion_home.html', locals())
 
@@ -99,15 +99,21 @@ def add_story(request, discussion, user, title, slug, speech_act):
 
 def add_opinion(request, discussion, user, title, slug, speech_act):
     parent_story = request.POST.get('parent_story', None)
+    parent_class = request.POST.get('parent_class', None)
     if parent_story is None:
         return HttpResponse("Did not get parent story.")
+    if parent_class is None:
+        return HttpResponse("Did not get parent type.")
     opinion = Opinion()
     opinion.discussion = discussion
     opinion.created_by = user
     opinion.title = title
     opinion.slug = slug
     opinion.speech_act = speech_act
-    opinion.parent_story = Story.objects.get(pk=parent_story)
+    opinion.parent_story = {
+        '1': Story.objects.get,
+        '3': StoryRelation.objects.get
+    }[parent_class](pk=parent_story)
     opinion.save()
     notification = Notification(text="There is a new opinion in %s discussion: %s" % (discussion.slug, title), 
                  group=discussion.group)
@@ -155,15 +161,7 @@ def get_stories_view_json(request, discussion_slug):
 
 def get_visualization_meta_data(request):
     discussion_type = request.GET.get('discussion_type', 1)
-    print discussion_type
     speech_acts = SpeechAct.objects.filter(discussion_type=discussion_type).order_by('story_type','ordinal')
-    json = serializers.serialize('json', speech_acts, ensure_ascii=False)
-    return HttpResponse(json)
-
-def get_speech_acts_by_story_type(request):
-    discussion_type = request.GET.get('discussion_type', 1)
-    story_type = request.GET.get('story_type', 1)
-    speech_acts = SpeechAct.objects.filter(discussion_type=discussion_type, story_type=story_type)
     json = serializers.serialize('json', speech_acts, ensure_ascii=False)
     return HttpResponse(json)
 
@@ -247,6 +245,14 @@ def delete_story(request, story_pk):
     discussion = story.discussion
     story.delete()
     return HttpResponseRedirect('/stories_list/%s/' % discussion.slug)
+
+def delete_relation(request, relation_pk):
+    response = ''
+    if relation_pk:
+        relation = StoryRelation.objects.get(pk=relation_pk)
+        relation.delete()
+        response = 'reload'
+    return HttpResponse(response)
 
 def get_inline_field(request):
     fieldname = request.POST['id']

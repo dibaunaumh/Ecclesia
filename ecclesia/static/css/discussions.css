@@ -1,4 +1,5 @@
 .clear {overflow:hidden;height:0;clear:both}
+.hidden {display:none}
 #content{width:975px;margin:10px auto}
 
 #buttons_container {float: right; padding-left: 15px}
@@ -30,17 +31,14 @@ a.member img {width: 50px; height: 50px; margin: 2px; border: 1px solid #933}
 /* Story Input Form */
 /*fieldset{padding:2px;border:1px solid #5B80B2}*/
 fieldset{margin-bottom:10px;paddin:2px;border:none}
-#story_input-from-story{display:none}
-#story_input-on-story{display:none}
-#story_input-to-story{display:none}
+.story_input-title{position:relative}
+.story_input-title textarea{width:99%;height:51px}
 #story_input-stories{}
 #story_input-submit{float:right}
-#story_input-title{position:relative}
-#story_input-title textarea{width:99%;height:51px}
 #story_input-types{}
 
 /* Context Menu */
-ul#vu-context-menu{display:none;position:absolute;list-style:none;width:100px;margin:0;padding:0}
+ul#vu-context-menu{display:none;position:absolute;list-style:none;width:115px;margin:0;padding:0;z-index:1000}
 ul#vu-context-menu li{list-style:none;margin:0;padding:0}
 ul#vu-context-menu li a, ul#vu-context-menu li a:link{display:block;padding:5px;border:2px solid #5B80B2;background-color:#eee;-moz-border-radius:3px;-webkit-border-radius:3px;border-radius:3px;font-weight:normal}
 ul#vu-context-menu li a:hover{font-weight:bold;border:2px outset #5B80B2}
