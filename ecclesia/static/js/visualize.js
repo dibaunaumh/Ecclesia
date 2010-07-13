@@ -79,9 +79,10 @@ Node = function (config) {
 		scale		: 1
 	};
     this.state = {
-        hover   : false,
-        drag    : false,
-        click   : false
+        hover       : false,
+        drag        : false,
+        click       : false,
+        indicated   : false 
     };
 	$.extend(true, this.config, config || {});
 };
@@ -228,13 +229,15 @@ Discussion.prototype = {
 
 Story = function (node_class, config) {
 	this.config = {
-		alias	    	: 'story',
-		model_name  	: 'Story',
-		type	    	: 'goal',
-        fill_normal     : '#e3e3e3',
-        fill_hover      : '#f2f2f2',
-        stroke_normal   : '#444',
-        stroke_hover    : '#000'
+		alias	    	        : 'story',
+		model_name  	        : 'Story',
+		type	    	        : 'goal',
+        fill_normal             : '#e3e3e3',
+        fill_normal_indicated   : '#418000',
+        fill_hover              : '#f2f2f2',
+        fill_hover_indicated    : '#5caa80',
+        stroke_normal           : '#444',
+        stroke_hover            : '#000'
 	};
 	// inheriting Node class
 	var dummy = $.extend(true, node_class, this);
@@ -270,7 +273,8 @@ Story.prototype = {
 			el = $('#'+this.DOMid).height(dims.h*s+'px').width(dims.w*s+'px');
         this.wrapTitle(el);
         var state = this.state.hover ? 'hover' : 'normal';
-		this.roundedRect(ctx, dims.x, dims.y, dims.w*s, dims.h*s, 5, this.config['fill_'+state], this.config['stroke_'+state]);
+        var indicated = this.state.indicated ? '_indicated' : '';
+		this.roundedRect(ctx, dims.x, dims.y, dims.w*s, dims.h*s, 5, this.config['fill_'+state + indicated], this.config['stroke_'+state]);
 	},
     hover       : function (ctx) {
         this.state.hover = true;
