@@ -29,4 +29,5 @@ urlpatterns = patterns('',
 
     (r'^', include('ecclesia.groups.urls')),
     (r'^edit_inline/$', 'ecclesia.discussions.views.get_inline_field'),
+    (r'^i18n/', include('django.conf.urls.i18n')),
 )

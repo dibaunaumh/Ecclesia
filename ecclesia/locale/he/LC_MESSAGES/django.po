@@ -643,8 +643,8 @@ msgstr "ערוך/ערכי מאפיינים"
 
 #: groups/templates/edit_profile.html:16
 #, python-format
-msgid "Please correct the error%(form.errors|pluralize)s below."
-msgstr "נא לתקן את השגיאות שלהלן."
+#msgid "Please correct the error%(form.errors|pluralize)s below."
+#sgstr "נא לתקן את השגיאות שלהלן."
 
 #: groups/templates/edit_profile.html:26
 msgid "To change your password"

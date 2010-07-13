@@ -30,6 +30,11 @@ TIME_ZONE = 'America/Chicago'
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'en-us'
+gettext = lambda s: s
+LANGUAGES = (
+    ('he', gettext('Hebrew')),
+    ('en-us', gettext('English')),
+)
 
 SITE_ID = 1
 
@@ -70,6 +75,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.csrf.middleware.CsrfMiddleware',
+    'django.middleware.locale.LocaleMiddleware'
 )
 
 ROOT_URLCONF = 'ecclesia.urls'
