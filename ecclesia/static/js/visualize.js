@@ -1,13 +1,14 @@
+Math.lineToPointDist = function (x, y, x1, y1, x2, y2) {
+    return this.round(this.abs((x2-x1)*(y1-y)-(x1-x)*(y2-y1))/this.sqrt(this.pow(x2-x1,2)+this.pow(y2-y1,2)));
+};
 $.extend({
-	distance    : function (x, y, x1, y1, x2, y2) {
-		return Math.round(Math.abs((x2-x1)*(y1-y)-(x1-x)*(y2-y1))/Math.sqrt(Math.pow(x2-x1,2)+Math.pow(y2-y1,2)));
-	},
 	clickOffset : function (e) {
-		if(!e || !e.type && (e.type === 'click' || e.type === 'mousedown' || e.type === 'mouseup')) {return this;}
-		var offset = $(e.target).offset();
-			x = parseInt(e.pageX - offset.left),
-			y = parseInt(e.pageY - offset.top);
-			return {left:x, top:y};
+		var type = e.type, offset, x, y;
+        if(!e || !type && (type === 'click' || type === 'mousedown' || type === 'mouseup')) {return this;}
+        offset = $(e.target).offset(),
+        x = parseInt(e.pageX - offset.left),
+        y = parseInt(e.pageY - offset.top);
+        return {left:x, top:y};
 	},
     bindFn      : function (scope, fn) {
         return function () {
@@ -76,14 +77,14 @@ Node = function (config) {
 		id			: -1,
 		url			: '',
 		name		: '',
-		scale		: 1
+		scale		: 1,
+		state		: {
+			hover   	: false,
+			drag    	: false,
+			click   	: false,
+			indicated	: false
+		}
 	};
-    this.state = {
-        hover       : false,
-        drag        : false,
-        click       : false,
-        indicated   : false 
-    };
 	$.extend(true, this.config, config || {});
 };
 Node.prototype = {
@@ -237,7 +238,9 @@ Story = function (node_class, config) {
         fill_hover              : '#f2f2f2',
         fill_hover_indicated    : '#5caa80',
         stroke_normal           : '#444',
-        stroke_hover            : '#000'
+        stroke_hover            : '#000',
+        stroke_normal_indicated : '#444',
+        stroke_hover_indicated  : '#000'
 	};
 	// inheriting Node class
 	var dummy = $.extend(true, node_class, this);
@@ -268,21 +271,24 @@ Story.prototype = {
 					  .css('top', dims.y+'px');
 	},
 	draw		: function (ctx) {
-		var dims = this.config.dimensions,
-			s = this.config.scale,
-			el = $('#'+this.DOMid).height(dims.h*s+'px').width(dims.w*s+'px');
+		var c = this.config,
+            dims = c.dimensions,
+			s = c.scale,
+			el = $('#'+this.DOMid).height(dims.h*s+'px').width(dims.w*s+'px'),
+            state = 'normal';
+        if(c.state.indicated) { state = 'normal_indicated'; }
+        if(c.state.hover) { state = c.state.indicated ? 'hover_indicated' : 'hover'; }
+        if(c.state.click) { state = 'click'; }
         this.wrapTitle(el);
-        var state = this.state.hover ? 'hover' : 'normal';
-        var indicated = this.state.indicated ? '_indicated' : '';
-		this.roundedRect(ctx, dims.x, dims.y, dims.w*s, dims.h*s, 5, this.config['fill_'+state + indicated], this.config['stroke_'+state]);
+		this.roundedRect(ctx, dims.x, dims.y, dims.w*s, dims.h*s, 5, c['fill_'+state], c['stroke_'+state]);
 	},
     hover       : function (ctx) {
-        this.state.hover = true;
+        this.config.state.hover = true;
         this.draw(ctx);
         //$('#'+this.DOMid).children('.opinions').show();
     },
     unhover     : function (ctx) {
-        this.state.hover = false;
+        this.config.state.hover = false;
         this.draw(ctx);
         //$('#'+this.DOMid).children('.opinions').hide();
     },
@@ -291,7 +297,7 @@ Story.prototype = {
     },
 	click		: function (event) {
 		var position = $.clickOffset(event),
-            that = this;
+            that = this,
 			config = {
 				element : $('#'+that.DOMid),
                 actions	: {
@@ -399,12 +405,12 @@ Relation.prototype = {
 		return "("+this.config.from.toString()+","+this.config.to.toString()+")";
     },
     getBezierPoints : function () {
-        var s = this.config.scale;
+        var s = this.config.scale,
 		// get the dimensions of the from and to elements
-		var from_dims = this.config.from.config.dimensions,
-			to_dims = this.config.to.config.dimensions;
+		    from_dims = this.config.from.config.dimensions,
+			to_dims = this.config.to.config.dimensions,
 		// calculate the from and to points
-		var x1 = from_dims.x + from_dims.w*s,
+		    x1 = from_dims.x + from_dims.w*s,
 			y1 = from_dims.y + from_dims.h*s/2,
 			x2 = to_dims.x,
 			y2 = to_dims.y + to_dims.h*s/2;
@@ -412,9 +418,9 @@ Relation.prototype = {
     },
     clicked         : function (x, y) {
         // get the control points
-        var points = this.getBezierPoints();
+        var points = this.getBezierPoints(),
 		// make sure we go from upper left to lower right
-		var padding = 2,
+		    padding = 2,
 			x1 = points.x1,
 			x2 = points.x2,
 			y1 = (points.y1 <= points.y2) ? points.y1 : points.y2,
@@ -427,13 +433,13 @@ Relation.prototype = {
         		// first calculate the points that create the diagonal
         	var line_x1 = (3*points.x1+points.x2)/4,
         		line_x2 = (points.x1+3*points.x2)/4;
-        	return $.distance(x, y, line_x1, points.y1, line_x2, points.y2) <= 3;
+        	return Math.lineToPointDist(x, y, line_x1, points.y1, line_x2, points.y2) <= 3;
         }
         return false;
     },
     click           : function (event) {
         var position = $.clickOffset(event),
-            that = this;
+            that = this,
 			config = {
                 actions	: {
                     add_opinion : $.bindFn(that, that.addOpinion),
@@ -754,6 +760,7 @@ VUController.prototype = {
                         clearTimeout(_VUC.timeoutID);
                         _VUC.init.call(_VUC, 'reload');
                     } else {
+                        clearTimeout(_VUC.timeoutID);
                         _VUC.timeoutID = setTimeout($.bindFn(_VUC, _VUC.updateView), _VUC.options.update_timeout);
                     }
                 }
@@ -930,13 +937,13 @@ VUController.prototype = {
 				$('#'+el.DOMid).draggable({
 					containment: 'parent',
 					start: function (e, ui) {
-						el.state.drag = true;
+						el.config.state.drag = true;
 						_VUC.drag = el;
 						_VUC.grip.call(_VUC);
 					},
 					stop : function (e, ui) {
 						var position = $(this).position();
-	                    el.state.drag = false;
+	                    el.config.state.drag = false;
 	                    el.config.dimensions.x = parseInt(position.left);
 						el.config.dimensions.y = parseInt(position.top);
 						_VUC.drop.call(_VUC);
@@ -953,23 +960,22 @@ VUController.prototype = {
 	},
     setEventHandlers    : function (el) {
         if(el && el.DOMid) {
-            var _VUC = this;
-            var $el = $('#'+el.DOMid);
+            var _VUC = this,
+                $el = $('#'+el.DOMid);
             if(el.hover && $.isFunction(el.hover)) {
                 $el.hover(
                     function () {
-                        if(el.state.drag) { return; }
+                        if(el.config.state.drag) { return; }
                         else { el.hover.call(el, _VUC.ctx); }
                     },
                     function () {
-                        if(el.state.drag) { return; }
+                        if(el.config.state.drag) { return; }
                         else { el.unhover.call(el, _VUC.ctx); }
                     }
                 );
             }
-            // attach the event to all elements and their title
-			$el.add($el.children('.story_title')).mousedown(function (e) {
-                e.stopPropagation();
+            // attach the event to all elements, no need to add children because of bubbling
+			$el.mousedown(function (e) {
                 var event = e;
                 if(_VUC.click) {
                     // if this is a click on the context menu on a Story
@@ -990,6 +996,7 @@ VUController.prototype = {
                     }
                 }
                 $(this).mouseup(function () {
+                    event.stopPropagation();
                     $(this).unbind('mouseup');
                     if(el.click && $.isFunction(el.click)) {
                         // if this is a right click > start rolling
@@ -1040,8 +1047,8 @@ VUController.prototype = {
 		this.init('reload');
 	},
     getClickConfig      : function (event) {
-        var position = $.clickOffset(event);
-        var config = {
+        var position = $.clickOffset(event),
+            config = {
             actions	: {
                 add_group : function () { if($('#create').length) { $('#create').click(); } }
             },
@@ -1168,9 +1175,9 @@ DiscussionController.prototype = {
 		}
 	},
     getClickConfig          : function (event) {
-        var position = $.clickOffset(event);
-        var _DC = this;
-        var config = {
+        var position = $.clickOffset(event),
+            _DC = this,
+            config = {
             actions	: {
                 add_story : function () {
                     _DC.click = null;

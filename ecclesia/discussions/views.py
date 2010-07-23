@@ -91,10 +91,10 @@ def add_story(request, discussion, user, title, slug, speech_act):
     story.title = title
     story.slug = slug
     story.speech_act = speech_act
-    story.save()    
+    story.save()
     notification = Notification(text="There is a new story in %s discussion: %s" % (discussion.slug, title), 
                  group=discussion.group)
-    notification.save()
+    #notification.save()
     return HttpResponse("reload")
 
 def add_opinion(request, discussion, user, title, slug, speech_act):
@@ -117,7 +117,7 @@ def add_opinion(request, discussion, user, title, slug, speech_act):
     opinion.save()
     notification = Notification(text="There is a new opinion in %s discussion: %s" % (discussion.slug, title), 
                  group=discussion.group)
-    notification.save()
+    #notification.save()
     return HttpResponse("reload")
 
 def add_relation(request, discussion, user, title, slug, speech_act):
@@ -285,12 +285,16 @@ def check_if_user_in_group(user, discussion):
         pass
     return user_in_group
 
-def story_home(request, story_slug):
-    story = Story.objects.get(slug=story_slug)
-    discussion = Discussion.objects.get(id=story.discussion.pk)
+def story_home(request, discussion_slug, ctype, slug):
+    discussion = Discussion.objects.get(slug=discussion_slug)
+    object = {
+        'story'     : Story.objects.get,
+        'relation'  : StoryRelation.objects.get
+    }[ctype](slug=slug, discussion=discussion)
+
     group = GroupProfile.objects.get(group=Group.objects.get(id=discussion.group.pk))
     user = request.user
-    opinions = Opinion.objects.filter(parent_story=story).order_by('speech_act')
+    opinions = object.opinions.all().order_by('speech_act')
     user_in_group = check_if_user_in_group(user, discussion)
     return render_to_response('story_home.html', locals())
 

@@ -34,10 +34,10 @@ class StoryRelationAdmin(admin.ModelAdmin):
     ordering = ('from_story', 'to_story', 'title', 'discussion', 'speech_act', 'slug', 'created_at', 'updated_at')
 
 class OpinionAdmin(admin.ModelAdmin):
-    list_display = ('parent_story', 'title', 'slug', 'speech_act', 'discussion', 'created_by', 'created_at', 'updated_at', 'content')
-    list_filter = ('parent_story', 'discussion', 'speech_act', 'created_at', 'created_by')
-    search_fields = ('parent_story', 'title', 'content', 'slug')
-    ordering = ('parent_story', 'title', 'discussion', 'speech_act', 'slug', 'created_at', 'updated_at')
+    list_display = ('title', 'slug', 'speech_act', 'discussion', 'created_by', 'created_at', 'updated_at', 'content')
+    list_filter = ('discussion', 'speech_act', 'created_at', 'created_by')
+    search_fields = ('title', 'content', 'slug')
+    ordering = ('title', 'discussion', 'speech_act', 'slug', 'created_at', 'updated_at')
 
 class DiscussionConclusionAdmin(admin.ModelAdmin):
     pass

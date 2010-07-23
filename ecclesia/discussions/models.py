@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User, Group
+from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import gettext_lazy as _
 import datetime
 from discussion_actions import evaluate_stories
@@ -59,7 +61,7 @@ class SpeechAct(models.Model):
 
 class BaseStory(Presentable):
     title = models.CharField(_('title'), max_length=50, blank=False, help_text=_('A title for story.'))
-    slug = models.SlugField(_('slug'), max_length=50, unique=True, blank=False, help_text=_("The url representation of the story's title. No whitespaces allowed - use hyphen/underscore to separate words"))
+    slug = models.SlugField(_('slug'), max_length=50, blank=False, help_text=_("The url representation of the story's title. No whitespaces allowed - use hyphen/underscore to separate words"))
     content = models.TextField(_('content'), help_text=_("The user content"))
     created_at = models.DateTimeField(_('created at'), auto_now_add=True, help_text=_('When the speech act was made.'))
     updated_at = models.DateTimeField(_('updated at'), auto_now=True, help_text=_('When the speech act was last updated.'))
@@ -74,7 +76,32 @@ class BaseStory(Presentable):
             self.discussion.save()
         return self.discussion
 
-		
+
+class Opinion(BaseStory):
+    discussion = models.ForeignKey(Discussion, related_name='opinions', verbose_name=_('discussion'), null=False, blank=False, help_text=_('The discussion this story is a part of.'))
+    speech_act = models.ForeignKey(SpeechAct, related_name='opinions', verbose_name=_('speech act'), null=False, blank=False, help_text=_("Which speech act this story represents."))
+    #parent_story = models.ForeignKey(Story, related_name='opinions', verbose_name=_('parent story'), null=False, blank=False, help_text=_('The parent story containing this opinion.'))
+    # Generic foreign key machinery follows
+    content_type = models.ForeignKey(ContentType)
+    object_id = models.PositiveIntegerField()
+    parent_story = generic.GenericForeignKey('content_type', 'object_id')
+    # Unfortunately, it does not support verbose_name and help_text, so no gettext here.
+
+    class Meta:
+        verbose_name = _('opinion')
+        verbose_name_plural = _('opinions')
+        unique_together = (('discussion', 'slug'),)
+
+    def unique_id(self):
+        return "%s_%d" % ('opinion', self.id)
+
+    def get_absolute_url(self):
+        return "http://%s/discussions/%s/opinion/%s/" % (get_domain(), self.discussion.slug, self.slug)
+
+    def __unicode__(self):
+        return self.title
+
+
 class Story(BaseStory):
     """
     A user story attached to a discussion
@@ -83,20 +110,18 @@ class Story(BaseStory):
     speech_act = models.ForeignKey(SpeechAct, related_name='stories', verbose_name=_('speech act'), null=False, blank=False, help_text=_("Which speech act this story represents."))
     parent = models.ForeignKey("Story", default=None, related_name='parent story', verbose_name=_('parent'), null=True, blank=True, help_text=_("Parent story if the story belong to story group"))
     is_parent = models.BooleanField(default=False, verbose_name=_('is parent'), help_text=_("Boolean field that tells us if the story is a parent of stories group"))
-    # Generic foreign key machinery follows
-    # content_type = models.ForeignKey(ContentType)
-    # object_id = models.PositiveIntegerField()
-    # object = generic.GenericForeignKey() # Unfortunately, it does not support verbose_name and help_text, so no gettext here.
+    opinions = generic.GenericRelation(Opinion)
 
     class Meta:
         verbose_name = _('story')
         verbose_name_plural = _('stories')
+        unique_together = (('discussion', 'slug'),)
 
     def unique_id(self):
         return "%s_%d" % ('story', self.id)
 		
     def get_absolute_url(self):
-        return "http://%s/discussions/story/%s/" % (get_domain(), self.slug)
+        return "http://%s/discussions/%s/story/%s/" % (get_domain(), self.discussion.slug, self.slug)
 
     def __unicode__(self):
         return self.title
@@ -111,39 +136,21 @@ class StoryRelation(BaseStory):
     speech_act = models.ForeignKey(SpeechAct, related_name='relations', verbose_name=_('speech act'), null=False, blank=False, help_text=_("Which speech act this story represents."))
     from_story = models.ForeignKey(Story, related_name='from_relation', verbose_name=_('from_relation'), null=False, blank=False, help_text=_('The story this story relation flows from.'))
     to_story = models.ForeignKey(Story, related_name='to_relation', verbose_name=_('to_relation'), null=False, blank=False, help_text=_('The story this story relation directs to.'))
+    opinions = generic.GenericRelation(Opinion)
 
     class Meta:
         verbose_name = _('story relation')
         verbose_name_plural = _('story relations')
+        unique_together = (('discussion', 'slug'),)
 
     def unique_id(self):
         return "%s_%d" % ('relation', self.id)
 		
     def get_absolute_url(self):
-        return "http://%s/story_relation/%s/" % (get_domain(), self.slug)
+        return "http://%s/discussions/%s/relation/%s/" % (get_domain(), self.discussion.slug, self.slug)
 
     def __unicode__(self):
         return self.title
-
-
-class Opinion(BaseStory):
-    discussion = models.ForeignKey(Discussion, related_name='opinions', verbose_name=_('discussion'), null=False, blank=False, help_text=_('The discussion this story is a part of.'))
-    speech_act = models.ForeignKey(SpeechAct, related_name='opinions', verbose_name=_('speech act'), null=False, blank=False, help_text=_("Which speech act this story represents."))
-    parent_story = models.ForeignKey(Story, related_name='opinions', verbose_name=_('parent story'), null=False, blank=False, help_text=_('The parent story containing this opinion.'))
-
-    class Meta:
-        verbose_name = _('opinion')
-        verbose_name_plural = _('opinions')
-
-    def unique_id(self):
-        return "%s_%d" % ('opinion', self.id)
-		
-    def get_absolute_url(self):
-        return "http://%s/opinion/%s/" % (get_domain(), self.slug)
-
-    def __unicode__(self):
-        return self.title
-
 
 
 class DiscussionConclusion(models.Model):
