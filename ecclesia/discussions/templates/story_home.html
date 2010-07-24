@@ -6,12 +6,13 @@
 {% block extrastyle %}
     <link rel="stylesheet" type="text/css" href="/static/css/story.css" />
 {% endblock %}
-{% block extahead %}
-<script type="text/javascript">
+{% block extrahead %}
+<script>
 	$(document).ready(function() {
 	    $('.edit').editable('/edit_inline/', {
 	        width   : 150
 	    });
+	    $('#opinions').accordion().removeClass('hide');
 	});
 </script>
 {% endblock %}
@@ -21,17 +22,24 @@
     <h4 id="discussion-name-header">Under discussion: {{ discussion.name }}</h4>
     <div>
         <h3>By: {{ object.created_by }}, at: {{ object.created_at }}</h3>
+        {% if object.from_story and object.to_story %}
+        <h3>From: {{ object.from_story }}, To: {{ object.to_story }}</h3>
+        {% endif %}
     </div>
     <hr/>
     <p>
         <span {% if user_in_group %} class="edit" id="storycontent_{{ object.pk }}"{% endif %}>{{object.content}}</span>
     </p>
     <hr/>
-    <ul id="opinions">
+    {% if opinions %}
+    <h2>Opinions:</h2>
+    <div id="opinions" class="hide">
     {% for opinion in opinions %}
-        <li>{{ opinion.created_by }}: <span class="opinion opinion_{{ opinion.speech_act }}">[{{ opinion.speech_act }}]</span> {{ opinion.title }}</li>
+        <h3><a href="#"><span class="opinion opinion_{{ opinion.speech_act }}">{{ opinion.speech_act }}</span>{{ opinion.title }}</a></h3>
+        <div><p>By: {{ opinion.created_by }}, at: {{ opinion.created_at }}</p><p>{{ opinion.content }}</p></div>
     {% endfor %}
-    </ul>
+    </div>
     <hr/>
+    {% endif %}
 </div>
 {% endblock %}

@@ -1,10 +1,15 @@
 .clear {overflow:hidden;height:0;clear:both}
-.opinion {display:inline-block;width:42px;text-align:center;font-weight:bold}
+.hide {visibility:hidden;}
+.opinion {display:inline-block;width:55px;margin-right:5px;text-align:center;font-weight:bold;color:#036;border:1px outset #fff;border-radius:4px;-moz-border-radius:4px;-webkit-border-radius:4px;}
 .opinion_false {background-color:#ffc}
 .opinion_true {background-color:#ccf}
 .opinion_bad {background-color:#fcc}
 .opinion_good {background-color:#cfc}
 #content{width:975px;margin:10px auto}
 h4#discussion-name-header {margin:0}
-#opinions {padding:0; list-style:none}
-#opinions li {list-style:none}
+
+/* Opinions List */
+div#opinions {padding:0;}
+div#opinions {}
+div#opinions h3 a{color:#fff}
+#opinions h3 a:hover{}

@@ -85,12 +85,18 @@ def add_base_story(request):
 
 
 def add_story(request, discussion, user, title, slug, speech_act):
+#    x = request.POST.get('x', None)
+    y = request.POST.get('y', None)
     story = Story()
     story.discussion = discussion
     story.created_by = user
     story.title = title
     story.slug = slug
     story.speech_act = speech_act
+#    if x:
+#        story.x = x
+    if y:
+        story.y = y
     story.save()
     notification = Notification(text="There is a new story in %s discussion: %s" % (discussion.slug, title), 
                  group=discussion.group)
@@ -112,6 +118,7 @@ def add_opinion(request, discussion, user, title, slug, speech_act):
     opinion.speech_act = speech_act
     opinion.parent_story = {
         '1': Story.objects.get,
+        '2': Opinion.objects.get,
         '3': StoryRelation.objects.get
     }[parent_class](pk=parent_story)
     opinion.save()
@@ -264,6 +271,7 @@ def get_inline_field(request):
     if fieldname.split("_")[0] == 'storytitle':
         story = Story.objects.get(pk=fieldname.split("_")[1])
         story.title = request.POST['value']
+        story.slug = slugify(story.title)
         story.save()
         return HttpResponse("%s" % story.title)
     if fieldname.split("_")[0] == 'storycontent' or fieldname.split("_")[0] == 'storycontent2':

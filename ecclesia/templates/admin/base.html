@@ -12,42 +12,46 @@
 {% block blockbots %}<meta name="robots" content="NONE,NOARCHIVE" />{% endblock %}
 
 <link rel="stylesheet" href="/static/js/jquery/css/ui.all.css" type="text/css" />
-<link rel="stylesheet" href="/static/js/jquery/css/start/jquery-ui-1.8.custom.css" />
-<script type="text/javascript" src="/static/js/jquery/jquery-1.4.2.min.js"></script>
-<script type="text/javascript" src="/static/js/jquery/ui/jquery-ui-1.8.custom.min.js"></script>
-<!--script type="text/javascript" src="/static/js/jquery/ui/ui.dialog.js"></script>
-<script type="text/javascript" src="/static/js/jquery/ui/ui.draggable.js"></script>
-<script type="text/javascript" src="/static/js/jquery/ui/ui.resizable.js"></script-->
-<script type="text/javascript" src="/static/js/jquery/jquery.form.js"></script>
-<script type="text/javascript" src="/static/js/jquery/jquery.jeditable.js"></script>
-<script type="text/javascript" src="/static/js/visualize.js"></script>
+<link rel="stylesheet" href="/static/js/jquery/css/start/jquery-ui-1.8.2.custom.css" />
+<script src="/static/js/jquery/jquery-1.4.2.min.js"></script>
+<script src="/static/js/jquery/ui/jquery-ui-1.8.2.custom.min.js"></script>
+<script src="/static/js/jquery/jquery.form.js"></script>
+<script src="/static/js/jquery/jquery.jeditable.js"></script>
+<script src="/static/js/visualize.js"></script>
 {% block extrahead %}{% endblock %}
 
-<script type="text/javascript">
+<script>
 	URL = window.location.href;
 	$(document).ready(function() {
-	if ((URL.indexOf('login') > 0) || (URL.indexOf('logout') > 0 || (URL.indexOf('register') > 0)))
-	{
-		document.getElementById('user-tools').style.display="none";
-	}
-	if (URL.indexOf('/group') > 0)
-	{
-		$.get("/group/is_in_group/",
-			 {group_slug: URL.split("/").reverse()[1]},
-	         function(returned_data)
-	         {
-	         	if (returned_data=="True")
-				{
-					document.getElementById('join_group').style.display="none";
-					document.getElementById('leave_group').style.display="block";
-				}
-				else
-				{
-					document.getElementById('join_group').style.display="block";
-					document.getElementById('leave_group').style.display="none";
-				}
-	         });
-	}
+        if ((URL.indexOf('login') > 0) || (URL.indexOf('logout') > 0 || (URL.indexOf('register') > 0)))
+        {
+            document.getElementById('user-tools').style.display="none";
+        }
+        if (URL.indexOf('/group') > 0)
+        {
+            $.get("/group/is_in_group/",
+                 {group_slug: URL.split("/").reverse()[1]},
+                 function(returned_data)
+                 {
+                    if (returned_data=="True")
+                    {
+                        document.getElementById('join_group').style.display="none";
+                        document.getElementById('leave_group').style.display="block";
+                    }
+                    else
+                    {
+                        document.getElementById('join_group').style.display="block";
+                        document.getElementById('leave_group').style.display="none";
+                    }
+                 });
+        }
+        <!-- Edit inline for -->
+        $('.edit').editable('/edit_inline/', {
+            width   : 150
+        });
+        {% if show_errors_in_form %}
+			$('#create_dialog').dialog('open');
+        {% endif %}
 	});
 	function join_group(){
 		$.post("/group/join_group/", {group_slug: URL.split("/").reverse()[1]},
@@ -93,19 +97,7 @@
 		});
 		$('#leave_group_confirmation').dialog('open');
 	}
-</script>
-
-<!-- Edit inline for -->
-<script>
-$(document).ready(function() {
-    $('.edit').editable('/edit_inline/', {
-        width   : 150
-    });
-});
-</script>
-
-<!-- Create new dialog -->
-<script type="text/javascript">
+	<!-- Create new dialog -->
 	$(function() {
 		$("#create_dialog").dialog({
 			bgiframe: true,
@@ -126,25 +118,15 @@ $(document).ready(function() {
 				window.location = window.location;
 			}
 		});
-
 		$('#create').click(function() {
 			$('#create_dialog').dialog('open');
 		})
 	});
 </script>
-
-{% if show_errors_in_form %}
-	<script>
-		$(document).ready(function() {
-			$('#create_dialog').dialog('open');
-		});
-	</script>
-{% endif %}
-
-<div style="display:none" title="Leave Group Confirmation" id="leave_group_confirmation">Are you sure you want to leave the group?</div>
 </head>
 {% load i18n %}
 <body class="{% if is_popup %}popup {% endif %}{% block bodyclass %}{% endblock %}">
+<div style="display:none" title="Leave Group Confirmation" id="leave_group_confirmation">Are you sure you want to leave the group?</div>
 <!-- Container -->
 <div id="container">
     {% if not is_popup %}

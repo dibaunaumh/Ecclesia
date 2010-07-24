@@ -301,40 +301,46 @@ Story.prototype = {
 			config = {
 				element : $('#'+that.DOMid),
                 actions	: {
-					add_relation: $.bindFn(that, that.addRelation),
                     add_opinion : $.bindFn(that, that.addOpinion),
                     edit_story  : $.bindFn(that, that.editStory),
                     delete_story: $.bindFn(that, that.deleteStory)
                 },
 				position: position
 			};
+        if ( this.config.type !== 'goal' ) {
+            config = $.extend(true, {actions : {add_relation: $.bindFn(that, that.addRelation)}}, config);
+        }
 		return config;
 	},
     addRelation : function (context_controller) {
         // TODO: move this form initialization into the view controller - by design
         var form = context_controller.getCreateRelationForm.apply(context_controller, arguments),
-            dialog_config ={
-                bgiframe: true,
-                autoOpen: false,
-                height: 300,
-                width: 600,
-                modal: true,
-                title: 'Add Relation',
-                buttons: {
-                    'Create': function() {
-                        var config = {
-                            callback : $.bindFn(context_controller, context_controller.init)
-                        },
-                            FC = new FormController();
-                        $(this).dialog('close');
-                        return FC.submit.call(FC, this, config);
+            dialog_config;
+        if ( ! form ) {
+            return false;
+        }
+        dialog_config= {
+            bgiframe: true,
+            autoOpen: false,
+            height: 300,
+            width: 600,
+            modal: true,
+            title: 'Add Relation',
+            buttons: {
+                'Create': function() {
+                    var config = {
+                        callback : $.bindFn(context_controller, context_controller.init)
                     },
-                    'Cancel': function() {
-                        $(this).dialog('close');
-                    }
+                        FC = new FormController();
+                    $(this).dialog('close');
+                    return FC.submit.call(FC, this, config);
+                },
+                'Cancel': function() {
+                    $(this).dialog('close');
                 }
-            };
-//            dialog_config = $.isPlainObject(config) ? $.extend(true, {}, defaults, config) : defaults;
+            }
+        };
+//        dialog_config = $.isPlainObject(config) ? $.extend(true, {}, defaults, config) : defaults;
         form.dialog(dialog_config).dialog('open');
     },
     addOpinion  : function (context_controller) {
@@ -729,6 +735,8 @@ VUController.prototype = {
                     _VUC.setEventHandlers(el);
 				});
 				this.draw();
+                // position nodes' titles in their middle
+                this.positionTitles();
                 // initialize the visualization updater
                 this.timeoutID = setTimeout($.bindFn(this, this.updateView), this.options.update_timeout);
 			} else {
@@ -1031,6 +1039,9 @@ VUController.prototype = {
 		});
         return this;
 	},
+    positionTitles      : function () {
+        
+    },
 	grip				: function () {
         $('#'+this.drag.config.alias+'_'+this.drag.config.id).addClass('dragon');
 		this.draw(true);
@@ -1190,20 +1201,26 @@ DiscussionController.prototype = {
     },
     getCreateStoryForm      : function (event) {
         var form = $('form[name=story_create]'),
-            x = $.clickOffset(event).left,
+            offset = $.clickOffset(event),
+            y = offset.top,
+            x = offset.left,
             input = $('input[name=speech_act]', form),
             speech_act;
         $('.'+this.options.speech_container_class).each( function () {
-            var this_left = $(this).position().left;
-            if(x > this_left && x <= this_left+$(this).outerWidth() ) {
-                speech_act = $(this).attr('pk');
+            var $this = $(this),
+                this_left = $this.position().left;
+            if(x > this_left && x <= this_left+$this.outerWidth() ) {
+                speech_act = $this.attr('pk');
             }
         });
-        if( ! (input.length > 0)) {
+        if( ! input.length ) {
             form.append('<input type="hidden" name="speech_act" value="'+speech_act+'" />');
         } else {
             input.val(speech_act);
         }
+        // add initial position
+        form.append('<input type="hidden" name="x" value="'+x+'" />' +
+                    '<input type="hidden" name="y" value="'+y+'" />');
         return form;
     },
     getCreateOpinionForm    : function () {
@@ -1256,7 +1273,7 @@ DiscussionController.prototype = {
             });
             to_input.html(options.join(''));
         }
-        return form;
+        return to_stories ? form : false;
     },
     getAllowedRelatedToList : function () {
         var type = this.click.config.type,

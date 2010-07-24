@@ -86,6 +86,7 @@ class Opinion(BaseStory):
     object_id = models.PositiveIntegerField()
     parent_story = generic.GenericForeignKey('content_type', 'object_id')
     # Unfortunately, it does not support verbose_name and help_text, so no gettext here.
+    opinions = generic.GenericRelation('self')
 
     class Meta:
         verbose_name = _('opinion')

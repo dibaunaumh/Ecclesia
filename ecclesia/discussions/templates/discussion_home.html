@@ -8,7 +8,7 @@
     <link rel="stylesheet" type="text/css" href="/static/css/discussions.css" />
 {% endblock %}
 {% block extrahead %}
-    <script type="text/javascript">
+    <script>
         var config = {
             bg_pic              : '/static/img/whiteboard.jpg',
             canvas_id	        : 'storysvu',
@@ -67,7 +67,6 @@
 
 <div id="canvasContainer"></div>
 
-<hr/>
 {% block story_input %}
 {% if user_in_group %}
 <form name="story_create" class="hidden" method="POST" action="/discussions/add_story/">
@@ -140,8 +139,6 @@
 </div>
 -->
 
-
-<hr/>
 <!--ul>
 <div id="ddd">
 <input type="button" value="{% trans 'Members List' %}" onclick="document.location.href='/members_list/{{group.name}}/'"/>
