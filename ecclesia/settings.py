@@ -36,6 +36,15 @@ LANGUAGES = (
     ('en-us', gettext('English')),
 )
 
+DEFAULT_LANGUAGE = 1
+
+TEMPLATE_CONTEXT_PROCESSORS = (
+    'django.core.context_processors.auth',
+    'django.core.context_processors.debug',
+    'django.core.context_processors.i18n',
+    'multilingual.context_processors.multilingual',
+)
+
 SITE_ID = 1
 
 # If you set this to False, Django will make some optimizations so as not
@@ -75,7 +84,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.csrf.middleware.CsrfMiddleware',
-    'django.middleware.locale.LocaleMiddleware'
+#    'django.middleware.locale.LocaleMiddleware'
 )
 
 ROOT_URLCONF = 'ecclesia.urls'
@@ -102,7 +111,8 @@ INSTALLED_APPS = (
     'discussions',
     'operations',
     'common',
-    'notifications'
+    'notifications',
+#    'multilingual'
 )
 
 AUTH_PROFILE_MODULE = 'groups.UserProfile'
