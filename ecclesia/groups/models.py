@@ -10,7 +10,7 @@ class UserProfile(models.Model):
 	Enhances the definitions of User.
 	"""
     user = models.ForeignKey(User, unique=True, verbose_name=_('user'), related_name='profile', help_text=_("The internal User entity. Add this entity before you create a profile and set a User for it."))
-    picture = models.ImageField(max_length=100, upload_to='img/user_pics', help_text=_('The name of the image file.'))
+    picture = models.ImageField(max_length=100, default='img/user_pics/default_photo.gif', upload_to='img/user_pics', help_text=_('The name of the image file.'))
     #im_address = models.CharField(_('im_address'), max_length=500, null=True, blank=True, help_text=_('IM address of the user'))
     #im_type = models.CharField(_('im type'), max_length=30, null=True, blank=True, choices = (("gtalk", "gtalk"),), help_text=_('IM type of the user'))
 
