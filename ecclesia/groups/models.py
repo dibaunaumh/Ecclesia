@@ -116,3 +116,15 @@ class GroupPermission(models.Model):
 
     def __unicode__(self):
         return u"%s's permission for %s" % (self.user, self.group)
+
+#def add_user_profile(sender, instance, **kwargs):  
+#    UserProfile(user=instance).save()
+    
+def create_profile(sender, **kw):
+    user = kw["instance"]
+    if kw["created"]:
+        profile = UserProfile(user=user)
+        profile.save()
+        
+#create user profile when user is created
+models.signals.post_save.connect(create_profile, sender=User, dispatch_uid="users-profilecreation-signal")
