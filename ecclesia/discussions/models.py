@@ -54,13 +54,14 @@ class SpeechAct(models.Model):
     discussion_type = models.ForeignKey(DiscussionType, verbose_name=_('discussion type'), related_name='speech_acts', help_text=_('The type of discussion that allows this speech act.'))
     story_type = models.IntegerField(_('story type'), default=1, choices=((1,_('story')),(2,_('opinion')),(3,_('relation'))))
     ordinal = models.IntegerField(_('DOM ordinal'), default=0, help_text=_('Order of appearance of this speech act in the DOM.'))
+#    icon = models.ImageField(_('icon'), max_length=25, upload_to='img/speech_act_icons', help_text=_('The name of the image file.'))
 
     def __unicode__(self):
         return self.name
 
 
 class BaseStory(Presentable):
-    title = models.CharField(_('title'), max_length=50, blank=False, help_text=_('A title for story.'))
+    title = models.CharField(_('title'), max_length=50, blank=True, null=False, help_text=_('A title for this story.'))
     slug = models.SlugField(_('slug'), max_length=50, blank=False, help_text=_("The url representation of the story's title. No whitespaces allowed - use hyphen/underscore to separate words"))
     content = models.TextField(_('content'), help_text=_("The user content"))
     created_at = models.DateTimeField(_('created at'), auto_now_add=True, help_text=_('When the speech act was made.'))
@@ -69,12 +70,6 @@ class BaseStory(Presentable):
 	
     class Meta:
         abstract = True
-
-    def get_view_container_object(self, set_to_now):
-        if set_to_now:
-            self.discussion.last_related_update = datetime.datetime.now()
-            self.discussion.save()
-        return self.discussion
 
 
 class Opinion(BaseStory):
@@ -170,9 +165,10 @@ class DiscussionConclusion(models.Model):
 
 def last_changed_updater(sender, instance, **kwargs):
     discussion = Discussion.objects.get(id=instance.discussion.pk)
-    discussion.last_related_update = datetime.datetime.now()
-    print 'updating %s to %s' % (discussion.name, datetime.datetime.now())
+    now = datetime.datetime.now()
+    discussion.last_related_update = now
     discussion.save()
+    print 'updating %s to %s' % (discussion.name, now)
     evaluate_stories(instance.discussion)
 
 

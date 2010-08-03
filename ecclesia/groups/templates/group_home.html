@@ -12,7 +12,8 @@
     var config = {
         canvas_id   : 'discsvu',
         data_url    : '/get_discussions_view_json/{{ group.slug }}',
-        dialog_title: '{% trans 'Create Discussion' %}'
+        dialog_title: '{% trans 'Create Discussion' %}',
+        bg_pic      : '/static/img/cork_board.jpg'
     }
     var VUC = new VUController(config);
     VUC.init();
@@ -122,7 +123,4 @@
 		{{ mission_statement_form.as_p }}
 	</form>
 </div>
-
-<hr/>
-
 {% endblock content %}

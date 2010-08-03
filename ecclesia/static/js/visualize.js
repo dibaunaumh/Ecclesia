@@ -314,8 +314,16 @@ Story.prototype = {
 	},
     addRelation : function (context_controller) {
         // TODO: move this form initialization into the view controller - by design
+        var that = this;
         var form = context_controller.getCreateRelationForm.apply(context_controller, arguments),
-            dialog_config;
+            dialog_config,
+            config = {
+                callback                    : $.bindFn(context_controller, context_controller.init),
+                from_story_title            : that.config.name,
+                clean_title_container_class : 'clean_title'
+            },
+            FC = new FormController(),
+            CRFC = new CreateRelationFormController(FC, config);
         if ( ! form ) {
             return false;
         }
@@ -328,12 +336,8 @@ Story.prototype = {
             title: 'Add Relation',
             buttons: {
                 'Create': function() {
-                    var config = {
-                        callback : $.bindFn(context_controller, context_controller.init)
-                    },
-                        FC = new FormController();
                     $(this).dialog('close');
-                    return FC.submit.call(FC, this, config);
+                    return CRFC.submit.call(CRFC, this, config);
                 },
                 'Cancel': function() {
                     $(this).dialog('close');
@@ -345,7 +349,15 @@ Story.prototype = {
     },
     addOpinion  : function (context_controller) {
         // TODO: move this form initialization into the view controller - by design
-        var form = context_controller.getCreateOpinionForm.apply(context_controller, arguments),
+        var that = this,
+            form = context_controller.getCreateOpinionForm.apply(context_controller, arguments),
+            config = {
+                callback                    : $.bindFn(context_controller, context_controller.init),
+                parent_story_title          : that.config.name,
+                clean_title_container_class : 'clean_title'
+            },
+            FC = new FormController(),
+            COFC = new CreateOpinionFormController(FC, config),
             dialog_config ={
                 bgiframe: true,
                 autoOpen: false,
@@ -355,19 +367,15 @@ Story.prototype = {
                 title: 'Add Opinion',
                 buttons: {
                     'Create': function() {
-                        var config = {
-                            callback : $.bindFn(context_controller, context_controller.init)
-                        },
-                            FC = new FormController();
                         $(this).dialog('close');
-                        return FC.submit.call(FC, this, config);
+                        return COFC.submit.call(COFC, this, config);
                     },
                     'Cancel': function() {
                         $(this).dialog('close');
                     }
                 }
             };
-//            dialog_config = $.isPlainObject(config) ? $.extend(true, {}, defaults, config) : defaults;
+//        dialog_config = $.isPlainObject(config) ? $.extend(true, {}, defaults, config) : defaults;
         form.dialog(dialog_config).dialog('open');
     },
     editStory   : function (context_controller) {
@@ -458,7 +466,15 @@ Relation.prototype = {
     },
     addOpinion      : function (context_controller) {
         // TODO: move this form initialization into the view controller - by design
-        var form = context_controller.getCreateOpinionForm.apply(context_controller, arguments),
+        var that = this,
+            form = context_controller.getCreateOpinionForm.apply(context_controller, arguments),
+            config = {
+                callback                    : $.bindFn(context_controller, context_controller.init),
+                parent_story_title          : that.config.name,
+                clean_title_container_class : 'clean_title'
+            },
+            FC = new FormController(),
+            COFC = new CreateOpinionFormController(FC, config),
             dialog_config ={
                 bgiframe: true,
                 autoOpen: false,
@@ -468,12 +484,8 @@ Relation.prototype = {
                 title: 'Add Opinion',
                 buttons: {
                     'Create': function() {
-                        var config = {
-                            callback : $.bindFn(context_controller, context_controller.init)
-                        },
-                            FC = new FormController();
                         $(this).dialog('close');
-                        return FC.submit.call(FC, this, config);
+                        return COFC.submit.call(COFC, this, config);
                     },
                     'Cancel': function() {
                         $(this).dialog('close');
@@ -542,8 +554,8 @@ Relation.prototype = {
 	bezier		    : function (ctx,x1,y1,x2,y2,label) {
 		ctx.save();
 		ctx.beginPath();
-		ctx.lineWidth = 2;
-		ctx.strokeStyle="rgb(130,130,200)";
+		ctx.lineWidth = 8;
+		ctx.strokeStyle="rgb(200,200,200)";
 		ctx.moveTo(x1,y1);
 //		this.square(ctx, x1+(x2-x1)/2, y1);
 //		this.square(ctx, x2-(x2-x1)/2, y2);
@@ -586,6 +598,7 @@ Opinion.prototype = {
 	},
 	addToDOM	: function () {
 		var c = this.config;
+        if ( c.parent.config.alias === 'relation' ) { return this; }
 		$('#'+c.container_id).append('<div class="'+c.alias+'" id="'+c.alias+'_'+c.id+'"></div>');
 	},
 	container	: function () {
@@ -597,7 +610,7 @@ Opinion.prototype = {
 			// try getting the container from the DOM
 			var id_selector = '#'+c.container_id,
 				container = $(id_selector);
-			// check if it exists and return it if it does
+			// check if the container exists and return if it does
 			if(container.length) { return this; }
 			// if it doesn't we create it
             var parent_dims = pc.dimensions,
@@ -636,25 +649,36 @@ Opinion.prototype = {
 	position	    : function () {},
 	draw		    : function () {
         var c = this.config;
-        if(!c.added) {
-			var anchor = $('a', '#'+c.container_id);
-            var opns = parseInt(anchor.text());
-			if(!opns) { opns = 1; }
-				 else { opns += 1; }
+        if( ! c.added ) {
+			var anchor = $('a', '#'+c.container_id),
+                opns = parseInt(anchor.text());
+			if ( ! opns ) { opns = 1; }
+				     else { opns += 1; }
 			anchor.text(opns);
-            anchor.attr('title', c.type+': '+opns);
+            if ( c.parent.config.alias === 'relation' ) {
+                
+            } else {
+                anchor.attr('title', c.type + ': ' + opns);
+            }
 			c.added = true;
 		}
 	},
     drawContainerBg : function (container_id) {
-        var s = this.config.scale;
-        var id = container_id+'_bg';
-        var ctx = $('#'+id).get(0).getContext('2d'); // get the context
+        var s = this.config.scale,
+            id = container_id+'_bg',
+            ctx = $('#'+id).get(0).getContext('2d'), // get the context
         // getting the current size definitions
-        var w = $('#'+container_id).innerWidth()*s;
-        var h = $('#'+container_id).innerHeight()*s;
+            w = $('#'+container_id).innerWidth()*s,
+            h = $('#'+container_id).innerHeight()*s,
+            color;
         // redefining the size & color
-         $('#'+container_id).height(h).width(w);
+        $('#'+container_id).height(h).width(w);
+        color = this.pickColor(container_id);
+        if(ctx) {
+            this.roundedRect(ctx, 0, 0, w, h, 8*s, color, '#666');
+        }
+    },
+    pickColor       : function (container_id) {
         var color;
         switch(container_id.split('_')[2]) {
             case 'good': color = '#cfc'; break;
@@ -663,9 +687,7 @@ Opinion.prototype = {
             case 'false': color = '#ffc'; break;
             default: '#eee'; break;
         }
-        if(ctx) {
-            this.roundedRect(ctx, 0, 0, w, h, 8*s, color, '#666');
-        }
+        return color;
     }
 };
 
@@ -689,8 +711,8 @@ VUController = function (options) {
             animate     : 'fast',
             step		: 0.1,
             min			: 0.5,
-            max			: 1.5,
-            value		: 0.8
+            max			: 1.1,
+            value		: 0.7
         },
         scale		: 0.8
     }, options || {});
@@ -790,21 +812,30 @@ VUController.prototype = {
 			}
 		});
 	},
+    drawCanvasBg        : function (drawContent) {
+        var _VUC = this,
+            o = this.options,
+            ctx = this.ctx,
+            img,pattern;
+        img = new Image();
+        img.src = o.bg_pic;
+        img.onload = function () {
+            pattern = ctx.createPattern(img, 'repeat');
+            ctx.fillStyle = pattern;
+            ctx.fillRect(0, 0, o.width, o.height);
+            if (drawContent && $.isFunction(drawContent)) {
+                drawContent.call(_VUC);
+            }
+        }
+        return this;
+    },
     initCanvas			: function () {
-		var _VUC = this,
-            o = this.options;
+		var o = this.options;
 		$('#'+o.container_id).empty().height(o.height).width(o.width);
 		$('#'+o.container_id).append('<canvas id="'+o.canvas_id+'" width="'+o.width+'" height="'+o.height+'"></canvas>');
 		this.ctx = document.getElementById(o.canvas_id).getContext('2d');
         // setting background
-        if(o.bg_pic != '') {
-            try {
-                var img = new Image();
-                img.src = o.bg_pic;
-                _VUC.ctx.drawImage(img, 0, 0, o.width, o.height);
-            } catch(e) {}
-        }
-		return (_VUC.ctx);
+		return this.ctx;
 	},
 	setVUEvents			: function () {
 		var _VUC = this;
@@ -1027,16 +1058,24 @@ VUController.prototype = {
 	},
 	draw				: function (isGrip) {
 		var _VUC = this;
-		this.ctx.clearRect(0, 0, this.options.width, this.options.height);
-		$.each(this.elems, function (id, el) {
-			if(isGrip) {
-				if(id != _VUC.drag.config.alias+'_'+_VUC.drag.config.id) {
-					el.draw.call(el, _VUC.ctx);
-				}
-			} else {
-				el.draw.call(el, _VUC.ctx);
-			}
-		});
+//		this.ctx.clearRect(0, 0, this.options.width, this.options.height);
+        var drawContent = function () {
+            $.each(this.elems, function (id, el) {
+                if(isGrip) {
+                    if(id != _VUC.drag.config.alias+'_'+_VUC.drag.config.id) {
+                        el.draw.call(el, _VUC.ctx);
+                    }
+                } else {
+                    el.draw.call(el, _VUC.ctx);
+                }
+            });
+        };
+        if(this.options.bg_pic != '') {
+            this.drawCanvasBg(drawContent);
+        } else {
+            this.ctx.clearRect(0, 0, this.options.width, this.options.height);
+            drawContent.call(this);
+        }
         return this;
 	},
     positionTitles      : function () {
@@ -1054,7 +1093,7 @@ VUController.prototype = {
 	zoom				: function (event, ui) {
 		this.options.scale = ui.value;
         // resize titles
-		$('#'+this.options.container_id).animate( { fontSize: 16*ui.value+'px' }, 'fast');
+		$('#'+this.options.container_id).animate( { fontSize: 18*ui.value+'px' }, 'fast');
 		this.init('reload');
 	},
     getClickConfig      : function (event) {
@@ -1159,7 +1198,7 @@ DiscussionController.prototype = {
                         var _config = {
                             callback : $.bindFn(_DC, _DC.init)
                         },
-                            FC = new FormController();
+                        FC = new FormController();
                         $(this).dialog('close');
                         return FC.submit.call(FC, this, _config);
                     },
@@ -1250,6 +1289,35 @@ DiscussionController.prototype = {
         }
         return form;
     },
+    getAllowedRelatedToList : function () {
+        var type = this.click.config.type,
+            ordinal,
+            allowed_type = null,
+            list = [];
+        // set the ordinal to the next column's
+        $.each(this.metaData, function (i, item) {
+            if(item.fields.name == type) {
+                ordinal = item.fields.ordinal+1;
+                return false; // break
+            }
+        });
+        // get the type name of that column
+        $.each(this.metaData, function (i, item) {
+            if(item.fields.ordinal == ordinal) {
+                allowed_type = item.fields.name;
+                return false;
+            }
+        });
+        // create a list of the stories of that type
+        if(allowed_type) {
+            $.each(this.elems, function (id, el) {
+                if(el.config.type && el.config.type == allowed_type) {
+                    list.push(el);
+                }
+            });
+        }
+        return (allowed_type && list.length > 0) ? list : false;
+    },
     getCreateRelationForm   : function () {
         var form = $('form[name=relation_create]'),
             from_story = this.click.config.id,
@@ -1274,32 +1342,6 @@ DiscussionController.prototype = {
             to_input.html(options.join(''));
         }
         return to_stories ? form : false;
-    },
-    getAllowedRelatedToList : function () {
-        var type = this.click.config.type,
-            ordinal,
-            allowed_type = null,
-            list = [];
-        $.each(this.metaData, function (i, item) {
-            if(item.fields.name == type) {
-                ordinal = item.fields.ordinal+1;
-                return false; // break
-            }
-        });
-        $.each(this.metaData, function (i, item) {
-            if(item.fields.ordinal == ordinal) {
-                allowed_type = item.fields.name;
-                return false;
-            }
-        });
-        if(allowed_type) {
-            $.each(this.elems, function (id, el) {
-                if(el.config.type && el.config.type == allowed_type) {
-                    list.push(el);
-                }
-            });
-        }
-        return (allowed_type && list.length > 0) ? list : false;
     },
 	drawText			    : function (text,x,y,maxWidth,rotation) {
         // if text is short enough - put it in 1 line. if not, search for the middle space, and split it there (only splits to 2 lines).
@@ -1365,7 +1407,8 @@ FormController.prototype = {
 		});
 	},
 	init				: function (form, options) {
-		this.f_html		= form || {};
+		var this_ = this;
+        this.f_html		= form || {};
 		this.f_jq		= $(form) || {};
 		this.options	= $.extend(true, {
 	        validation	    : {},
@@ -1376,13 +1419,8 @@ FormController.prototype = {
             callback        : null,
 	        editor		    : {}
 	    }, options || {});
-		/* for YUI Rich Text Editor
-		if(this.options.editor && this.options.editor.saveHTML) {
-			this.options.editor.saveHTML();
-		}*/
 		this.elements = {};
 		if(this.f_html.elements) {
-			var this_ = this;
 			$.each(this.f_html.elements, function (i, el) {
 				if($(el).attr('name')) {
 					this_.elements[$(el).attr('name')] = el;
@@ -1396,7 +1434,8 @@ FormController.prototype = {
 		if(this.options.validation && typeof this.options.validation != 'undefined') {
 			var this_ = this;
 			$.each(this.options.validation, function(field, method){
-				// first check that there's a field with this name and that it's not disabled
+				var _checked = false;
+                // first check that there's a field with this name and that it's not disabled
 				if(this_.elements[field] != null && !this_.elements[field].disabled) {
 					try {
 						if(this_[method] && $.isFunction(this_[method])) {
@@ -1414,7 +1453,6 @@ FormController.prototype = {
 						 * in case there's a specification for a validation of checkboxes
 						 * run an 'OR' test to verify that at least one is checked
 						 */
-						var _checked = false;
 						$.each(this_.elements[field+'[]'], function(index, box){
 							_checked = _checked || box.checked;
 						});
@@ -1435,7 +1473,7 @@ FormController.prototype = {
 	 */
 	submit				: function (form, options) {
 		this.init(form, options);
-		if(this.validate()) {
+        if(this.validate()) {
 			if(this.before()) {
 				if(this.options.dont_post) {
 					this.after(this.f_jq.serialize());
@@ -1525,4 +1563,79 @@ FormController.prototype = {
 	_validate			: function (el, pat ){
 		return this.is_value(el.attr('name')) ? !pat.test(el.val()) : false;
 	}
+};
+CreateRelationFormController = function (BaseFormController, options) {
+    // init the parent
+    BaseFormController.init($('form[name="relation_create"]')[0], options);
+    // make this the extended of FormController
+    $.extend(true, this, BaseFormController, this);
+
+    this.clean_container = $('.'+this.options.clean_title_container_class, this.f_jq);
+    this.title_field = $('textarea[name=title]', this.f_jq);
+
+    // initialize
+    this.setCleanTitle().bindChange();
+};
+CreateRelationFormController.prototype = {
+    isClean        : function () {
+        var title = $.trim(this.title_field.val()),
+            clean = this.clean_container.text();
+        return ( title === clean );
+    },
+    setCleanTitle  : function () {
+        var text, to_story_name = $.trim($('select[name="to_story"] option:selected').text());
+        text = 'Relation from '+this.options.from_story_title+' to '+to_story_name;
+        this.clean_container.text(text);
+        this.title_field.val(text);
+        return this;
+    },
+    bindChange     : function () {
+        var that = this;
+        $('select[name="to_story"]').bind('change', function () {
+            if ( that.isClean() ) {
+                that.setCleanTitle();
+            } else {
+                $(this).unbind('change', arguments.callee);
+            }
+        });
+    }
+};
+CreateOpinionFormController = function (BaseFormController, options) {
+    // init the parent
+    BaseFormController.init($('form[name="opinion_create"]')[0], options);
+     // make this the extended of FormController
+    $.extend(true, this, BaseFormController, this);
+
+    this.clean_container = $('.'+this.options.clean_title_container_class, this.f_jq);
+    this.title_field = $('textarea[name=title]', this.f_jq);
+
+    // initialize
+    this.setCleanTitle().bindChange();
+};
+CreateOpinionFormController.prototype = {
+    isClean        : function () {
+        var title = $.trim(this.title_field.val()),
+            clean = this.clean_container.text();
+        return ( title === clean );
+    },
+    setCleanTitle  : function () {
+        var input = $('input[name="speech_act"]:checked'),
+            text,
+            speech_act_name = $.trim(input.next('label').text()),
+            user_name = input.attr('user_name');
+        text = user_name + ' says ' + this.options.parent_story_title + ' is ' + speech_act_name;
+        this.clean_container.text(text);
+        this.title_field.val(text);
+        return this;
+    },
+    bindChange     : function () {
+        var that = this;
+        $('input[name="speech_act"]').bind('change', function () {
+            if ( that.isClean() ) {
+                that.setCleanTitle();
+            } else {
+                $(this).unbind('change', arguments.callee);
+            }
+        });
+    }
 };

@@ -38,6 +38,7 @@ def visualize(request, discussion_slug):
     for key in story_form.fields:
         story_form.fields[key].widget.attrs["class"] = "text ui-widget-content ui-corner-all"
     speech_acts = SpeechAct.objects.filter(discussion_type=discussion.type)
+    opinion_types = speech_acts.filter(story_type=2)
     last_related_update = str(discussion.last_related_update) # set an initial value for the update timestamp
     return render_to_response('discussion_home.html', locals())
 

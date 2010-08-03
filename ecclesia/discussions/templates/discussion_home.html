@@ -10,7 +10,6 @@
 {% block extrahead %}
     <script>
         var config = {
-            bg_pic              : '/static/img/whiteboard.jpg',
             canvas_id	        : 'storysvu',
             data_url	        : '/discussions/get_stories_view_json/{{ discussion.slug }}',
             meta_url	        : '/discussions/get_visualization_meta_data/',
@@ -35,9 +34,6 @@
 {% endblock %}
 {% block content %}
 <div id="buttons_container">
-{% if user_in_group %}
-	<!--input id="create" class="ui-button ui-state-default ui-corner-all" type="button" value="{% trans 'Create Story' %}"/><br clear="all"/-->
-{% endif %}
 	<input type="button" value="{% trans 'Stories List' %}" onclick="document.location.href='/stories_list/{{discussion.slug}}/'"/>
 </div>
 
@@ -76,6 +72,7 @@
 	<fieldset class="story_input-title">
 		<legend>{% trans 'Title:' %}</legend>
 		<textarea name="title" class="is_value"></textarea>
+		<span class="clean_title hidden"></span>
 	</fieldset>
 </form>
 <form name="opinion_create" class="hidden" method="POST" action="/discussions/add_story/">
@@ -84,24 +81,17 @@
 	<input type="hidden" name="parent_story" value="" />
 	<input type="hidden" name="parent_class" value="1" />
 	<div id="story_input-types">
-		<!--fieldset id="story_input-story-type">
-			<legend>{% trans 'Story type:' %}</legend>
-			<input type="radio" name="story-class" id="story" value="1" checked="checked" /><label for="story"> {% trans 'Story' %}</label>
-			<input type="radio" name="story-class" id="relation" value="3" /><label for="relation"> {% trans 'Relation' %}</label>
-			<input type="radio" name="story-class" id="opinion" value="2" /><label for="opinion"> {% trans 'Opinion' %}</label>
-		</fieldset-->
 		<fieldset>
 			<legend>{% trans 'Speech act:' %}</legend>
-			{% for sa in speech_acts %}
-                {% ifequal sa.story_type 2 %}
-			<input type="radio" name="speech_act" value="{{ sa.pk }}" id="opinion_{{ sa.name }}" /><label for="opinion_{{ sa.name }}"> {{ sa.name }}</label><br/>
-			    {% endifequal %}
+			{% for sa in opinion_types %}
+			<input type="radio" name="speech_act" value="{{ sa.pk }}" id="opinion_{{ sa.name }}" user_name="{{ user.username }}" {% if forloop.first %} checked="checked" {% endif %} /><label for="opinion_{{ sa.name }}"> {{ sa.name }}</label><br/>
             {% endfor %}
 		</fieldset>
 	</div>
     <fieldset class="story_input-title">
 		<legend>{% trans 'Title:' %}</legend>
 		<textarea name="title" class="is_value"></textarea>
+		<span class="clean_title hidden"></span>
 	</fieldset>
 </form>
 <form name="relation_create" class="hidden" method="POST" action="/discussions/add_story/">
@@ -110,12 +100,6 @@
     <input type="hidden" name="from_story" value="" />
     <input type="hidden" name="speech_act" value="{% for sa in speech_acts %}{% ifequal sa.story_type 3 %}{{ sa.pk }}{% endifequal %}{% endfor %}" />
 	<div id="story_input-stories">
-		<!--fieldset>
-			<legend>{% trans 'From story:' %}</legend>
-			<select name="from_story">
-
-			</select>
-		</fieldset-->
 		<fieldset>
 			<legend>{% trans 'To story:' %}</legend>
 			<select name="to_story">
@@ -126,26 +110,9 @@
 	<fieldset class="story_input-title">
 		<legend>{% trans 'Title:' %}</legend>
 		<textarea name="title" class="is_value"></textarea>
+		<span class="clean_title hidden"></span>
 	</fieldset>
 </form>
 {% endif %}
 {% endblock %}
-<!--
-<h3>Current members</h3>
-<div id="members_container">
-{% for member in members %}
-	<a href="{{ member.get_absolute_url }}" class="member" title="{{ member.username }}" alt=""><img src="{{ member.get_profile.get_picture_abs_url }}" alt=""/></a>
-{% endfor %}
-</div>
--->
-
-<!--ul>
-<div id="ddd">
-<input type="button" value="{% trans 'Members List' %}" onclick="document.location.href='/members_list/{{group.name}}/'"/>
-{% for member in members %}
-    <li><a href="{{ member.get_absolute_url }}">{{ member.username }}</a>
-{% endfor %}
-</div>
-</ul-->
-
 {% endblock content %}
