@@ -138,7 +138,6 @@
         {% if user.is_authenticated %}
 	        {#<div id="user-tools">{% trans 'Welcome,' %} <strong>{% firstof user.first_name user.username %}</strong>. {% block userlinks %}{% url django-admindocs-docroot as docsroot %}{% if docsroot %}<a href="{{ docsroot }}">{% trans 'Documentation' %}</a> / {% endif %}<a href="/user-profile/{{ request.user.username }}/">{% trans 'Edit profile' %}</a> / <a href="/admin/password_change/">{% trans 'Change password' %}</a> / <a href="/admin/logout/">{% trans 'Log out' %}</a>{% endblock %}</div>#}
 			<div id="user-tools">{% trans 'Welcome,' %} <strong>{% firstof user.first_name user.username %}</strong>. {% block userlinks %}{% url django-admindocs-docroot as docsroot %}{% if docsroot %}<a href="{{ docsroot }}">{% trans 'Documentation' %}</a> / {% endif %}<a href="/user-profile/{{ request.user.username }}/">{% trans 'Edit profile' %}</a> / <a href="password_change/">{% trans 'Change password' %}</a> / <a href="/admin/logout/">{% trans 'Log out' %}</a>{% endblock %}</div>
-			{% include 'admin/change_language.html' %}
 			<div id="join_group" style="display:none"> <input type="button" value="Join Group" onclick="join_group();" /></div>
 			<div id="leave_group" style="display:none"> <input type="button" value="Leave Group" onclick="leave_group();" /></div>
 		{% else %}
@@ -152,6 +151,7 @@
 		{% endif %}
         {% block nav-global %}{% endblock %}
     </div>
+    {%comment%}{% include 'admin/change_language.html' %}{%  endcomment %}
     <!-- END Header -->
     {% block breadcrumbs %}<div class="breadcrumbs"><a href="/">{% trans 'Home' %}</a>{% if title %} &rsaquo; {{ title }}{% endif %}</div>{% endblock %}
     {% endif %}
