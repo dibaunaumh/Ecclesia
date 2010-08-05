@@ -42,7 +42,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.auth',
     'django.core.context_processors.debug',
     'django.core.context_processors.i18n',
-    'multilingual.context_processors.multilingual',
+    #'multilingual.context_processors.multilingual',
 )
 
 SITE_ID = 1
@@ -85,6 +85,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.csrf.middleware.CsrfMiddleware',
 #    'django.middleware.locale.LocaleMiddleware'
+    'privatebeta.middleware.PrivateBetaMiddleware',
 )
 
 ROOT_URLCONF = 'ecclesia.urls'
@@ -112,6 +113,7 @@ INSTALLED_APPS = (
     'operations',
     'common',
     'notifications',
+    'privatebeta',
 #    'multilingual'
 )
 
