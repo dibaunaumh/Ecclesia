@@ -1,10 +1,9 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-        "http://www.w3.org/TR/html4/loose.dtd">
-<html>
-<head>
-    <title></title>
-</head>
-<body>
+{% extends 'admin/base_site.html' %}
 
-</body>
-</html>
+{% block content %}
+<h3>Enter your email address and we'll send you an invite soon</h3>
+<form action="{% url privatebeta_invite %}" method="post">
+{{ form }}
+<input type="submit" value="Submit" />
+</form>
+{% endblock %}
