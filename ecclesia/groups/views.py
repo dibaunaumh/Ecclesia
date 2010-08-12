@@ -175,9 +175,9 @@ def user_home(request, user_name):
     return render_to_response('user_home.html', locals())
 
 
-def edit_user_profile(request, user_name):
+def edit_user_profile(request):
     """
-    Allows a user to edit her profile.
+    Allows a user to edit his profile.
     """
     user = request.user
     if request.method == 'POST':
@@ -191,7 +191,8 @@ def edit_user_profile(request, user_name):
             return HttpResponseRedirect('/')
     else:
         form = MemberProfileForm(instance=request.user)
-    return render_to_response('edit_profile.html', {'form': form})
+    print "ddddddddd"
+    return render_to_response('edit_profile.html', {'form': form, 'user': user })
 
 
 def is_in_group(request):
