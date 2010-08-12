@@ -15,13 +15,22 @@
             {% blocktrans %}Please correct the error{{ form.errors|pluralize }} below.{% endblocktrans %}
         </p>
     {% endif %}
+	{% if additional_form.errors %}
+        <p style="color: red;">
+            {% blocktrans %}Please correct the error{{ additional_form.errors|pluralize }} below.{% endblocktrans %}
+        </p>
+    {% endif %}
 
+	<img src="{{ user.get_profile.get_picture_abs_url }}" alt=""/>
     <form action="" method="post">
         <table>
             {{ form.as_table }}
         </table>
-        <input type="submit" value="Submit">
-    </form>
-	<a href="/admin/password_change/">{% trans 'To change your password' %}</a>
-
+        <table>
+            {{ additional_form.as_table }}
+        </table>
+		<a href="/admin/password_change/">{% trans 'To change your password' %}</a>
+		<br/>
+		<input type="submit" value="Submit">
+	</form>
 {% endblock content %}

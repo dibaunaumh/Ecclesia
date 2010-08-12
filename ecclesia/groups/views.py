@@ -180,9 +180,11 @@ def edit_user_profile(request):
     Allows a user to edit his profile.
     """
     user = request.user
+    user_profile = UserProfile.objects.filter(user=user)[0]
     if request.method == 'POST':
         form = MemberProfileForm(request.POST)
-        if form.is_valid():
+        additional_form = MemberAdditionalProfileForm(request.POST)
+        if form.is_valid() and additional_form.is_valid():
             cd = form.cleaned_data
             user.first_name = cd['first_name']
             user.last_name = cd['last_name']
@@ -191,8 +193,8 @@ def edit_user_profile(request):
             return HttpResponseRedirect('/')
     else:
         form = MemberProfileForm(instance=request.user)
-    print "ddddddddd"
-    return render_to_response('edit_profile.html', {'form': form, 'user': user })
+        additional_form = MemberAdditionalProfileForm(instance=user_profile)
+    return render_to_response('edit_profile.html', locals())
 
 
 def is_in_group(request):
