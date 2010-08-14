@@ -21,8 +21,20 @@
         </p>
     {% endif %}
 
-	<img src="{{ user.get_profile.get_picture_abs_url }}" alt=""/>
-    <form action="" method="post">
+	<table>
+		<tr>
+			<td>
+				<img src="{{ user.get_profile.get_picture_abs_url }}" alt=""/>
+			</td>
+			<td>
+				<form action="/user-profile/delete_picture/" method="post">
+			        <input type="hidden" name="delete" value="{{ item.pk }}"/>
+			        <input type="image" onclick="this.form.submit()" src="/static/icons/delete.png"/>
+			    </form>
+			</td>
+		</tr>
+	</table>
+    <form action="" enctype="multipart/form-data" method="post">
         <table>
             {{ form.as_table }}
         </table>
