@@ -190,12 +190,11 @@ def edit_user_profile(request):
             user.last_name = cd['last_name']
             user.email = cd['email']
             user.save()
-            print request.FILES
             if 'picture' in request.FILES:
-                print "here"
                 file = request.FILES['picture']
                 user_profile.picture.save(file.name, file, save=True)
-                user_profile.save()
+            user_profile.gravatar = additional_form.cleaned_data['gravatar']
+            user_profile.save()
             return HttpResponseRedirect('/')
     else:
         form = MemberProfileForm(instance=request.user)
@@ -205,6 +204,7 @@ def edit_user_profile(request):
 def delete_picture(request):
     user_profile = UserProfile.objects.filter(user=request.user)[0]
     user_profile.picture = 'img/user_pics/default_photo.gif'
+    user_profile.gravatar = None
     user_profile.save()
     return HttpResponseRedirect("/user-profile")
 

@@ -1,3 +1,4 @@
+import hashlib
 from django.db import models
 from django.contrib.auth.models import Group, User
 from django.utils.translation import gettext_lazy as _
@@ -11,6 +12,7 @@ class UserProfile(models.Model):
 	"""
     user = models.ForeignKey(User, unique=True, verbose_name=_('user'), related_name='profile', help_text=_("The internal User entity. Add this entity before you create a profile and set a User for it."))
     picture = models.ImageField(max_length=100, default='img/user_pics/default_photo.gif', upload_to='img/user_pics', help_text=_('The name of the image file.'))
+    gravatar = models.EmailField(max_length=100, help_text=_('The email of your gravatar.'), null=True, blank=True)
     #im_address = models.CharField(_('im_address'), max_length=500, null=True, blank=True, help_text=_('IM address of the user'))
     #im_type = models.CharField(_('im type'), max_length=30, null=True, blank=True, choices = (("gtalk", "gtalk"),), help_text=_('IM type of the user'))
 
@@ -18,7 +20,12 @@ class UserProfile(models.Model):
         return "%s's profile" % (self.user.username,)
 
     def get_picture_abs_url(self):
-        return "%s%s" % (settings.MEDIA_URL, self.picture)
+        if self.gravatar:
+            h = hashlib.md5()
+            h.update(self.gravatar)
+            return "http://www.gravatar.com/avatar/%s" % h.hexdigest()
+        else:
+            return "%s%s" % (settings.MEDIA_URL, self.picture)
 
 
 class GroupProfile(Presentable):

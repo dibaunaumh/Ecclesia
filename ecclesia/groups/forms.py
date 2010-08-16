@@ -21,7 +21,7 @@ class MemberProfileForm(forms.ModelForm):
 class MemberAdditionalProfileForm(forms.ModelForm):
     class Meta:
         model = UserProfile
-        fields = ['picture',]
+        fields = ['picture', 'gravatar']
 
 class GroupProfileForm(forms.ModelForm):
     class Meta:
