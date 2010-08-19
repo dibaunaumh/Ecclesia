@@ -171,7 +171,9 @@ def user_home(request, user_name):
         raise Http404("Can't find a user named: %s" % user_name)
     else:
         user = query[0]
-    groups = get_user_groups(user)
+        if UserProfile.objects.filter(user=user):
+            user_profile = UserProfile.objects.filter(user=user)[0]
+    groups = get_user_groups(user)  
     return render_to_response('user_home.html', locals())
 
 

@@ -10,22 +10,19 @@
 
 
 <h2>
-    {% trans "Edit profile" %}
+    {{ user.username }}
 </h2>
-
-<form method="post" action=".">
-<table>
-  {{ form }}
-</table>
-  <input type="submit" value="{% trans 'Submit' %}" />
-</form>
+<img src="{{ user_profile.get_picture_abs_url }}"/>
+<h3>
+	Email: {{ user.email }}
+</h3>
 
 <hr/>
 
-<h3>Current groups</h3>
+<h4>Current groups</h4>
 <ul>
 {% for group in groups %}
-    <li><a href="{{ group.get_absolute_url }}">{{ group.name }}</a>
+    <li><a href="{{ group.get_absolute_url }}">{{ group.group.name }}</a>
 {% endfor %}
 </ul>
 
