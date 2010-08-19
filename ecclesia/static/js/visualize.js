@@ -233,6 +233,7 @@ Story = function (node_class, config) {
 		alias	    	        : 'story',
 		model_name  	        : 'Story',
 		type	    	        : 'goal',
+		content					: '',
         fill_normal             : '#e3e3e3',
         fill_normal_indicated   : '#418000',
         fill_hover              : '#f2f2f2',
@@ -276,6 +277,7 @@ Story.prototype = {
 			s = c.scale,
 			el = $('#'+this.DOMid).height(dims.h*s+'px').width(dims.w*s+'px'),
             state = 'normal';
+		//if((c.content) && (c.content != '')) { el.append('<div><a title=' + c.content + ' class="story_content"><img src="/static/icons/tool_tip_icon.gif"/></a></div>')}
         if(c.state.indicated) { state = 'normal_indicated'; }
         if(c.state.hover) { state = c.state.indicated ? 'hover_indicated' : 'hover'; }
         if(c.state.click) { state = 'click'; }

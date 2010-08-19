@@ -155,7 +155,7 @@ def get_stories_view_json(request, discussion_slug):
     json = ','
     for story in stories:
         is_conclusion = "true" if story.id in conclusions_map else "false"
-        json = '%s{"story":{"id":%s,"url":"%s","name":"%s","type":"%s","state":{"indicated":%s},"dimensions":{"x":%s,"y":%s,"w":%s,"h":%s}}},' % (json, story.id, story.get_absolute_url(), story.title, story.speech_act, is_conclusion, story.x, story.y, story.w, story.h)
+        json = '%s{"story":{"id":%s,"url":"%s","name":"%s","type":"%s","content":"%s","state":{"indicated":%s},"dimensions":{"x":%s,"y":%s,"w":%s,"h":%s}}},' % (json, story.id, story.get_absolute_url(), story.title, story.speech_act, story.content, is_conclusion, story.x, story.y, story.w, story.h)
     relations = StoryRelation.objects.filter(discussion=discussion)
     for relation in relations:
         json = '%s{"relation":{"id":%s,"url":"%s","name":"%s","type":"%s","from_id":"%s","to_id":"%s"}},' % (json, relation.id, relation.get_absolute_url(), relation.title, relation.speech_act, relation.from_story.unique_id(), relation.to_story.unique_id())
