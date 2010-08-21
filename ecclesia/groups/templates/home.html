@@ -4,11 +4,11 @@
     <link rel="stylesheet" type="text/css" href="/static/css/home.css" />
 {% endblock %}
 {% block extrahead %}
-<script type="text/javascript">
+<script>
 	var config = {
 	  dialog_title : '{% trans 'Create Group' %}'
 	};
-	var VUC = new VUController();
+	var VUC = new VUController(config);
 	VUC.init();
 </script>
 {% endblock %}
@@ -25,10 +25,7 @@
 </p>
 
 <div id="buttons_container">
-	{% if user.is_authenticated %}
-		<input id="create" class="ui-button ui-state-default ui-corner-all" type="button" value="{% trans 'Create Group' %}"/><br clear="all"/>
-	{% endif %}
-	<input type="button" value="{% trans 'Groups List' %}" onclick="document.location.href='/groups_list/'"/>
+	<input type="button" class="ui-button ui-state-default ui-corner-all" value="{% trans 'Groups List' %}" onclick="document.location.href='/groups_list/'"/>
 </div>
 
 <hr/>
@@ -36,7 +33,7 @@
 <h3>Current groups</h3>
 <div id="canvasContainer"></div>
 <div id="create_dialog" style="display:none" title="Create new Group">
-	<form method="POST" action="" id="create_form">
+	<form method="POST" action="/groups/add_group/" id="create_form">
 	{{ group_form.as_p }}
 	</form>
 </div>

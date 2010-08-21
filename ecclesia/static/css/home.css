@@ -3,9 +3,9 @@
 #canvasContainer {position: relative; float:left; margin: 0; padding: 0; font-size: 16px}
 #groupsvu {margin: 0; padding: 0; border: thin solid #5B80B2}
 #vuslider {float:right}
-.group{position: absolute; margin: 0; padding: 0; font-weight: bold; overflow: hidden; cursor: move}
-.group a {display: block; float: left; padding: 10px; color: #000}
-.group a:hover {color: #033; text-decoration: underline}
+div.group{position: absolute; margin: 0; padding: 0; font-weight: bold; cursor: move}
+div.group > a.group_title {display: block; float: left; padding: 3px; color: #000; overflow: hidden;}
+div.group > a.group_title:hover {color: #033; text-decoration: underline}
 .dragon { border: thin solid #033; background: url(/static/img/cork_board.jpg) left top no-repeat;opacity:.6; -moz-opacity:.6}
 .selecton { border: 2px solid #033 }
 

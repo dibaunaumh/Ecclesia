@@ -8,12 +8,9 @@ from django.contrib.contenttypes.models import ContentType
 class DiscussionForm(forms.ModelForm):
     class Meta:
         model = Discussion
-        exclude = ('x_pos', 'y_pos', 'width', 'height', 'last_related_update')
+        exclude = ('x_pos', 'y_pos', 'width', 'height', 'last_related_update', 'slug')
 
 class StoryForm(forms.ModelForm):
-    #content_type = forms.ModelChoiceField(queryset=ContentType.objects.all(), widget=forms.HiddenInput)
-    #object_id = forms.IntegerField(widget=forms.HiddenInput)
-
     class Meta:
         model = Story
         exclude = ('x_pos', 'y_pos', 'width', 'height', 'created_by', 'discussion')

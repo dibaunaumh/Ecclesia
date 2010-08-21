@@ -8,15 +8,16 @@
     <link rel="stylesheet" type="text/css" href="/static/css/group-home.css" />
 {% endblock %}
 {% block extrahead %}
-<script type="text/javascript">
+<script>
     var config = {
         canvas_id   : 'discsvu',
         data_url    : '/get_discussions_view_json/{{ group.slug }}',
         dialog_title: '{% trans 'Create Discussion' %}',
         bg_pic      : '/static/img/cork_board.jpg'
     }
-    var VUC = new VUController(config);
-    VUC.init();
+    var VUC = new VUController({});
+    var GC	= new GroupController(VUC, config);
+    GC.init();
 
 	$(function() {
 		$("#mission_statement_dialog").dialog({
@@ -46,19 +47,16 @@
 </script>
 
 {% if show_errors_in_mission_statement_form %}
-	<script>
-		$(document).ready(function() {
-			$('#mission_statement_dialog').dialog('open');
-		});
-	</script>
+<script>
+    $(document).ready(function() {
+        $('#mission_statement_dialog').dialog('open');
+    });
+</script>
 {% endif %}
 {% endblock %}
 {% block content %}
 <div id="buttons_container">
-<div id="create_container" {% if not user_in_group %}style="display:none"{% endif %}>
-	<input id="create" class="ui-button ui-state-default ui-corner-all" type="button" value="{% trans 'Create Discussion' %}"/><br clear="all"/>
-</div>
-<input type="button" value="{% trans 'Discussions List' %}" onclick="document.location.href='/discussions_list/{{group.slug}}/'"/>
+<input type="button" class="ui-button ui-state-default ui-corner-all" value="{% trans 'Discussions List' %}" onclick="document.location.href='/discussions_list/{{group.slug}}/'"/>
 </div>
 
 <h2>
@@ -66,11 +64,11 @@
 </h2>
 {% ifequal user_permission_type 1 %}
 	<form action="/group-delete/{{group.pk}}/" method="post">
-        <input type="image" onclick="if(confirm('Are you sure you want to delete this group?')) {this.form.submit();} else { return false; }" src="/static/icons/delete.png">Delete group</input>
+        <input type="image" onclick="if(confirm('Are you sure you want to delete this group?')) {this.form.submit();} else { return false; }" src="/static/icons/delete.png" value="Delete group" />
     </form>
 {% endifequal %}
 
-<p>
+<div>
 	<div id="mission_statement_button" {% if user_in_group %}{% ifequal mission_statement "" %}style="display:block"{%else%}style="display:none"{%endifequal%}{%else %}style="display:none"{% endif %}>
 		<input id="add_mission" class="ui-button ui-state-default ui-corner-all" type="button" value="{% trans 'Add Mission Statement' %}"/><br clear="all"/>
 	</div>
@@ -80,7 +78,7 @@
 	<div id="mission_statement" {% if not user_in_group %}{% ifnotequal mission_statement "" %}style="display:block"{%else%}style="display:none"{%endifnotequal%}{%else %}style="display:none"{% endif %}>
 		<div>{{ mission_statement.mission_statement }}</div>
 	</div>
-</p>
+</div>
 
 <div id="members_container">
 <h3>Current members</h3>
@@ -89,23 +87,6 @@
 {% endfor %}
 <input type="button" value="{% trans 'Members List' %}" onclick="document.location.href='/members_list/{{group.slug}}/'"/>
 </div>
-<!--
-<p>
-<div id="ms">
-{% ifequal mission_statement "" %}
-	<div id="mission_statement_button" {% if user_in_group %}style="display:block"{% else %}style="display:none"{% endif %}>
-		<input id="add_mission" class="ui-button ui-state-default ui-corner-all" type="button" value="{% trans 'Add Mission Statement' %}"/><br clear="all"/>
-	</div>
-{% else %}
-	{% if user_in_group %}
-		<div class="edit" id="missionstatement_{{ mission_statement.pk }}">{{ mission_statement.mission_statement }}</div>
-	{% else %}
-		<div>{{ mission_statement.mission_statement }}</div>
-	{% endif %}
-{% endifequal %}
-</div>
-</p>
--->
 
 <hr/>
 
@@ -113,8 +94,9 @@
 <div id="canvasContainer"></div>
 
 <div id="create_dialog" style="display:none" title="Create new Discussion">
-	<form method="POST" action="" id="create_form">
-		{{ discussion_form.as_p }}
+	<form method="POST" action="/discussions/add_discussion/" id="create_form">
+		<input type="hidden" name="group" value="{{ group.group.pk }}"/>
+        {{ discussion_form.as_p }}
 	</form>
 </div>
 

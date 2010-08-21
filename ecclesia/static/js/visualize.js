@@ -47,9 +47,10 @@ ContextMenu.prototype = {
 	},
 	buildMenu	: function () {
 		var c = this.config,
-            that = this;
-		this.config.element.append('<ul id="'+c.container_id+'"></ul>');
-		var ul = this.menu = $('#'+c.container_id).empty();
+            that = this,
+            ul;
+		c.element.append('<ul id="'+c.container_id+'"></ul>');
+		ul = this.menu = $('#'+c.container_id).empty();
 		$.each(c.actions, function (action_name, callback) {
 			ul.append('<li/>');
 			$('li', ul).last().append('<a href="#">'+action_name+'</a>');
@@ -172,16 +173,33 @@ Group.prototype = {
 	draw		: function (ctx) {
 		var dims = this.config.dimensions;
 		if(this.config.bg_image) {
-			var s = this.config.scale;
-			$('#'+this.DOMid).height(dims.h*s+'px').width(dims.w*s+'px');
+			var s = this.config.scale,
+			    el = $('#'+this.DOMid).height(dims.h*s+'px').width(dims.w*s+'px');
+            this.wrapTitle(el);
 			try {
 				ctx.drawImage(this.config.bg_image, dims.x, dims.y, dims.w*s, dims.h*s);
 			} catch(e){}
 			ctx.strokeRect(dims.x, dims.y, dims.w*s, dims.h*s);
 		}
 	},
+    click		: function (event) {
+		var position = $.clickOffset(event),
+            that = this,
+			config = {
+				element : $('#'+that.DOMid),
+                actions	: {
+                    edit_group : $.bindFn(that, that.editGroup)
+                },
+				position: position
+        };
+		return config;
+	},
     clicked     : function (x, y) {
 		return false;
+    },
+    editGroup   : function () {
+        // TODO: improve this, create a real edit dialog
+        window.location.href = this.config.url;
     }
 };
 
@@ -203,20 +221,20 @@ Discussion = function (node_class, config) {
 	this.loadImage();
 };
 Discussion.prototype = {
-	serialize	: function () {
+	serialize	    : function () {
 		return $.param(this.config.dimensions) + '&model_name=' + this.config.model_name + '&pk=' + this.config.id;
 	},
-	addToDOM	: function (container) {
+	addToDOM	    : function (container) {
 		var c = this.config;
 		$('#'+container).append('<div class="'+c.alias+'" id="'+this.DOMid+'"><a href="'+c.url+'" class="'+c.alias+'_title">'+c.name+'</a></div>');
 	},
-	position	: function () {
+	position	    : function () {
 		var c = this.config,
 			id_selector = '#'+this.DOMid;
 		$(id_selector).css('left', c.dimensions.x+'px')
 					  .css('top', c.dimensions.y+'px');
 	},
-	draw		: function (ctx) {
+	draw		    : function (ctx) {
 		var dims = this.config.dimensions;
 		if(this.config.bg_image) {
 			var s = this.config.scale;
@@ -225,7 +243,11 @@ Discussion.prototype = {
 				ctx.drawImage(this.config.bg_image, dims.x, dims.y, dims.w*s, dims.h*s);
 			} catch(e){}
 		}
-	}
+	},
+    editDiscussion  : function () {
+        // TODO: improve this, create a real edit dialog
+        window.location.href = this.config.url;
+    }
 };
 
 Story = function (node_class, config) {
@@ -241,7 +263,8 @@ Story = function (node_class, config) {
         stroke_normal           : '#444',
         stroke_hover            : '#000',
         stroke_normal_indicated : '#444',
-        stroke_hover_indicated  : '#000'
+        stroke_hover_indicated  : '#000',
+        children                : {}
 	};
 	// inheriting Node class
 	var dummy = $.extend(true, node_class, this);
@@ -400,12 +423,14 @@ Story.prototype = {
 };
 Relation = function (node_class, config) {
 	this.config = {
-		alias		: 'relation',
-		model_name	: 'StoryRelation',
-		from_id		: -1,
-		to_id		: -1,
-		from		: {},
-		to			: {}
+		alias		    : 'relation',
+		model_name	    : 'StoryRelation',
+		from_id		    : -1,
+		to_id		    : -1,
+		from		    : {},
+		to			    : {},
+        children        : {},
+        opinions_count  : 0
 	};
 	// inheriting Node class
 	var dummy = $.extend(true, node_class, this);
@@ -556,8 +581,8 @@ Relation.prototype = {
 	bezier		    : function (ctx,x1,y1,x2,y2,label) {
 		ctx.save();
 		ctx.beginPath();
-		ctx.lineWidth = 8;
-		ctx.strokeStyle="rgb(200,200,200)";
+		ctx.lineWidth = 4;
+		ctx.strokeStyle="rgb(20,20,20)";
 		ctx.moveTo(x1,y1);
 //		this.square(ctx, x1+(x2-x1)/2, y1);
 //		this.square(ctx, x2-(x2-x1)/2, y2);
@@ -566,16 +591,25 @@ Relation.prototype = {
 //		this.contour(ctx, x1+(x2-x1)/2, x2-(x2-x1)/2);
 		//drawText(label,(x1+x2)/2, (y1+y2)/2, x2-x1,Math.atan2(y2-y1,x2-x1));
 		ctx.restore();
+        return this;
     },
 	addToDOM	    : function (container) {
 		var c = this.config;
 		$('#'+container).append('<div class="'+c.alias+'" id="'+c.alias+'_'+c.id+'"><a href="'+c.url+'" class="'+c.alias+'_title">'+c.name+'</a></div>');
 	},
+    clearChildrenViz: function () {
+        this.config.opinions_count = 0;
+        $.each(this.config.children, function (id, child) {
+            child.config.added = false;
+        });
+    },
 	draw		    : function (ctx) {
 		//get the control points
         var points = this.getBezierPoints();
 		// draw it
-		this.bezier(ctx, points.x1, points.y1, points.x2, points.y2);
+		this.bezier(ctx, points.x1, points.y1, points.x2, points.y2)
+        // and clear its children's visualization state
+            .clearChildrenViz();
 	}
 };
 Opinion = function (node_class, config) {
@@ -649,17 +683,32 @@ Opinion.prototype = {
 		}
 	},
 	position	    : function () {},
-	draw		    : function () {
-        var c = this.config;
+    bezier		    : function (ctx,x1,y1,x2,y2,color) {
+		ctx.save();
+		ctx.beginPath();
+		ctx.lineWidth = 2;
+		ctx.strokeStyle=color;
+		ctx.moveTo(x1,y1);
+		ctx.bezierCurveTo(x1+(x2-x1)/2,y1,x2-(x2-x1)/2,y2,x2,y2);
+		ctx.stroke();
+		ctx.restore();
+    },
+	draw		    : function (ctx) {
+        var c = this.config,parent,points,offset = 0,anchor,opns;
         if( ! c.added ) {
-			var anchor = $('a', '#'+c.container_id),
-                opns = parseInt(anchor.text());
-			if ( ! opns ) { opns = 1; }
-				     else { opns += 1; }
-			anchor.text(opns);
-            if ( c.parent.config.alias === 'relation' ) {
-                
+            if ( c.parent instanceof Relation ) {
+                parent = c.parent;
+                opns = parent.config.opinions_count;
+                points = parent.getBezierPoints.call(parent);
+                offset = (opns % 2) ? opns+1 : opns*(-1);
+                parent.config.opinions_count = opns + 1;
+                this.bezier(ctx, points.x1, points.y1+offset, points.x2, points.y2+offset, this.pickColor(c.container_id));
             } else {
+                anchor = $('a', '#'+c.container_id),
+                opns = parseInt(anchor.text());
+                if ( ! opns ) { opns = 1; }
+                         else { opns += 1; }
+                anchor.text(opns);
                 anchor.attr('title', c.type + ': ' + opns);
             }
 			c.added = true;
@@ -681,8 +730,8 @@ Opinion.prototype = {
         }
     },
     pickColor       : function (container_id) {
-        var color;
-        switch(container_id.split('_')[2]) {
+        var color,type = container_id.split('_').reverse()[0];
+        switch(type) {
             case 'good': color = '#cfc'; break;
             case 'bad': color = '#fcc'; break;
             case 'true': color = '#ccf'; break;
@@ -841,6 +890,10 @@ VUController.prototype = {
 	},
 	setVUEvents			: function () {
 		var _VUC = this;
+        // turn off the context menu on the canvas' container
+        $('#'+this.options.container_id)[0].oncontextmenu = function() {
+            return false;
+        }
         $('#'+this.options.canvas_id).mousedown(function (e) {
             var event = e;
             $(this).mouseup(function () {
@@ -872,10 +925,6 @@ VUController.prototype = {
                 }
             })
 		});
-        // turn off the context menu on the canvas
-        $('#'+this.options.canvas_id)[0].oncontextmenu = function() {
-            return false;
-        }
 	},
 	initZoom			: function () {
 		if($('#vuslider').length == 0) {
@@ -889,7 +938,7 @@ VUController.prototype = {
 	},
     initDialog          : function () {
         var _VUC = this;
-        $('form[name=story_create]').dialog({
+        $('#create_form').dialog({
 			bgiframe: true,
             autoOpen: false,
 			height: 402,
@@ -898,10 +947,14 @@ VUController.prototype = {
             title: _VUC.options.dialog_title,
 			buttons: {
 				'Create': function() {
-					$(this).submit();
+					var _config = {
+                        callback : $.bindFn(_VUC, _VUC.init)
+                    },
+                    FC = new FormController();
+                    $(this).dialog('close');
+                    return FC.submit.call(FC, this, _config);
 				},
-
-				Cancel: function() {
+				'Cancel': function() {
 					$(this).dialog('close');
 				}
 			}
@@ -938,7 +991,7 @@ VUController.prototype = {
                 // set a load event listener to the element's background image to initialy draw it
 				if(c.bg_image) {
 					$(c.bg_image).load(function () {
-						node.draw(_VUC.ctx);
+						node.draw.call(node, _VUC.ctx);
 					});
 				}
 			});
@@ -959,13 +1012,20 @@ VUController.prototype = {
 		}
 	},
     setElementsRelations: function () {
-		var _VUC = this;
+		var _VUC = this,children_refs_obj;
 		$.each(this.elems, function (key, el) {
 			var c = _VUC.elems[key].config;
-			if(el instanceof Relation) {
+            if ( c.children && c.children.length ) {
+                children_refs_obj = {};
+                $.each(c.children, function (i, child_id) {
+                    children_refs_obj[child_id] = _VUC.elems[child_id];
+                });
+                c.children = children_refs_obj;
+            }
+			if ( el instanceof Relation ) {
 				c.from = _VUC.elems[c.from_id];
 				c.to = _VUC.elems[c.to_id];
-			} else if(el instanceof Opinion) {
+			} else if ( el instanceof Opinion ) {
 				c.parent = _VUC.elems[c.parent_id];
 			}
 		});
@@ -1019,8 +1079,8 @@ VUController.prototype = {
 			$el.mousedown(function (e) {
                 var event = e;
                 if(_VUC.click) {
-                    // if this is a click on the context menu on a Story
-                    if(_VUC.click instanceof Story && $(event.target).parents('ul').length) {
+                    // if this is a click on the context menu on a Group
+                    if(_VUC.click instanceof Group && $(event.target).parents('ul').length) {
                         if($(event.target).parents('ul')[0].id === _VUC.menu[0].id) {
                             _VUC.click = null;
                             $(event.target).mousedown();
@@ -1098,18 +1158,121 @@ VUController.prototype = {
 		$('#'+this.options.container_id).animate( { fontSize: 18*ui.value+'px' }, 'fast');
 		this.init('reload');
 	},
+    getCreateGroupForm  : function  (event) {
+        var form = $('#create_form'),
+            offset = $.clickOffset(event),
+            y = offset.top,
+            x = offset.left;
+        // add initial position
+        form.append('<input type="hidden" name="x" value="'+x+'" />' +
+                    '<input type="hidden" name="y" value="'+y+'" />');
+        return form;
+    },
     getClickConfig      : function (event) {
-        var position = $.clickOffset(event),
+        var _VUC = this,
+            position = $.clickOffset(event),
             config = {
-            actions	: {
-                add_group : function () { if($('#create').length) { $('#create').click(); } }
-            },
-            position: position
+                actions	: {
+                    add_group : function () {
+                        _VUC.click = null;
+                        _VUC.getCreateGroupForm(event).dialog('open');
+                    }
+                },
+                position: position
         };
         return config;
     }
 };
-/*
+/**
+ *	A controller class that handles Group view GUI.
+ *	Accepts a VUController object instance and inherits it
+ *	using jQuery.extend()
+ */
+GroupController = function (VuController, options) {
+    this.options = {};
+	// inheriting Node class
+	var dummy = $.extend(true, VuController, this);
+	$.extend(true, this, dummy);
+	// set the options
+	$.extend(this.options, options || {});
+}
+GroupController.prototype = {
+    setEventHandlers    : function (el) {
+        if(el && el.DOMid) {
+            var _VUC = this,
+                $el = $('#'+el.DOMid);
+            if(el.hover && $.isFunction(el.hover)) {
+                $el.hover(
+                    function () {
+                        if(el.config.state.drag) { return; }
+                        else { el.hover.call(el, _VUC.ctx); }
+                    },
+                    function () {
+                        if(el.config.state.drag) { return; }
+                        else { el.unhover.call(el, _VUC.ctx); }
+                    }
+                );
+            }
+            // attach the event to all elements, no need to add children because of bubbling
+			$el.mousedown(function (e) {
+                var event = e;
+                if(_VUC.click) {
+                    // if this is a click on the context menu on a Discussion
+                    if(_VUC.click instanceof Discussion && $(event.target).parents('ul').length) {
+                        if($(event.target).parents('ul')[0].id === _VUC.menu[0].id) {
+                            _VUC.click = null;
+                            $(event.target).mousedown();
+                            if(event.which === 3) {
+                                $(this)[0].oncontextmenu = function () {
+                                    return false;
+                                }
+                            }
+                            return false;
+                        }
+                    } else {
+                        _VUC.click = null;
+                        _VUC.menu.close.call(_VUC.menu);
+                    }
+                }
+                $(this).mouseup(function () {
+                    event.stopPropagation();
+                    $(this).unbind('mouseup');
+                    if(el.click && $.isFunction(el.click)) {
+                        // if this is a right click > start rolling
+                        if(event.which === 3) {
+                            _VUC.click = el;
+                            _VUC.menu.pop.call(_VUC.menu, el.click.call(el, event), _VUC);
+                        }
+                        $(this)[0].oncontextmenu = function () {
+                            return false;
+                        }
+                    }
+                });
+			});
+        }
+    },
+    getCreateDiscussionForm : function  (event) {
+        // serves only as an alias for getCreateGroupForm
+        // does the exactly the same
+        return this.getCreateGroupForm.call(this, event);
+    },
+    getClickConfig          : function (event) {
+        var _VUC = this,
+            position = $.clickOffset(event),
+            config = {
+                actions	: {
+                    add_discussion : function () {
+                        _VUC.click = null;
+                        _VUC.getCreateDiscussionForm(event).dialog('open');
+                    }
+                },
+                position: position
+        };
+        return config;
+    }
+}
+
+/**
  *	A controller class that handles Discussions GUI.
  *	Accepts a VUController object instance and inherits it
  *	using jQuery.extend()
@@ -1226,6 +1389,60 @@ DiscussionController.prototype = {
 			});
 		}
 	},
+    setEventHandlers    : function (el) {
+        if(el && el.DOMid) {
+            var _DC = this,
+                $el = $('#'+el.DOMid);
+            if(el.hover && $.isFunction(el.hover)) {
+                $el.hover(
+                    function () {
+                        if(el.config.state.drag) { return; }
+                        else { el.hover.call(el, _DC.ctx); }
+                    },
+                    function () {
+                        if(el.config.state.drag) { return; }
+                        else { el.unhover.call(el, _DC.ctx); }
+                    }
+                );
+            }
+            // attach the event to all elements, no need to add children because of bubbling
+			$el.mousedown(function (e) {
+                var event = e;
+                if(_DC.click) {
+                    // if this is a click on the context menu on a Story
+                    if(_DC.click instanceof Story && $(event.target).parents('ul').length) {
+                        if($(event.target).parents('ul')[0].id === _DC.menu[0].id) {
+                            _DC.click = null;
+                            $(event.target).mousedown();
+                            if(event.which === 3) {
+                                $(this)[0].oncontextmenu = function () {
+                                    return false;
+                                }
+                            }
+                            return false;
+                        }
+                    } else {
+                        _DC.click = null;
+                        _DC.menu.close.call(_DC.menu);
+                    }
+                }
+                $(this).mouseup(function () {
+                    event.stopPropagation();
+                    $(this).unbind('mouseup');
+                    if(el.click && $.isFunction(el.click)) {
+                        // if this is a right click > start rolling
+                        if(event.which === 3) {
+                            _DC.click = el;
+                            _DC.menu.pop.call(_DC.menu, el.click.call(el, event), _DC);
+                        }
+                        $(this)[0].oncontextmenu = function () {
+                            return false;
+                        }
+                    }
+                });
+			});
+        }
+    },
     getClickConfig          : function (event) {
         var position = $.clickOffset(event),
             _DC = this,
@@ -1233,7 +1450,7 @@ DiscussionController.prototype = {
             actions	: {
                 add_story : function () {
                     _DC.click = null;
-                    $(_DC.getCreateStoryForm(event)).dialog('open');
+                    _DC.getCreateStoryForm(event).dialog('open');
                 }
             },
             position: position
@@ -1418,6 +1635,7 @@ FormController.prototype = {
 	        type		    : this.f_jq.attr('method') || 'POST',
 	        dont_post	    : false,
 	        data_type	    : 'text',
+            reset_after_send: true,
             callback        : null,
 	        editor		    : {}
 	    }, options || {});
@@ -1498,7 +1716,7 @@ FormController.prototype = {
 			data	: this_.f_jq.serialize(),
 			dataType: this_.options.data_type,
 			success	: function(response){
-				this_.after.call(this_, response);
+                this_.after.call(this_, response);
 			}
 		});
 	},
@@ -1518,8 +1736,12 @@ FormController.prototype = {
 	 * @return Object
 	 */
 	after				: function (response) {
-        if(this.options.callback && typeof this.options.callback == 'function') {
-			this.options.callback(response);
+        var o = this.options;
+        if(o.reset_after_send) {
+            this.f_html.reset();
+        }
+        if(o.callback && typeof o.callback == 'function') {
+			o.callback(response);
 		} else {
             alert(response);
 		}

@@ -23,32 +23,16 @@ def visualize(request, discussion_slug):
         user_in_group = user.groups.filter(id=group.group.id).count() > 0
     except:
         pass
-    #initializing the form
-    show_errors_in_form = False
-    story_form = StoryForm()
-    #saving new story
-    if request.POST:
-        story_form = StoryForm(request.POST)
-        if story_form.is_valid():
-            save_story_from_form(story_form, discussion, user)
-            story_form = StoryForm()
-        else:
-            show_errors_in_form = True
-    #adding beautiful css
-    for key in story_form.fields:
-        story_form.fields[key].widget.attrs["class"] = "text ui-widget-content ui-corner-all"
     speech_acts = SpeechAct.objects.filter(discussion_type=discussion.type)
     opinion_types = speech_acts.filter(story_type=2)
     last_related_update = str(discussion.last_related_update) # set an initial value for the update timestamp
     return render_to_response('discussion_home.html', locals())
-
 
 def evaluate(request, discussion_slug):
     discussion = get_object_or_404(Discussion, slug=discussion_slug)
     conclusions = discussion_actions.evaluate_stories(discussion)
     json = serializers.serialize('json', conclusions, ensure_ascii=False)
     return HttpResponse(json)
-
 
 def get_stories_json(request):
     """
@@ -65,6 +49,25 @@ def get_stories_json(request):
         result = HttpResponse(json)
     return result
 
+def add_discussion(request):
+    if request.POST:
+        discussion_form = DiscussionForm(request.POST)
+        if discussion_form.is_valid():
+            discussion = Discussion()
+            discussion.group = Group.objects.get(id=request.POST.get('group'))
+            discussion.type = DiscussionType.objects.get(id=request.POST.get('type'))
+            discussion.name = discussion_form.cleaned_data['name']
+            discussion.slug = slugify(discussion_form.cleaned_data['name'])
+            discussion.description = discussion_form.cleaned_data['description']
+            discussion.created_by = request.user
+            discussion.x = request.POST.get('x', None)
+            discussion.y = request.POST.get('y', None)
+            discussion.save()
+            return HttpResponse('reload')
+        else:
+            return HttpResponse('error')
+    else:
+        return HttpResponse('Wrong usage: HTTP POST expected')
 
 def add_base_story(request):
     #saving new story
@@ -83,7 +86,6 @@ def add_base_story(request):
     else:
         result = HttpResponse("Wrong usage: HTTP POST expected")
     return result
-
 
 def add_story(request, discussion, user, title, slug, speech_act):
 #    x = request.POST.get('x', None)
@@ -144,7 +146,6 @@ def add_relation(request, discussion, user, title, slug, speech_act):
     relation.save()
     return HttpResponse("reload")
 
-
 def get_stories_view_json(request, discussion_slug):
     discussion = Discussion.objects.get(slug=discussion_slug)
     stories = Story.objects.filter(discussion=discussion)
@@ -155,10 +156,12 @@ def get_stories_view_json(request, discussion_slug):
     json = ','
     for story in stories:
         is_conclusion = "true" if story.id in conclusions_map else "false"
-        json = '%s{"story":{"id":%s,"url":"%s","name":"%s","type":"%s","content":"%s","state":{"indicated":%s},"dimensions":{"x":%s,"y":%s,"w":%s,"h":%s}}},' % (json, story.id, story.get_absolute_url(), story.title, story.speech_act, story.content, is_conclusion, story.x, story.y, story.w, story.h)
+        children = story.get_children_js_array()
+        json = '%s{"story":{"id":%s,"url":"%s","name":"%s","type":"%s","content":"%s","state":{"indicated":%s},"dimensions":{"x":%s,"y":%s,"w":%s,"h":%s},"children":%s}},' % (json, story.id, story.get_absolute_url(), story.title, story.speech_act, story.content, is_conclusion, story.x, story.y, story.w, story.h, children)
     relations = StoryRelation.objects.filter(discussion=discussion)
     for relation in relations:
-        json = '%s{"relation":{"id":%s,"url":"%s","name":"%s","type":"%s","from_id":"%s","to_id":"%s"}},' % (json, relation.id, relation.get_absolute_url(), relation.title, relation.speech_act, relation.from_story.unique_id(), relation.to_story.unique_id())
+        children = relation.get_children_js_array()
+        json = '%s{"relation":{"id":%s,"url":"%s","name":"%s","type":"%s","from_id":"%s","to_id":"%s","children":%s}},' % (json, relation.id, relation.get_absolute_url(), relation.title, relation.speech_act, relation.from_story.unique_id(), relation.to_story.unique_id(), children)
     opinions = Opinion.objects.filter(discussion=discussion)
     for opinion in opinions:
         json = '%s{"opinion":{"id":%s,"url":"%s","name":"%s","type":"%s","parent_id":"%s"}},' % (json, opinion.id, opinion.get_absolute_url(), opinion.title, opinion.speech_act, opinion.parent_story.unique_id())
@@ -188,26 +191,6 @@ def status(request, discussion_slug):
             return HttpResponse(str(last_changed_client))
         except: # probably the last_changed value isn't in the right format
             return HttpResponse(str(last_changed_db))
-
-def save_story_from_form(story_form, discussion, user):
-    story = Story()
-    story.discussion = discussion
-    story.title = story_form.cleaned_data['title']
-    story.slug = story_form.cleaned_data['slug']
-    story.content = story_form.cleaned_data['content']
-    story.speech_act = story_form.cleaned_data['speech_act']
-    story.created_by = user
-    story.save()
-    return
-
-#def submit_story(request):
-#    story = Story(created_by=request.user)
-#    form = StoryForm(request.POST, instance=story)
-#    try:
-#        form.save()
-#    except ValueError:
-#        return render_to_response('write_story_miniform.html', {'form':form})
-#    return HttpResponse('OK')
 
 def discussions_list(request, group_slug):
     group = GroupProfile.objects.filter(slug=group_slug)

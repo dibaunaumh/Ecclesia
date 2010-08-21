@@ -37,10 +37,3 @@ fieldset{margin-bottom:10px;paddin:2px;border:none}
 #story_input-stories{}
 #story_input-submit{float:right}
 #story_input-types{}
-
-/* Context Menu */
-ul#vu-context-menu{display:none;position:absolute;list-style:none;width:115px;margin:0;padding:0;z-index:1000}
-ul#vu-context-menu li{list-style:none;margin:0;padding:0}
-ul#vu-context-menu li a, ul#vu-context-menu li a:link{display:block;padding:5px;border:2px solid #5B80B2;background-color:#eee;-moz-border-radius:3px;-webkit-border-radius:3px;border-radius:3px;font-weight:normal}
-ul#vu-context-menu li a:hover{font-weight:bold;border:2px outset #5B80B2}
-ul#vu-context-menu li a:active{border:2px inset #5B80B2;background-color:#ccc}

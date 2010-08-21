@@ -27,8 +27,8 @@ class Discussion(Presentable):
     group = models.ForeignKey(Group, editable=False, verbose_name=_('group'), related_name='discussions', help_text=_("The group profile containing this discussion."))
     name = models.CharField(_('name'), max_length=50, help_text=_('The name of the discussion.'))
     slug = models.SlugField(_('slug'), unique=True, blank=False, help_text=_("The url representation of the discussion's name. No whitespaces allowed - use hyphen/underscore to separate words"))
-    type = models.ForeignKey(DiscussionType, verbose_name=_('discussion type'), related_name='objects', help_text=_("The discussion's type."))
-    description = models.CharField(_('short description'), max_length=500, null=True, blank=True, help_text=_('A short description of the discussion.'))
+    type = models.ForeignKey(DiscussionType, verbose_name=_('discussion type'), related_name='discussions', help_text=_("The discussion's type."))
+    description = models.TextField(_('short description'), max_length=500, null=True, blank=True, help_text=_('A short description of the discussion.'))
     # no nesting on this release...
 	#parent = models.ForeignKey('self', verbose_name=_('parent'), related_name='children', null=True, blank=True, help_text=_('The parent discussion containing this discussion.'))
     # keeping it simple...
@@ -54,7 +54,7 @@ class SpeechAct(models.Model):
     discussion_type = models.ForeignKey(DiscussionType, verbose_name=_('discussion type'), related_name='speech_acts', help_text=_('The type of discussion that allows this speech act.'))
     story_type = models.IntegerField(_('story type'), default=1, choices=((1,_('story')),(2,_('opinion')),(3,_('relation'))))
     ordinal = models.IntegerField(_('DOM ordinal'), default=0, help_text=_('Order of appearance of this speech act in the DOM.'))
-#    icon = models.ImageField(_('icon'), max_length=25, upload_to='img/speech_act_icons', help_text=_('The name of the image file.'))
+    icon = models.ImageField(_('icon'), max_length=25, upload_to='img/speech_act_icons', null=True, blank=True, help_text=_('The name of the image file.'))
 
     def __unicode__(self):
         return self.name
@@ -70,6 +70,16 @@ class BaseStory(Presentable):
 	
     class Meta:
         abstract = True
+
+    def get_children(self):
+        return self.opinions.all()
+
+    def get_children_js_array(self):
+        children = self.get_children()
+        if len(children):
+            return '["%s"]' % '","'.join([child.unique_id() for child in children])
+        else:
+            return '[]'
 
 
 class Opinion(BaseStory):

@@ -17,8 +17,8 @@
             last_changed        : '{{ last_related_update }}',
             discussion_type     : {{ discussion.type.id }}
         };
-        VUC = new VUController({});
-        DC	= new DiscussionController(VUC, config);
+        var VUC = new VUController({});
+        var DC	= new DiscussionController(VUC, config);
         DC.init();
         $(document).ready(function () {
             $('button').filter('.ekkli-button').hover(
