@@ -45,14 +45,14 @@
 					{% ifequal user_permission_type 1 %}
 						<td>
 							<form action="/story-delete/{{obj.pk}}/" method="post">
-						        <input type="image" onclick="if(confirm('Are you sure you want to delete story?')) {this.form.submit();} else { return false; }" src="/static/icons/delete.png">Delete Story</input>
+						        <input type="image" onclick="if(confirm('Are you sure you want to delete story?')) {this.form.submit();} else { return false; }" src="/static/img/icons/delete.png">Delete Story</input>
 						    </form>
 						</td>
 					{% else %}
 						{% ifequal user obj.created_by %}
 							<td>
 								<form action="/story-delete/{{obj.pk}}/" method="post">
-							        <input type="image" onclick="if(confirm('Are you sure you want to delete story?')) {this.form.submit();} else { return false; }" src="/static/icons/delete.png">Delete Story</input>
+							        <input type="image" onclick="if(confirm('Are you sure you want to delete story?')) {this.form.submit();} else { return false; }" src="/static/img/icons/delete.png">Delete Story</input>
 							    </form>
 							</td>
 						{% endifequal %}

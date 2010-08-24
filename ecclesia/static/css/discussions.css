@@ -33,7 +33,7 @@ a.member img {width: 50px; height: 50px; margin: 2px; border: 1px solid #933}
 /*fieldset{padding:2px;border:1px solid #5B80B2}*/
 fieldset{margin-bottom:10px;paddin:2px;border:none}
 .story_input-title{position:relative}
-.story_input-title textarea{width:99%;height:51px}
+.story_input-title input{width:99%;}
 #story_input-stories{}
 #story_input-submit{float:right}
 #story_input-types{}

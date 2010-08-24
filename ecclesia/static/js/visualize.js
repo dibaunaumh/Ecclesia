@@ -307,7 +307,7 @@ Story.prototype = {
 		if (! $('a.story_content', el).length && c.content && c.content !== '') {
 			el.append('<a href="#" class="story_content" title="' + c.content + '"></a>');
 			// TODO: replace this tooltip plugin with jQueryUI-1.9's tooltip
-			$('a.story_content', el).tooltip({showURL: false, extraClass: "fancy"});
+			$('a.story_content', el).tooltip({showURL: false});
 		}
         this.wrapTitle(el);
 		this.roundedRect(ctx, dims.x, dims.y, dims.w*s, dims.h*s, 5, c['fill_'+state], c['stroke_'+state]);
@@ -1800,7 +1800,7 @@ CreateRelationFormController = function (BaseFormController, options) {
     $.extend(true, this, BaseFormController, this);
 
     this.clean_container = $('.'+this.options.clean_title_container_class, this.f_jq);
-    this.title_field = $('textarea[name=title]', this.f_jq);
+    this.title_field = $('input[name=title]', this.f_jq);
 
     // initialize
     this.setCleanTitle().bindChange();
@@ -1836,7 +1836,7 @@ CreateOpinionFormController = function (BaseFormController, options) {
     $.extend(true, this, BaseFormController, this);
 
     this.clean_container = $('.'+this.options.clean_title_container_class, this.f_jq);
-    this.title_field = $('textarea[name=title]', this.f_jq);
+    this.title_field = $('input[name=title]', this.f_jq);
 
     // initialize
     this.setCleanTitle().bindChange();
