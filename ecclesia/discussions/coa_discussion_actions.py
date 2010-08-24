@@ -1,6 +1,7 @@
 import template_factory
 import networkx as nx
 from django.db.models import get_model
+import sys
 
 TEMPLATE_NAME = "course-of-action"
 COA_SPEECH_ACT = "course_of_action"
@@ -27,55 +28,12 @@ def evaluate_stories(discussion):
     GOOD_EVAL(story, path) = |Good opinions| - |Bad opinions|
     """
     conclusions = []    # list of (story_id, score) tuples
-
     stories = {}
-    evals = {}
-    types = {}
-    coa_stories = []
-    scores = {}
 
-    # step 1: Evaluate each node & add to graph
-
-    graph = nx.DiGraph()
-
-    # step 1.1: loop over the relation of the discussion
-    StoryRelation = get_model('discussions', 'StoryRelation')
-    for rel in StoryRelation.objects.filter(discussion=discussion):
-        # step 1.2: call eval_story for every node in a relation
-        f = rel.from_story
-        stories[f.id] = f
-        evals[f.id] = evaluate_story(f, discussion)
-        types[f.id] = f.speech_act.name
-        if f.speech_act.name == COA_SPEECH_ACT and f.id not in coa_stories:
-            coa_stories.append(f.id)
-        t = rel.to_story
-        stories[t.id] = t
-        evals[t.id] = evaluate_story(t, discussion)
-        types[t.id] = t.speech_act.name
-
-        # step 1.3: add the relation & its evaluated stories to a graph structure
-        graph.add_edge(f.id, t.id)
-        
-
-    # step 2: Evaluate the graph
-
-    # step 2.1: go over the list of CoA nodes & create a list paths starting from this CoA
-    for coa in coa_stories:
-        paths = paths_starting_in(graph, coa)
-        score = 0
-        for p in paths:
-            # step 2.2: calculate the aggregated evaluation of the nodes in the path
-            path_eval = sum([evals[s] for s in p])
-            # step 2.3: check whether it ends in a Goal
-            ends_in_goal = types[p[-1]] == GOAL_SPEECH_ACT
-            if not ends_in_goal:
-                path_eval = path_eval * PENALTY_FOR_NOT_ENDING_IN_GOAL
-            score = score + path_eval
-        scores[coa] = score
-
+    scores = evaluate_discussion_stories(discussion, stories)
 
     # step 3: Pick the outstanding CoA nodes (use simple StdDev calculation)
-    
+
     for coa in pick_outstanding_scores(scores):
         print "Found conclusion: %s" % stories[coa]
         conclusions.append( (coa, int(scores[coa])) )
@@ -99,23 +57,73 @@ def evaluate_stories(discussion):
     return conclusions
 
 
+def evaluate_discussion_stories(discussion, stories):
+    scores = {}
+    evals = {}
+    types = {}
+    coa_stories = []
+
+    # step 1: Evaluate each node & add to graph
+
+    graph = nx.DiGraph()
+
+    # step 1.1: loop over the relation of the discussion
+    StoryRelation = get_model('discussions', 'StoryRelation')
+    for rel in StoryRelation.objects.filter(discussion=discussion):
+        # step 1.2: call eval_story for every node in a relation
+        f = rel.from_story
+        stories[f.id] = f
+        evals[f.id] = evaluate_story(f, discussion)
+        types[f.id] = f.speech_act.name
+        if f.speech_act.name == COA_SPEECH_ACT and f.id not in coa_stories:
+            coa_stories.append(f.id)
+        t = rel.to_story
+        stories[t.id] = t
+        evals[t.id] = evaluate_story(t, discussion)
+        types[t.id] = t.speech_act.name
+
+        # step 1.3: add the relation & its evaluated stories to a graph structure
+        graph.add_edge(f.id, t.id)
+
+    # step 2: Evaluate the graph
+
+    # step 2.1: go over the list of CoA nodes & create a list paths starting from this CoA
+    for coa in coa_stories:
+        paths = paths_starting_in(graph, coa)
+        score = 0
+        for p in paths:
+            # step 2.2: calculate the aggregated evaluation of the nodes in the path
+            path_eval = sum([evals[s] for s in p])
+            # step 2.3: check whether it ends in a Goal
+            ends_in_goal = types[p[-1]] == GOAL_SPEECH_ACT
+            if not ends_in_goal:
+                path_eval = path_eval * PENALTY_FOR_NOT_ENDING_IN_GOAL
+            score = score + path_eval
+        scores[coa] = score
+
+    return scores
+    
 
 def evaluate_story(story, discussion):
-    score = evaluate_truth(story, discussion) * evaluate_goodness(story, discussion)
-    return score
-    
+    try:
+        score = evaluate_truth(story, discussion) * evaluate_goodness(story, discussion)
+        return score
+    except:
+        print sys.exc_info()[1]
+        pass
+    return 1
 
 def evaluate_truth(story, discussion):
     Opinion = get_model('discussions', 'Opinion')
-    true_count = Opinion.objects.filter(discussion=discussion, parent_story=story, speech_act__name=TRUE_SPEECH_ACT).count()
-    false_count = Opinion.objects.filter(discussion=discussion, parent_story=story, speech_act__name=FALSE_SPEECH_ACT).count()
+    true_count = Opinion.objects.filter(discussion=discussion, object_id=story.id, speech_act__name=TRUE_SPEECH_ACT).count()
+    false_count = Opinion.objects.filter(discussion=discussion, object_id=story.id, speech_act__name=FALSE_SPEECH_ACT).count()
     return 1 or true_count - false_count
 
 
 def evaluate_goodness(story, discussion):
     Opinion = get_model('discussions', 'Opinion')
-    good_count = Opinion.objects.filter(discussion=discussion, parent_story=story, speech_act__name=GOOD_SPEECH_ACT).count()
-    bad_count = Opinion.objects.filter(discussion=discussion, parent_story=story, speech_act__name=BAD_SPEECH_ACT).count()
+    good_count = Opinion.objects.filter(discussion=discussion, object_id=story.id, speech_act__name=GOOD_SPEECH_ACT).count()
+    bad_count = Opinion.objects.filter(discussion=discussion, object_id=story.id, speech_act__name=BAD_SPEECH_ACT).count()
     return 1 or good_count - bad_count
 
 

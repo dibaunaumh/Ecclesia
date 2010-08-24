@@ -1,15 +1,14 @@
 from ecclesia.groups.models import GroupProfile, GroupPermission, MissionStatement
-from ecclesia.discussions.forms import StoryForm
 from ecclesia.discussions.models import *
 from ecclesia.notifications.models import Notification
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import Group
 from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponse, Http404, HttpResponseRedirect
-from django import forms
 from forms import *
 from services.search_filter_pagination import search_filter_paginate
 from django.core import serializers
 from django.template.defaultfilters import slugify
+from django.utils import simplejson
 import datetime
 import discussion_actions
 
@@ -30,8 +29,8 @@ def visualize(request, discussion_slug):
 
 def evaluate(request, discussion_slug):
     discussion = get_object_or_404(Discussion, slug=discussion_slug)
-    conclusions = discussion_actions.evaluate_stories(discussion)
-    json = serializers.serialize('json', conclusions, ensure_ascii=False)
+    conclusions = discussion_actions.evaluate_stories_verbose(discussion)
+    json = simplejson.dumps(conclusions)
     return HttpResponse(json)
 
 def get_stories_json(request):
