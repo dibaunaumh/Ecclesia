@@ -13,10 +13,10 @@ import os
 
 base_dir = os.path.abspath(os.path.dirname(__file__))
 
-DATABASE_ENGINE = 'sqlite3'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-DATABASE_NAME = '%s/db/ecclesia.db' % base_dir # Or path to database file if using sqlite3.
-DATABASE_USER = ''             # Not used with sqlite3.
-DATABASE_PASSWORD = ''         # Not used with sqlite3.
+DATABASE_ENGINE = 'postgresql_psycopg2'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+DATABASE_NAME = 'ekkli' 				# Or path to database file if using sqlite3.
+DATABASE_USER = 'postgres'             # Not used with sqlite3.
+DATABASE_PASSWORD = 'ekkli'         # Not used with sqlite3.
 DATABASE_HOST = ''             # Set to empty string for localhost. Not used with sqlite3.
 DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
 
@@ -83,7 +83,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.csrf.middleware.CsrfMiddleware',
+#    'django.contrib.csrf.middleware.CsrfMiddleware',
 #    'django.middleware.locale.LocaleMiddleware'
     'privatebeta.middleware.PrivateBetaMiddleware',
 )
