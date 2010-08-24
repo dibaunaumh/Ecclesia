@@ -10,6 +10,7 @@
 #goal_container{}
 #possible_result_container{border-right: 1px solid #5B80B2}
 #vuslider {float:right}
+#tooltip {width:500px;}
 div.relation {display:none}
 div.opinion {display:none}
 
@@ -18,8 +19,7 @@ div.opinion {display:none}
 div.story {position: absolute; margin: 0; padding: 0; font-weight: bold; cursor: move}
 div.story a.story_title {display: block; float: left; padding: 2px; color: #000; overflow: hidden}
 div.story a.story_title:hover {color: #033; text-decoration: underline}
-div.story a.story_content {position: relative; height: 15px; width: 15px; left: 3px; bottom: 3px}
-
+div.story a.story_content {position: absolute; left: 0; bottom: 0; height: 32px; width: 32px; background:url('../img/icons/tool_tip_icon.gif') center center no-repeat;}
 .dragon { border: thin solid #033;opacity:.6; -moz-opacity:.6}
 .selecton { border: 2px solid #033 }
 a.member img {width: 50px; height: 50px; margin: 2px; border: 1px solid #933}

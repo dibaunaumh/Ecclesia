@@ -6,9 +6,12 @@
 {% block coltype %}diagram{% endblock %}
 {% block extrastyle %}
     <link rel="stylesheet" type="text/css" href="/static/css/discussions.css" />
+	<link rel="stylesheet" type="text/css" href="http://dev.jquery.com/view/trunk/plugins/tooltip/jquery.tooltip.css" />
 {% endblock %}
 {% block extrahead %}
-    <script>
+	<script src="http://dev.jquery.com/view/trunk/plugins/tooltip/jquery.tooltip.js"></script>
+
+	<script>
         var config = {
             canvas_id	        : 'storysvu',
             data_url	        : '/discussions/get_stories_view_json/{{ discussion.slug }}',

@@ -107,10 +107,11 @@ Node.prototype = {
 		}
 	},
     wrapTitle   : function (container) {
-        var container_w = container.width();
-        var title_padding = parseInt(container.children('a').css('padding-right'))
-                            + parseInt(container.children('a').css('padding-left'));
-        container.children('a').width(container_w - title_padding - 2);
+        var container_w = container.width(),
+			titles = container.children('a.story_title,a.disc_title,a.group_title'),
+        	title_padding = parseInt(titles.css('padding-right'))
+                            + parseInt(titles.css('padding-left'));
+        titles.width(container_w - title_padding - 2);
     },
     roundedRect	: function (ctx,x,y,width,height,radius,fill_color,stroke_color){
 		ctx.save();
@@ -300,10 +301,14 @@ Story.prototype = {
 			s = c.scale,
 			el = $('#'+this.DOMid).height(dims.h*s+'px').width(dims.w*s+'px'),
             state = 'normal';
-		//if((c.content) && (c.content != '')) { el.append('<div><a title=' + c.content + ' class="story_content"><img src="/static/icons/tool_tip_icon.gif"/></a></div>')}
-        if(c.state.indicated) { state = 'normal_indicated'; }
-        if(c.state.hover) { state = c.state.indicated ? 'hover_indicated' : 'hover'; }
-        if(c.state.click) { state = 'click'; }
+        if (c.state.indicated) { state = 'normal_indicated'; }
+        if (c.state.hover) { state = c.state.indicated ? 'hover_indicated' : 'hover'; }
+        if (c.state.click) { state = 'click'; }
+		if (! $('a.story_content', el).length && c.content && c.content !== '') {
+			el.append('<a href="#" class="story_content" title="' + c.content + '"></a>');
+			// TODO: replace this tooltip plugin with jQueryUI-1.9's tooltip
+			$('a.story_content', el).tooltip({showURL: false, extraClass: "fancy"});
+		}
         this.wrapTitle(el);
 		this.roundedRect(ctx, dims.x, dims.y, dims.w*s, dims.h*s, 5, c['fill_'+state], c['stroke_'+state]);
 	},
