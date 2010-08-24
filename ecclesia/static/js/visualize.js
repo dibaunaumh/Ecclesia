@@ -1160,7 +1160,7 @@ VUController.prototype = {
 	zoom				: function (event, ui) {
 		this.options.scale = ui.value;
         // resize titles
-		$('#'+this.options.container_id).animate( { fontSize: 18*ui.value+'px' }, 'fast');
+		$('#'+this.options.container_id).animate( { fontSize: 16*ui.value+'px' }, 'fast');
 		this.init('reload');
 	},
     getCreateGroupForm  : function  (event) {
