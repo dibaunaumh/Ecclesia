@@ -61,8 +61,8 @@ class SpeechAct(models.Model):
 
 
 class BaseStory(Presentable):
-    title = models.CharField(_('title'), max_length=50, blank=True, null=False, help_text=_('A title for this story.'))
-    slug = models.SlugField(_('slug'), max_length=50, blank=False, help_text=_("The url representation of the story's title. No whitespaces allowed - use hyphen/underscore to separate words"))
+    title = models.CharField(_('title'), max_length=500, blank=True, null=False, help_text=_('A title for this story.'))
+    slug = models.SlugField(_('slug'), max_length=500, blank=False, help_text=_("The url representation of the story's title. No whitespaces allowed - use hyphen/underscore to separate words"))
     content = models.TextField(_('content'), help_text=_("The user content"))
     created_at = models.DateTimeField(_('created at'), auto_now_add=True, help_text=_('When the speech act was made.'))
     updated_at = models.DateTimeField(_('updated at'), auto_now=True, help_text=_('When the speech act was last updated.'))
