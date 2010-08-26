@@ -1,5 +1,0 @@
-{% autoescape off %}{"goal": {"id": {{ goal.id }}, "name": "{{ goal.name }}","short_description": "{{ goal.short_description }}", "storiesURL":"/goal/{{ goal.id }}/stories/" },     
-              "actions": [{{ actions_list }}],
-              "results": [{{ results_list }}],
-              "a2r": [{{ causing_relations_list }}],
-              "r2g": [{{ leading_relations_list }}]  }{% endautoescape %}
