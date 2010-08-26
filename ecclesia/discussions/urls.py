@@ -16,4 +16,5 @@ urlpatterns = patterns('',
     (r'^(?P<discussion_slug>.*)/(?P<ctype>relation)/(?P<slug>.*)/$', 'ecclesia.discussions.views.story_home'),
     (r'^merge_stories/(?P<story1_slug>.*)/(?P<story2_slug>.*)$', 'ecclesia.discussions.views.merge_stories'),
     (r'^status/(?P<discussion_slug>.*)$', 'ecclesia.discussions.views.status'),
+    (r'^get_stories_json_by_speechact/(?P<discussion_pk>\d+)/(?P<speech_act>.*)/$','ecclesia.discussions.views.get_inline_select_json'),    
 )

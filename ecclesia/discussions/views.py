@@ -268,6 +268,31 @@ def get_inline_field(request):
         mission_statement.save()
         return HttpResponse("%s" % mission_statement.mission_statement)
 
+def get_inline_select_field(request,relation_id,direction):
+    story_relation = StoryRelation.objects.get(pk=relation_id)
+    story_id = request.POST['value']
+    story = Story.objects.get(pk = story_id)
+    if direction == 'from':
+        story_relation.from_story = story
+    elif direction == 'to':
+        story_relation.to_story = story
+
+    story_relation.save()
+    return HttpResponse("%s" % story.title)
+
+def get_inline_select_json(request, discussion_pk, speech_act):
+    result = []
+    try:
+        stories = Story.objects.filter(discussion = discussion_pk, speech_act__name = speech_act )
+        result =  "{%s}" % ','.join(['"%s":"%s"' % (story.id,story.title) for story in stories])
+
+    except:
+        print sys.exc_info()
+    #Return the response back
+    return HttpResponse("%s"% result)
+
+   # json = simplejson.dumps(['{"%s":"%s"}' % (story.id, story.title) for story in stories])
+
 def check_if_user_in_group(user, discussion):
     user_in_group = False
     try:

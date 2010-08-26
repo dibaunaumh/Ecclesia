@@ -13,6 +13,18 @@
 	        width   : 150
 	    });
 	    $('#opinions').accordion().removeClass('hide');
+
+        $('.editable_select_json').each(function () {
+            var span = $(this),
+                speech_act = span.attr('speech_act'),
+                direction = span.attr('direction');
+            span.editable('/edit_inline_select_field/{{object.pk}}/' + direction +'/', {
+                width   : 150,
+                loadurl : '/discussions/get_stories_json_by_speechact/{{ discussion.pk }}/' + speech_act +'/',
+                type   : 'select',
+                submit : 'OK'
+            });
+        });
 	});
 </script>
 {% endblock %}
@@ -23,7 +35,7 @@
     <div>
         <h3>By: {{ object.created_by }}, at: {{ object.created_at }}</h3>
         {% if object.from_story and object.to_story %}
-        <h3>From: {{ object.from_story }}, To: {{ object.to_story }}</h3>
+        <h3>From: <strong class="editable_select_json" direction="from" speech_act="{{ object.from_story.speech_act }}">{{ object.from_story }}</strong>, To: <strong class="editable_select_json" direction="to" speech_act="{{ object.to_story.speech_act }}">{{ object.to_story }}</strong></h3>
         {% endif %}
     </div>
     <hr/>
