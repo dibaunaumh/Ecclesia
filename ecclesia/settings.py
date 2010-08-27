@@ -83,7 +83,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-#    'django.contrib.csrf.middleware.CsrfMiddleware',
+    'django.contrib.csrf.middleware.CsrfMiddleware',
 #    'django.middleware.locale.LocaleMiddleware'
     'privatebeta.middleware.PrivateBetaMiddleware',
 )
@@ -96,7 +96,6 @@ TEMPLATE_DIRS = (
     # Don't forget to use absolute paths, not relative paths.
     '%s/templates' % base_dir,
     '%s/groups/templates' % base_dir,
-    '%s/goals/templates' % base_dir,
 )
 
 INSTALLED_APPS = (
@@ -108,7 +107,6 @@ INSTALLED_APPS = (
     'south',
     'registration',
     'groups',
-    'goals',
     'discussions',
     'operations',
     'common',
