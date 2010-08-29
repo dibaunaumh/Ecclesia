@@ -56,7 +56,9 @@
 {% block content %}
 <div id="buttons_container">
 	<input type="button" class="ui-button ui-state-default ui-corner-all" value="{% trans 'Stories List' %}" onclick="document.location.href='/stories_list/{{discussion.slug}}/'" />
+    {% if not user_follows_discussion %}
     <input type="button" class="ui-button ui-state-default ui-corner-all" id="follow_button" value="{% trans 'Follow' %}" />
+    {% endif %}
 </div>
 
 <h2>

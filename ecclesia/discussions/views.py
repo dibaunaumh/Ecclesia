@@ -23,6 +23,7 @@ def visualize(request, discussion_slug):
         user_in_group = user.groups.filter(id=group.group.id).count() > 0
     except:
         pass
+    user_follows_discussion = True if Subscription.objects.filter(user=user, discussion=discussion) else False
     speech_acts = SpeechAct.objects.filter(discussion_type=discussion.type)
     opinion_types = speech_acts.filter(story_type=2)
     last_related_update = str(discussion.last_related_update) # set an initial value for the update timestamp
