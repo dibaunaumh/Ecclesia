@@ -19,7 +19,7 @@ class Subscription(models.Model):
     """
     Users' subscriptions to get notifictions on objects (follow)
     """
-    user = models.ForeignKey(User, verbose_name=_('user'), null=False, blank=False, help_text=_('The subscribed user.'))
+    user = models.ForeignKey(User, verbose_name=_('user'), related_name='subscriptions', null=False, blank=False, help_text=_('The subscribed user.'))
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
     followed_object = generic.GenericForeignKey('content_type', 'object_id')
