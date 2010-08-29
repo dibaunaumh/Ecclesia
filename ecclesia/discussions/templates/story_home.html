@@ -10,7 +10,11 @@
 <script>
 	$(document).ready(function() {
 	    $('.edit').editable('/edit_inline/', {
-	        width   : 150
+			height	: 150,
+	        width   : 500,
+			type   : 'textarea',
+			cancel    : 'Cancel',
+         	submit    : 'OK',
 	    });
 	    $('#opinions').accordion().removeClass('hide');
 
