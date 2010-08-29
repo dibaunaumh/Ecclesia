@@ -18,7 +18,7 @@
             var span = $(this),
                 speech_act = span.attr('speech_act'),
                 direction = span.attr('direction');
-            span.editable('/edit_inline_select_field/{{object.pk}}/' + direction +'/', {
+            span.editable('/discussions/edit_inline_select_field/{{object.pk}}/' + direction +'/', {
                 width   : 150,
                 loadurl : '/discussions/get_stories_json_by_speechact/{{ discussion.pk }}/' + speech_act +'/',
                 type   : 'select',

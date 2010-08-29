@@ -26,7 +26,7 @@ class MemberAdditionalProfileForm(forms.ModelForm):
 class GroupProfileForm(forms.ModelForm):
     class Meta:
         model = GroupProfile
-        exclude = ('x_pos', 'y_pos', 'width', 'height', 'group', 'parent', 'forked_from', 'location')
+        exclude = ('slug', 'x_pos', 'y_pos', 'width', 'height', 'group', 'parent', 'forked_from', 'location')
 
 class MissionStatementForm(forms.ModelForm):
     class Meta:

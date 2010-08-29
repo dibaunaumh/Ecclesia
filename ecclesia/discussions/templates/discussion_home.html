@@ -32,12 +32,31 @@
                     $(this).removeClass('ui-state-hover');
                 }
             );
+            $('#follow_button').click(function () {
+                var $this = $(this).attr('disabled', 'disabled');
+                $.ajax({
+                    url : '/discussions/follow/{{ discussion.slug }}/',
+                    type: 'post',
+                    data: {},
+                    success: function (response) {
+                        if (response && response === 'success') {
+                            $this.val('{% trans 'Following!' %}').fadeOut('slow');
+                        } else {
+                            alert('didn\'t work');
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        $this.removeAttr('disabled');
+                    }
+                });
+            });
         });
     </script>
 {% endblock %}
 {% block content %}
 <div id="buttons_container">
-	<input type="button" value="{% trans 'Stories List' %}" onclick="document.location.href='/stories_list/{{discussion.slug}}/'"/>
+	<input type="button" class="ui-button ui-state-default ui-corner-all" value="{% trans 'Stories List' %}" onclick="document.location.href='/stories_list/{{discussion.slug}}/'" />
+    <input type="button" class="ui-button ui-state-default ui-corner-all" id="follow_button" value="{% trans 'Follow' %}" />
 </div>
 
 <h2>

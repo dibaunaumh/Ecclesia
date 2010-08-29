@@ -34,7 +34,8 @@
 <div id="canvasContainer"></div>
 <div id="create_dialog" style="display:none" title="Create new Group">
 	<form method="POST" action="/groups/add_group/" id="create_form">
-	{{ group_form.as_p }}
+	    <label>{% trans 'Group name' %}: </label><input type="text" name="group_name" /> 
+		{{ group_form.as_p }}
 	</form>
 </div>
 

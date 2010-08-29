@@ -295,6 +295,17 @@ Story.prototype = {
 		$(id_selector).css('left', dims.x+'px')
 					  .css('top', dims.y+'px');
 	},
+    setIcon     : function (viewMetaData) {
+        var c = this.config;
+        $.each(viewMetaData, function (i, item) {
+            var f = item.fields;
+            if ( f.story_type == 1 && f.name === c.type) {
+                c.icon = f.icon;
+                return false; // break;
+            }
+        });
+        return this;
+    },
 	draw		: function (ctx) {
 		var c = this.config,
             dims = c.dimensions,
@@ -311,6 +322,13 @@ Story.prototype = {
 		}
         this.wrapTitle(el);
 		this.roundedRect(ctx, dims.x, dims.y, dims.w*s, dims.h*s, 5, c['fill_'+state], c['stroke_'+state]);
+        try {
+            var img = new Image(), w = 32, h = 32;
+            img.src = '/static/' + c.icon;
+            $(img).load(function () {
+                ctx.drawImage(img, dims.x+dims.w*s-w, dims.y+dims.h*s-h, w, h);
+            });
+        } catch(e) {}
 	},
     hover       : function (ctx) {
         this.config.state.hover = true;
@@ -804,17 +822,17 @@ VUController.prototype = {
 				// iterate over the elements and create the GUI
 				$.each(this.elems, function (id, el) {
 					// appending a div for each element to the canvas container
-					_VUC.addElement(el);
+					_VUC.addElement(el)
 					// position the element inside the container
-					_VUC.position(el);
+					    .position(el)
 					// set it as draggable
-					_VUC.setDraggable(el);
+					    .setDraggable(el)
                     // set other event handlers
-                    _VUC.setEventHandlers(el);
+                        .setEventHandlers(el);
 				});
-				this.draw();
+				this.draw()
                 // position nodes' titles in their middle
-                this.positionTitles();
+                    .positionTitles();
                 // initialize the visualization updater
                 this.timeoutID = setTimeout($.bindFn(this, this.updateView), this.options.update_timeout);
 			} else {
@@ -859,14 +877,14 @@ VUController.prototype = {
     updateDB	: function () {
 		var _VUC = this;
 		this.data = this.drag.serialize();
-		$.ajax({
-			type		: "POST",
-			url			: _VUC.options.update_db_url,
-			data		: _VUC.data,
-			success		: function (response){
-				_VUC.options.last_changed = response;
-			}
-		});
+        $.ajax({
+            type		: "POST",
+            url			: _VUC.options.update_db_url,
+            data		: _VUC.data,
+            success		: function (response){
+                _VUC.options.last_changed = response;
+            }
+        });
 	},
     drawCanvasBg        : function (drawContent) {
         var _VUC = this,
@@ -986,6 +1004,9 @@ VUController.prototype = {
 					case 'opinion':
 						node = new Opinion(node, conf);
 						break;
+                    default:
+                        // data is corrupted, reload
+                        return _VUC.init.call(_VUC, false);
 				}
 				var c = node.config;
                 var id = c.alias+'_'+c.id;
@@ -1001,7 +1022,8 @@ VUController.prototype = {
 				}
 			});
 		});
-		this.setElementsRelations();
+        // create references for relations between them
+        this.setElementsRelations();
 	},
     addElement			: function (el) {
         // add an element to the DOM
@@ -1015,6 +1037,7 @@ VUController.prototype = {
 				_VUC.addElement(el);
 			});
 		}
+        return this;
 	},
     setElementsRelations: function () {
 		var _VUC = this,children_refs_obj;
@@ -1040,7 +1063,7 @@ VUController.prototype = {
 		// set a specific element as draggable
 		if(el) {
 			if(el.DOMid) {
-				$('#'+el.DOMid).draggable({
+				$('#'+el.DOMid).draggable('destroy').draggable({
 					containment: 'parent',
 					start: function (e, ui) {
 						el.config.state.drag = true;
@@ -1063,7 +1086,24 @@ VUController.prototype = {
 				_VUC.setDraggable(el);
 			});
 		}
+        return this;
 	},
+    unsetDraggable		: function (el) {
+        var _VUC = this;
+		// unset a specific element's draggable state
+		if(el) {
+            if(el.DOMid) {
+				$('#'+el.DOMid).draggable('destroy');
+            }
+        }
+        // unset all the elements' draggable state
+		else {
+			$.each(this.elems, function (id, el) {
+				_VUC.unsetDraggable(el);
+			});
+		}
+        return this;
+    },
     setEventHandlers    : function (el) {
         if(el && el.DOMid) {
             var _VUC = this,
@@ -1122,6 +1162,7 @@ VUController.prototype = {
 		if(el.position && $.isFunction(el.position)) {
 			el.position.call(el);
 		}
+        return this;
 	},
 	draw				: function (isGrip) {
 		var _VUC = this;
@@ -1307,6 +1348,7 @@ DiscussionController.prototype = {
 	},
 	getVisualizationMetaData: function () {
 		var _DC = this;
+//        this.unsetDraggable();
 		$.getJSON(this.options.meta_url, {discussion_type:this.options.discussion_type}, function (json) {
             // apply the received data
             _DC.metaData = json;
@@ -1384,7 +1426,8 @@ DiscussionController.prototype = {
         // add an element to the DOM
 		if(el) {
 			if(el instanceof Opinion) { el.container.call(el).addToDOM.call(el); }
-								 else { el.addToDOM.call(el, this.options.container_id); }
+            if(el instanceof Story) { el.setIcon.call(el, this.metaData).addToDOM.call(el, this.options.container_id); }
+            else if (el.addToDOM && $.isFunction(el.addToDOM)) { el.addToDOM.call(el, this.options.container_id); }
 		}
 		// add all elements to the DOM
 		else {
@@ -1393,6 +1436,7 @@ DiscussionController.prototype = {
 				_DC.addElement(el);
 			});
 		}
+        return this;
 	},
     setEventHandlers    : function (el) {
         if(el && el.DOMid) {

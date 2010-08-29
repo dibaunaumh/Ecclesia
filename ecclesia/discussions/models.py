@@ -5,7 +5,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import gettext_lazy as _
 import datetime
 from discussion_actions import evaluate_stories
-from common.models import Presentable
+from common.models import Presentable, Subscription
 from common.utils import get_domain
 
 
@@ -36,6 +36,7 @@ class Discussion(Presentable):
     created_by = models.ForeignKey(User, editable=False, verbose_name=_('created by'), null=True, blank=True, help_text=_('The user that created the discussion.'))
     created_at = models.DateTimeField(_('created at'), auto_now_add=True, help_text=_('When was the discussion created.'))
     updated_at = models.DateTimeField(_('updated at'), auto_now=True, help_text=_('When was the discussion last updated.'))
+    subscriptions = generic.GenericRelation(Subscription)
 
     class Meta:
         verbose_name = _('discussion')
@@ -54,7 +55,7 @@ class SpeechAct(models.Model):
     discussion_type = models.ForeignKey(DiscussionType, verbose_name=_('discussion type'), related_name='speech_acts', help_text=_('The type of discussion that allows this speech act.'))
     story_type = models.IntegerField(_('story type'), default=1, choices=((1,_('story')),(2,_('opinion')),(3,_('relation'))))
     ordinal = models.IntegerField(_('DOM ordinal'), default=0, help_text=_('Order of appearance of this speech act in the DOM.'))
-    icon = models.ImageField(_('icon'), max_length=25, upload_to='img/speech_act_icons', null=True, blank=True, help_text=_('The name of the image file.'))
+    icon = models.ImageField(_('icon'), max_length=100, upload_to='img/speech_act_icons', null=True, blank=True, help_text=_('The name of the image file.'))
 
     def __unicode__(self):
         return self.name

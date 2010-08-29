@@ -1,9 +1,6 @@
 from django.http import HttpResponseRedirect, HttpResponse, Http404
-from groups.models import *
-from discussions.models import *
-
-ENTITY_TYPES_MAP = { 'group': GroupProfile, 
-					 'disc' : Discussion }
+from models import *
+from ecclesia.discussions.models import Story, Discussion
 
 def update_presentation(request):
     """
@@ -28,3 +25,12 @@ def update_presentation(request):
         print "Model name not specified."
     return HttpResponse(str(timestamp))
 
+def _follow(user, followed_object):
+    if user and followed_object:
+        subscription = Subscription()
+        subscription.user = user
+        subscription.followed_object = followed_object
+        subscription.save()
+        return HttpResponse('success')
+    else:
+        return HttpResponse('error')

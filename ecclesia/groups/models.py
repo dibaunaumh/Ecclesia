@@ -1,9 +1,10 @@
 import hashlib
 from django.db import models
+from django.contrib.contenttypes import generic
 from django.contrib.auth.models import Group, User
 from django.utils.translation import gettext_lazy as _
 from common.utils import get_domain
-from common.models import Presentable
+from common.models import Presentable, Subscription
 from django.conf import settings
 
 class UserProfile(models.Model):
@@ -45,6 +46,7 @@ class GroupProfile(Presentable):
     created_by = models.ForeignKey(User, editable=False, verbose_name=_('created by'), null=True, blank=True, help_text=_('The user that created the group'))
     created_at = models.DateTimeField(_('created at'), auto_now_add=True, help_text=_('When was the group created'))
     updated_at = models.DateTimeField(_('updated at'), auto_now=True, help_text=_('When was the group last updated'))
+    subscriptions = generic.GenericRelation(Subscription)
 
     class Meta:
         verbose_name = _("group profile")

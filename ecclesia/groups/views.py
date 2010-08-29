@@ -7,9 +7,9 @@ from discussions.models import *
 from discussions.forms import DiscussionForm
 import sys
 from forms import *
-
 from django.contrib.auth.models import User
 from services.search_filter_pagination import search_filter_paginate
+from django.template.defaultfilters import slugify
 
 def home(request):
     """
@@ -44,17 +44,17 @@ def get_discussions_view_json(request, group_slug):
 
 def add_group(request):
     if request.POST:
-        group_form = GroupProfileForm(request.POST)
-        if group_form.is_valid():
-            if Group.objects.filter(name=group_form.cleaned_data['slug']):
-                group = Group.objects.filter(name=group_form.cleaned_data['slug'])[0]
+        name = request.POST.get('group_name', None)
+        if name:
+            if Group.objects.filter(name=name):
+                group = Group.objects.filter(name=name)[0]
             else:
-                group = Group(name=group_form.cleaned_data['slug'])
+                group = Group(name=name)
                 group.save()
             group_profile = GroupProfile()
             group_profile.group = group
-            group_profile.slug = group_form.cleaned_data['slug']
-            group_profile.description = group_form.cleaned_data['description']
+            group_profile.slug = slugify(name)
+            group_profile.description = request.POST.get('description', '')
             group_profile.created_by = request.user
             group_profile.x = request.POST.get('x', None)
             group_profile.y = request.POST.get('y', None)

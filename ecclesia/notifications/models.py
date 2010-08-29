@@ -1,8 +1,8 @@
 from django.db import models
 from django.core.mail import send_mail
-from discussions.models import Discussion, Story
-from groups.models import GroupProfile
 from django.contrib.auth.models import User, Group
+from groups.models import GroupProfile
+from discussions.models import Discussion, Story
 from django.utils.translation import gettext_lazy as _
 from datetime import datetime
 
@@ -46,7 +46,7 @@ class Notification(models.Model):
                 notification.save()
         else:
             pass
-        
+
 def send_notification(sender, instance, **kwargs):
     if instance.delivered_at is None:
         instance.deliver(instance)

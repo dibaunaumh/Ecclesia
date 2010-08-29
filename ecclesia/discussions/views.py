@@ -1,6 +1,7 @@
 from ecclesia.groups.models import GroupProfile, GroupPermission, MissionStatement
 from ecclesia.discussions.models import *
 from ecclesia.notifications.models import Notification
+from ecclesia.common.views import _follow
 from django.contrib.auth.models import Group
 from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponse, Http404, HttpResponseRedirect
@@ -344,3 +345,13 @@ def change_from_relation(story1, story2):
     for relation in StoryRelation.objects.filter(from_story=story1):
         relation.from_story=story2
         relation.save()
+
+def follow(request, discussion_slug):
+    if request.user.is_authenticated():
+        discussion = Discussion.objects.get(slug=discussion_slug)
+        print discussion
+        print request.user
+        return _follow(request.user, discussion)
+    else:
+        print 'error'
+        return HttpResponse('error')
