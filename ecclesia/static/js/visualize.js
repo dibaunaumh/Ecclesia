@@ -257,6 +257,7 @@ Story = function (node_class, config) {
 		model_name  	        : 'Story',
 		type	    	        : 'goal',
 		content					: '',
+        icon                    : '',
         fill_normal             : '#e3e3e3',
         fill_normal_indicated   : '#418000',
         fill_hover              : '#f2f2f2',
@@ -265,7 +266,9 @@ Story = function (node_class, config) {
         stroke_hover            : '#000',
         stroke_normal_indicated : '#444',
         stroke_hover_indicated  : '#000',
-        children                : {}
+        children                : {},
+        icon_w                  : 32,
+        icon_h                  : 32
 	};
 	// inheriting Node class
 	var dummy = $.extend(true, node_class, this);
@@ -295,17 +298,6 @@ Story.prototype = {
 		$(id_selector).css('left', dims.x+'px')
 					  .css('top', dims.y+'px');
 	},
-    setIcon     : function (viewMetaData) {
-        var c = this.config;
-        $.each(viewMetaData, function (i, item) {
-            var f = item.fields;
-            if ( f.story_type == 1 && f.name === c.type) {
-                c.icon = f.icon;
-                return false; // break;
-            }
-        });
-        return this;
-    },
 	draw		: function (ctx) {
 		var c = this.config,
             dims = c.dimensions,
@@ -323,10 +315,10 @@ Story.prototype = {
         this.wrapTitle(el);
 		this.roundedRect(ctx, dims.x, dims.y, dims.w*s, dims.h*s, 5, c['fill_'+state], c['stroke_'+state]);
         try {
-            var img = new Image(), w = 32, h = 32;
-            img.src = '/static/' + c.icon;
+            var img = new Image();
+            img.src = c.icon;
             $(img).load(function () {
-                ctx.drawImage(img, dims.x+dims.w*s-w, dims.y+dims.h*s-h, w, h);
+                ctx.drawImage(img, dims.x+dims.w*s-c.icon_w, dims.y+dims.h*s-c.icon_h, c.icon_w, c.icon_h);
             });
         } catch(e) {}
 	},
@@ -832,14 +824,24 @@ VUController.prototype = {
 				});
 				this.draw()
                 // position nodes' titles in their middle
-                    .positionTitles();
+                    .positionTitles()
                 // initialize the visualization updater
-                this.timeoutID = setTimeout($.bindFn(this, this.updateView), this.options.update_timeout);
+                    .setVUUpdater();
 			} else {
 				alert('No canvas context.');
 			}
 		}
 	},
+    setVUUpdater        : function (clear_only) {
+        if ( this.timeoutID ) {
+            clearTimeout(this.timeoutID);
+            this.timeoutID = 0;
+        }
+        if ( ! clear_only ) {
+            this.timeoutID = setTimeout($.bindFn(this, this.updateView), this.options.update_timeout);
+        }
+        return this;
+    },
     getData				: function () {
 		var _VUC = this;
 		// expecting format: [ { element_alias : { element_config_object }, ... ]
@@ -849,7 +851,7 @@ VUController.prototype = {
 			_VUC.init.call(_VUC, true);
 		});
 	},
-    updateView             : function () {
+    updateView          : function () {
         if(!this.options.update_status_url) { return; } // ignore and don't update
         var _VUC = this;
         $.ajax({
@@ -859,13 +861,12 @@ VUController.prototype = {
             //timeout : _VUC.options.update_timeout,
             success : function (response) {
                 if(response) {
+                    clearTimeout(_VUC.timeoutID);
                     if(_VUC.options.last_changed !== response) {
                         _VUC.options.last_changed = response;
-                        clearTimeout(_VUC.timeoutID);
                         _VUC.init.call(_VUC, 'reload');
                     } else {
-                        clearTimeout(_VUC.timeoutID);
-                        _VUC.timeoutID = setTimeout($.bindFn(_VUC, _VUC.updateView), _VUC.options.update_timeout);
+                        _VUC.setVUUpdater.call(_VUC);
                     }
                 }
             },
@@ -874,9 +875,9 @@ VUController.prototype = {
             }
         });
     },
-    updateDB	: function () {
+    updateDB	        : function () {
 		var _VUC = this;
-		this.data = this.drag.serialize();
+		this.data = this.drag.serialize() + '&last_changed=' + this.options.last_changed;
         $.ajax({
             type		: "POST",
             url			: _VUC.options.update_db_url,
@@ -904,11 +905,25 @@ VUController.prototype = {
         return this;
     },
     initCanvas			: function () {
-		var o = this.options;
+		var o = this.options,canvas;
 		$('#'+o.container_id).empty().height(o.height).width(o.width);
 		$('#'+o.container_id).append('<canvas id="'+o.canvas_id+'" width="'+o.width+'" height="'+o.height+'"></canvas>');
-		this.ctx = document.getElementById(o.canvas_id).getContext('2d');
-        // setting background
+		canvas =document.getElementById(o.canvas_id);
+        // check if there's no canvas support
+        if ( ! canvas.getContext ) {
+            // check if we fixed it using excanvas
+            if ( G_vmlCanvasManager && G_vmlCanvasManager.initElement ) {
+                try {
+                    G_vmlCanvasManager.initElement(canvas);
+                } catch (ex) {
+                    return false;
+                }
+            } else {
+                // bail out...
+                return false;
+            }
+        }
+        this.ctx = canvas.getContext('2d');
 		return this.ctx;
 	},
 	setVUEvents			: function () {
@@ -1187,7 +1202,7 @@ VUController.prototype = {
         return this;
 	},
     positionTitles      : function () {
-        
+        return this;
     },
 	grip				: function () {
         $('#'+this.drag.config.alias+'_'+this.drag.config.id).addClass('dragon');
@@ -1348,7 +1363,7 @@ DiscussionController.prototype = {
 	},
 	getVisualizationMetaData: function () {
 		var _DC = this;
-//        this.unsetDraggable();
+        this.unsetDraggable();
 		$.getJSON(this.options.meta_url, {discussion_type:this.options.discussion_type}, function (json) {
             // apply the received data
             _DC.metaData = json;
@@ -1376,10 +1391,25 @@ DiscussionController.prototype = {
                                .width(this.options.width * 0.25 - 1);
     },
 	initCanvas			    : function () {
-        var o = this.options;
+        var o = this.options, canvas;
 		$('#'+o.container_id).empty()
                              .append('<canvas id="'+o.canvas_id+'" width="'+o.width+'" height="'+o.height+'"></canvas>');
-		this.ctx = document.getElementById(o.canvas_id).getContext('2d');
+		canvas =document.getElementById(o.canvas_id);
+        // check if there's no canvas support
+        if ( ! canvas.getContext ) {
+            // check if we fixed it using excanvas
+            if ( G_vmlCanvasManager && G_vmlCanvasManager.initElement ) {
+                try {
+                    G_vmlCanvasManager.initElement(canvas);
+                } catch(e) {
+                    return false;
+                }
+            } else {
+                // bail out...
+                return false;
+            }
+        }
+        this.ctx = canvas.getContext('2d');
         // setting background
         var _DC = this;
         if(o.bg_pic != '' && false) {
@@ -1426,7 +1456,6 @@ DiscussionController.prototype = {
         // add an element to the DOM
 		if(el) {
 			if(el instanceof Opinion) { el.container.call(el).addToDOM.call(el); }
-            if(el instanceof Story) { el.setIcon.call(el, this.metaData).addToDOM.call(el, this.options.container_id); }
             else if (el.addToDOM && $.isFunction(el.addToDOM)) { el.addToDOM.call(el, this.options.container_id); }
 		}
 		// add all elements to the DOM

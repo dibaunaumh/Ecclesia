@@ -158,7 +158,7 @@ def get_stories_view_json(request, discussion_slug):
     for story in stories:
         is_conclusion = "true" if story.id in conclusions_map else "false"
         children = story.get_children_js_array()
-        json = '%s{"story":{"id":%s,"url":"%s","name":"%s","type":"%s","content":"%s","state":{"indicated":%s},"dimensions":{"x":%s,"y":%s,"w":%s,"h":%s},"children":%s}},' % (json, story.id, story.get_absolute_url(), story.title, story.speech_act, story.content, is_conclusion, story.x, story.y, story.w, story.h, children)
+        json = '%s{"story":{"id":%s,"url":"%s","name":"%s","type":"%s","content":"%s","state":{"indicated":%s},"dimensions":{"x":%s,"y":%s,"w":%s,"h":%s},"children":%s,"icon":"/static/%s"}},' % (json, story.id, story.get_absolute_url(), story.title, story.speech_act, story.get_json_safe_content(), is_conclusion, story.x, story.y, story.w, story.h, children, story.speech_act.icon)
     relations = StoryRelation.objects.filter(discussion=discussion)
     for relation in relations:
         children = relation.get_children_js_array()
@@ -182,6 +182,7 @@ def status(request, discussion_slug):
     discussion = Discussion.objects.get(slug=discussion_slug)
     last_changed_db = discussion.last_related_update
     last_changed_client = request.POST.get('last_changed', None)
+    print 'last_changed_client= %s' % str(last_changed_client)
     if not last_changed_client:
         return HttpResponse(str(last_changed_db))
     else:

@@ -1,6 +1,7 @@
 from django.http import HttpResponseRedirect, HttpResponse, Http404
 from models import *
 from ecclesia.discussions.models import Story, Discussion
+import datetime
 
 def update_presentation(request):
     """
@@ -18,12 +19,16 @@ def update_presentation(request):
             object.x = int(request.POST.get('x', object.x))
             object.y = int(request.POST.get('y', object.y))
             object.save()
+            last_changed = request.POST.get('last_changed', None)
+            if last_changed:
+                timestamp = object.updated_at if object.updated_at else datetime.datetime.now()
             print "Coordinates updated successfully."
         else:
             print "Object's pk not specified."
     else:
         print "Model name not specified."
     return HttpResponse(str(timestamp))
+
 
 def _follow(user, followed_object):
     if user and followed_object:
