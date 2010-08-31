@@ -155,7 +155,7 @@ def members_list(request, group_slug):
             if GroupPermission.objects.filter(group=group).filter(user=user):
                 permission = GroupPermission.objects.filter(group=group.group).filter(user=user)[0]
                 user_permission_type = permission.permission_type
-    members = group.get_group_members()
+    members = group.group.user_set.all()
     (my_items, get_parameters, f) = search_filter_paginate('member', members, request)
     return render_to_response('members_list.html', locals())
 
