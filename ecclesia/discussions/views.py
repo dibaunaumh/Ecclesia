@@ -247,6 +247,15 @@ def delete_relation(request, relation_pk):
         response = 'reload'
     return HttpResponse(response)
 
+def delete_opinion(request):
+    response = 'error'
+    if request.POST:
+        opinion = Opinion.objects.get(pk=request.POST.get('opinion_pk', None))
+        if opinion:
+            opinion.delete()
+            response = 'OK'
+    return HttpResponse(response)
+
 def get_inline_field(request):
     fieldname = request.POST['id']
     if fieldname.split("_")[0] == 'discussion':

@@ -9,15 +9,39 @@
 {% block extrahead %}
 <script>
 	$(document).ready(function() {
-	    $('.edit').editable('/edit_inline/', {
+	    $('#opinions').accordion().removeClass('hide');
+        $('.delete_opinion_button').click(function () {
+            $.ajax({
+                url : '/discussions/delete_opinion/',
+                data: { opinion_pk : $(this).attr('pk') },
+                type: 'post',
+                success: function (response) {
+                    if (response && response === 'OK') {
+                        alert('OK');
+                    }
+                }
+            });
+            return false;
+        });
+        $('.edit-textarea').editable('/edit_inline/', {
 			height	: 150,
 	        width   : 500,
-			type   : 'textarea',
-			cancel    : 'Cancel',
-         	submit    : 'OK'
+			type    : 'textarea',
+			cancel  : 'Cancel',
+         	submit  : 'OK'
 	    });
-	    $('#opinions').accordion().removeClass('hide');
-
+        $('.edit').editable('/edit_inline/', {
+	        width   : 500,
+			cancel  : 'Cancel',
+         	submit  : 'OK'
+	    });
+        $('.edit-opinion-content').editable('/discussions/update_opinion/', {
+            height	: 150,
+	        width   : 500,
+			type    : 'textarea',
+			cancel  : 'Cancel',
+         	submit  : 'OK'
+        });
         $('.editable_select_json').each(function () {
             var span = $(this),
                 speech_act = span.attr('speech_act'),
@@ -35,24 +59,27 @@
 {% block content %}
 <div id="content">
     <h1><span {% if user_in_group %} class="edit" id="storytitle_{{ object.pk }}"{% endif %}>{{object.title}}</span> ({{ object.speech_act }})</h1>
-    <h4 id="discussion-name-header">Under discussion: {{ discussion.name }}</h4>
+    <h4 id="discussion-name-header">{% trans 'Under discussion' %}: {{ discussion.name }}</h4>
     <div>
-        <h3>By: {{ object.created_by }}, at: {{ object.created_at }}</h3>
+        <h3>{% trans 'By' %}: {{ object.created_by }}, {% trans 'at' %}: {{ object.created_at }}</h3>
         {% if object.from_story and object.to_story %}
-        <h3>From: <strong class="editable_select_json" direction="from" speech_act="{{ object.from_story.speech_act }}">{{ object.from_story }}</strong>, To: <strong class="editable_select_json" direction="to" speech_act="{{ object.to_story.speech_act }}">{{ object.to_story }}</strong></h3>
+        <h3>{% trans 'From' %}: <strong class="editable_select_json" direction="from" speech_act="{{ object.from_story.speech_act }}">{{ object.from_story }}</strong>, {% trans 'to' %}: <strong class="editable_select_json" direction="to" speech_act="{{ object.to_story.speech_act }}">{{ object.to_story }}</strong></h3>
         {% endif %}
     </div>
     <hr/>
     <p>
-        <span {% if user_in_group %} class="edit" id="storycontent_{{ object.pk }}"{% endif %}>{{object.content}}</span>
+        <span {% if user_in_group %} class="edit-textarea" id="storycontent_{{ object.pk }}"{% endif %}>{{object.content}}</span>
     </p>
     <hr/>
     {% if opinions %}
-    <h2>Opinions:</h2>
+    <h2>{% trans 'Opinions' %}:</h2>
     <div id="opinions" class="hide">
     {% for opinion in opinions %}
-        <h3><a href="#"><span class="opinion opinion_{{ opinion.speech_act }}">{{ opinion.speech_act }}</span>{{ opinion.title }}</a></h3>
-        <div><p>By: {{ opinion.created_by }}, at: {{ opinion.created_at }}</p><p>{{ opinion.content }}</p></div>
+        <h3><a href="#"><span class="opinion opinion_{{ opinion.speech_act }}">{{ opinion.speech_act }}</span><span class="edit-opinion-title">{{ opinion.title }}</span></a></h3>
+        <div>
+            <a href="#" class="delete_opinion_button" pk="{{ opinion.pk }}" title="{% trans 'Delete opinion' %}"></a><span>{% trans 'By' %}: {{ opinion.created_by }}, {% trans 'at' %}: {{ opinion.created_at }}</span>
+            <p class="edit-opinion-content">{{ opinion.content }}</p>
+        </div>
     {% endfor %}
     </div>
     <hr/>

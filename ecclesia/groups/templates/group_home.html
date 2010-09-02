@@ -15,35 +15,37 @@
         dialog_title: '{% trans 'Create Discussion' %}',
         bg_pic      : '/static/img/cork_board.jpg'
     }
-    var VUC = new VUController({});
-    var GC	= new GroupController(VUC, config);
-    GC.init();
+    $(document).ready(function () {
+        var VUC = new VUController({});
+        var GC	= new GroupController(VUC, config);
+        GC.init();
 
-	$(function() {
-		$("#mission_statement_dialog").dialog({
-			bgiframe: true,
-            autoOpen: false,
-			height: 402,
-			width: 787,
-			modal: true,
-			buttons: {
-				Create: function() {
-					$("#mission_statement_form").submit();
-				},
+        $(function() {
+            $("#mission_statement_dialog").dialog({
+                bgiframe: true,
+                autoOpen: false,
+                height: 402,
+                width: 787,
+                modal: true,
+                buttons: {
+                    Create: function() {
+                        $("#mission_statement_form").submit();
+                    },
 
-				Cancel: function() {
-					$(this).dialog('close');
-				}
-			},
-			close: function() {
-				window.location = window.location;
-			}
-		});
+                    Cancel: function() {
+                        $(this).dialog('close');
+                    }
+                },
+                close: function() {
+                    window.location = window.location;
+                }
+            });
 
-		$('#add_mission').click(function() {
-			$('#mission_statement_dialog').dialog('open');
-		})
-	});
+            $('#add_mission').click(function() {
+                $('#mission_statement_dialog').dialog('open');
+            })
+        });
+    });
 </script>
 
 {% if show_errors_in_mission_statement_form %}

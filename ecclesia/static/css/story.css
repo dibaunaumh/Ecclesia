@@ -1,4 +1,5 @@
 .clear {overflow:hidden;height:0;clear:both}
+.delete_opinion_button {float:right;width:12px;height:12px;background:url('../img/icons/delete.png') left top no-repeat;}
 .hide {visibility:hidden;}
 .opinion {display:inline-block;width:55px;margin-right:5px;text-align:center;font-weight:bold;color:#036;border:1px outset #fff;border-radius:4px;-moz-border-radius:4px;-webkit-border-radius:4px;}
 .opinion_false {background-color:#ffc}
