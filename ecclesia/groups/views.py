@@ -9,6 +9,7 @@ import sys
 from forms import *
 from django.contrib.auth.models import User
 from services.search_filter_pagination import search_filter_paginate
+from services.utils import get_user_permissions
 from django.template.defaultfilters import slugify
 
 def home(request):
@@ -23,6 +24,10 @@ def home(request):
 
 def get_groups_view_json(request):
     groups = GroupProfile.objects.all()
+    #if str(user) != 'AnonymousUser':
+    #    json = ',{"allow_edit":true},'
+    #else:
+    #    json = ',{"allow_edit":false},'
     json = ',';
     for group in groups:
         json = '%s{"group":{"id":%s,"url":"%s","name":"%s","dimensions":{"x":%s,"y":%s,"w":%s,"h":%s}}},' % (json, group.id, group.get_absolute_url(), group.group.name, group.x, group.y, group.w, group.h)
@@ -32,8 +37,14 @@ def get_groups_view_json(request):
     return HttpResponse('[%s]' % json)
 
 def get_discussions_view_json(request, group_slug):
-    group = GroupProfile.objects.get(slug=group_slug).group
+    group_profile = GroupProfile.objects.get(slug=group_slug)
+    group = group_profile.group
     discussions = Discussion.objects.filter(group=group)
+    #user_permission_type = get_user_permissions(request.user, group_profile)
+    #if user_permission_type != 3 and user_permission_type != "Not logged in":
+    #    json = ',{"allow_edit":true},'
+    #else:
+    #    json = ',{"allow_edit":false},'
     json = ',';
     for discussion in discussions:
         json = '%s{"discussion":{"id":%s,"url":"%s","name":"%s","dimensions":{"x":%s,"y":%s,"w":%s,"h":%s}}},' % (json, discussion.id, discussion.get_absolute_url(), discussion.name, discussion.x, discussion.y, discussion.w, discussion.h)
@@ -75,10 +86,7 @@ def group_home(request, group_slug):
         raise Http404("Can't find a group with the slug: %s" % group_slug)
     else:
         group = query[0]
-        if str(user) != 'AnonymousUser':
-            if GroupPermission.objects.filter(group=group.group).filter(user=user):
-                permission = GroupPermission.objects.filter(group=group.group).filter(user=user)[0]
-                user_permission_type = permission.permission_type
+        user_permission_type = get_user_permissions(user, group)
     query = group.mission_statements.all().order_by("-created_at")
     if query.count() > 0:
         mission_statement = query[0]

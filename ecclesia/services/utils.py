@@ -1,7 +1,16 @@
 import re
 from django.db.models import Q
+from groups.models import GroupPermission
 
-#list search funtions
+def get_user_permissions(user, group):
+    if str(user) != 'AnonymousUser':
+        if GroupPermission.objects.filter(group=group.group).filter(user=user):
+            permission = GroupPermission.objects.filter(group=group.group).filter(user=user)[0]
+            user_permission_type = permission.permission_type
+            return user_permission_type
+    return "Not logged in"
+            
+#list search functions
 def normalize_query(query_string,
                     findterms=re.compile(r'"([^"]+)"|(\S+)').findall,
                     normspace=re.compile(r'\s{2,}').sub):

@@ -7,6 +7,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from forms import *
 from services.search_filter_pagination import search_filter_paginate
+from services.utils import get_user_permissions
 from django.core import serializers
 from django.template.defaultfilters import slugify
 from django.utils import simplejson
@@ -154,6 +155,12 @@ def get_stories_view_json(request, discussion_slug):
     conclusions_map = {}
     for c in conclusions:
         conclusions_map[c.story.id] = True
+    group = GroupProfile.objects.filter(group=discussion.group)[0]
+    user_permission_type = get_user_permissions(request.user, group)
+    if user_permission_type != 3 and user_permission_type != "Not logged in":
+        json = ',{"allow_edit":true},'
+    else:
+        json = ',{"allow_edit":false},'
     json = ','
     for story in stories:
         is_conclusion = "true" if story.id in conclusions_map else "false"
