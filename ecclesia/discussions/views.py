@@ -161,7 +161,6 @@ def get_stories_view_json(request, discussion_slug):
         json = ',{"allow_edit":true},'
     else:
         json = ',{"allow_edit":false},'
-    json = ','
     for story in stories:
         is_conclusion = "true" if story.id in conclusions_map else "false"
         children = story.get_children_js_array()
