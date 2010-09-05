@@ -7,7 +7,6 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from forms import *
 from services.search_filter_pagination import search_filter_paginate
-from services.utils import get_user_permissions
 from django.core import serializers
 from django.template.defaultfilters import slugify
 from django.utils import simplejson
@@ -155,12 +154,7 @@ def get_stories_view_json(request, discussion_slug):
     conclusions_map = {}
     for c in conclusions:
         conclusions_map[c.story.id] = True
-    group = GroupProfile.objects.filter(group=discussion.group)[0]
-    user_permission_type = get_user_permissions(request.user, group)
-    if user_permission_type != 3 and user_permission_type != "Not logged in":
-        json = ',{"allow_edit":true},'
-    else:
-        json = ',{"allow_edit":false},'
+    json = ','
     for story in stories:
         is_conclusion = "true" if story.id in conclusions_map else "false"
         children = story.get_children_js_array()
@@ -366,9 +360,9 @@ def change_from_relation(story1, story2):
 def follow(request, discussion_slug):
     if request.user.is_authenticated():
         discussion = Discussion.objects.get(slug=discussion_slug)
-        print discussion
-        print request.user
+        #print discussion
+        #print request.user
         return _follow(request.user, discussion)
     else:
-        print 'error'
+        #print 'error'
         return HttpResponse('error')

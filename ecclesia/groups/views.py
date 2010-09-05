@@ -24,11 +24,7 @@ def home(request):
 
 def get_groups_view_json(request):
     groups = GroupProfile.objects.all()
-    #if str(user) != 'AnonymousUser':
-    #    json = ',{"allow_edit":true},'
-    #else:
-    #    json = ',{"allow_edit":false},'
-    json = ',';
+    json = ','
     for group in groups:
         json = '%s{"group":{"id":%s,"url":"%s","name":"%s","dimensions":{"x":%s,"y":%s,"w":%s,"h":%s}}},' % (json, group.id, group.get_absolute_url(), group.group.name, group.x, group.y, group.w, group.h)
     #json_serializer = serializers.get_serializer("json")()
@@ -40,12 +36,7 @@ def get_discussions_view_json(request, group_slug):
     group_profile = GroupProfile.objects.get(slug=group_slug)
     group = group_profile.group
     discussions = Discussion.objects.filter(group=group)
-    #user_permission_type = get_user_permissions(request.user, group_profile)
-    #if user_permission_type != 3 and user_permission_type != "Not logged in":
-    #    json = ',{"allow_edit":true},'
-    #else:
-    #    json = ',{"allow_edit":false},'
-    json = ',';
+    json = ','
     for discussion in discussions:
         json = '%s{"discussion":{"id":%s,"url":"%s","name":"%s","dimensions":{"x":%s,"y":%s,"w":%s,"h":%s}}},' % (json, discussion.id, discussion.get_absolute_url(), discussion.name, discussion.x, discussion.y, discussion.w, discussion.h)
     #json_serializer = serializers.get_serializer("json")()
