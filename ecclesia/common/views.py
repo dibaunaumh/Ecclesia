@@ -16,14 +16,15 @@ def update_presentation(request):
         pk = request.POST.get('pk', None)
         if pk:
             object = model_class.objects.get(pk=pk)
-            if object and hasattr(object, 'discussion') and hasattr(object.discussion, 'last_related_update'):
+            container = object.get_visual_container()
+            if object and hasattr(container, 'last_related_update'):
                 last_changed = request.POST.get('last_changed', None)
                 if last_changed:
                     try:
                         last_changed_datetime = datetime.datetime.strptime(last_changed, '%Y-%m-%d %H:%M:%S.%f')
                     except:
                         last_changed_datetime = datetime.datetime.strptime(last_changed, '%Y-%m-%d %H:%M:%S')
-                    if last_changed_datetime < object.discussion.last_related_update:
+                    if last_changed_datetime < container.last_related_update:
                         timestamp = last_changed
                     else:
                         update_time = True
