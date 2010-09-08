@@ -7,6 +7,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from forms import *
 from services.search_filter_pagination import search_filter_paginate
+from services.utils import get_user_permissions
 from django.core import serializers
 from django.template.defaultfilters import slugify
 from django.utils import simplejson
@@ -27,6 +28,11 @@ def visualize(request, discussion_slug):
     speech_acts = SpeechAct.objects.filter(discussion_type=discussion.type)
     opinion_types = speech_acts.filter(story_type=2)
     last_related_update = str(discussion.last_related_update) # set an initial value for the update timestamp
+    user_permissions = get_user_permissions(request.user, group)
+    if user_permissions != 3 and user_permissions != "Not logged in":
+        user_permissions = 'allowed'
+    else:
+        user_permissions = ''
     return render_to_response('discussion_home.html', locals())
 
 def evaluate(request, discussion_slug):
@@ -176,23 +182,6 @@ def get_visualization_meta_data(request):
     speech_acts = SpeechAct.objects.filter(discussion_type=discussion_type).order_by('story_type','ordinal')
     json = serializers.serialize('json', speech_acts, ensure_ascii=False)
     return HttpResponse(json)
-
-def status(request, discussion_slug):
-    datetime_format = '%Y-%m-%d %H:%M:%S.%f'
-    discussion = Discussion.objects.get(slug=discussion_slug)
-    last_changed_db = discussion.last_related_update
-    last_changed_client = request.POST.get('last_changed', None)
-    print 'last_changed_client= %s' % str(last_changed_client)
-    if not last_changed_client:
-        return HttpResponse(str(last_changed_db))
-    else:
-        try:
-            last_changed_client = datetime.datetime.strptime(last_changed_client, datetime_format)
-            if last_changed_client < last_changed_db:
-                last_changed_client = last_changed_db
-            return HttpResponse(str(last_changed_client))
-        except: # probably the last_changed value isn't in the right format
-            return HttpResponse(str(last_changed_db))
 
 def discussions_list(request, group_slug):
     group = GroupProfile.objects.filter(slug=group_slug)
@@ -360,9 +349,6 @@ def change_from_relation(story1, story2):
 def follow(request, discussion_slug):
     if request.user.is_authenticated():
         discussion = Discussion.objects.get(slug=discussion_slug)
-        #print discussion
-        #print request.user
         return _follow(request.user, discussion)
     else:
-        #print 'error'
         return HttpResponse('error')

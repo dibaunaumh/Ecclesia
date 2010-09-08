@@ -5,11 +5,13 @@
 {% endblock %}
 {% block extrahead %}
 <script>
-	var config = {
-	  dialog_title : '{% trans 'Create Group' %}'
-	};
-	var VUC = new VUController(config);
-	VUC.init();
+	$(document).ready(function () {
+        var config = {
+                dialog_title    : '{% trans 'Create Group' %}',
+                user_permissions: '{{ user_permissions }}'
+            },
+            VUC = new VUController(config).init();
+    });
 </script>
 {% endblock %}
 {% block content %}

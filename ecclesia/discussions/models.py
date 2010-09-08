@@ -8,6 +8,7 @@ from discussion_actions import evaluate_stories
 from common.models import Presentable, Subscription
 from common.utils import get_domain
 import re
+from ecclesia.groups.models import GroupProfile
 
 
 class DiscussionType(models.Model):
@@ -46,6 +47,9 @@ class Discussion(Presentable):
 
     def get_absolute_url(self):
         return "http://%s/discussions/discussion/%s/" % (get_domain(), self.slug)
+
+    def get_visual_container(self):
+        return self.group
 
     def __unicode__(self):
         return self.name
@@ -86,6 +90,9 @@ class BaseStory(Presentable):
     def get_json_safe_content(self):
         p = re.compile('(\n)')
         return p.sub(' ', self.content)
+
+    def get_visual_container(self):
+        return self.discussion
 
 
 class Opinion(BaseStory):
@@ -180,14 +187,15 @@ class DiscussionConclusion(models.Model):
 
 
 def last_changed_updater(sender, instance, **kwargs):
-    discussion = Discussion.objects.get(id=instance.discussion.pk)
-    discussion.last_related_update = instance.updated_at if instance.updated_at else datetime.datetime.now()
-    discussion.save()
-    print 'updating %s to %s' % (discussion.name, discussion.last_related_update)
-    evaluate_stories(instance.discussion)
+    container = sender.get_visual_container(instance)
+    container.last_related_update = instance.updated_at if hasattr(instance, 'updated_at') else datetime.datetime.now()
+    container.save()
+    if container is Discussion:
+        evaluate_stories(instance.discussion)
 
 
 # connecting post_save signal of stories and opinions to update their parent discussion's last_related_update field 
 models.signals.post_save.connect(last_changed_updater, sender=Story)
 models.signals.post_save.connect(last_changed_updater, sender=Opinion)
 models.signals.post_save.connect(last_changed_updater, sender=StoryRelation)
+models.signals.post_save.connect(last_changed_updater, sender=Discussion)

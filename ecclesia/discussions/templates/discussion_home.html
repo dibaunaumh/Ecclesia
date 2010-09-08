@@ -12,18 +12,18 @@
 	<script src="http://dev.jquery.com/view/trunk/plugins/tooltip/jquery.tooltip.js"></script>
 
 	<script>
-        var config = {
-            canvas_id	        : 'storysvu',
-            data_url	        : '/discussions/get_stories_view_json/{{ discussion.slug }}',
-            meta_url	        : '/discussions/get_visualization_meta_data/',
-            update_status_url	: '/discussions/status/{{ discussion.slug }}',
-            last_changed        : '{{ last_related_update }}',
-            discussion_type     : {{ discussion.type.id }}
-        };
-        var VUC = new VUController({});
-        var DC	= new DiscussionController(VUC, config);
-        DC.init();
         $(document).ready(function () {
+            var config = {
+                    canvas_id	        : 'storysvu',
+                    data_url	        : '/discussions/get_stories_view_json/{{ discussion.slug }}',
+                    meta_url	        : '/discussions/get_visualization_meta_data/',
+                    update_status_url	: '/common/presentation_status/Discussion/{{ discussion.pk }}',
+                    last_changed        : '{{ last_related_update }}',
+                    discussion_type     : {{ discussion.type.id }},
+                    user_permissions    : '{{ user_permissions }}'
+                },
+                VUC = new VUController({}),
+                DC = new DiscussionController(VUC, config).init();
             $('button').filter('.ekkli-button').hover(
                 function () {
                     $(this).addClass('ui-state-hover');
@@ -42,7 +42,7 @@
                         if (response && response === 'success') {
                             $this.val('{% trans 'Following!' %}').fadeOut('slow');
                         } else {
-                            alert('didn\'t work');
+                            alert("{% trans "Didn't work" %}");
                         }
                     },
                     error: function (xhr, status, error) {

@@ -20,6 +20,7 @@ def home(request):
     user = request.user
     show_errors_in_form = False
     group_form = GroupProfileForm()
+    user_permissions = 'allowed' if user.is_authenticated() else ''
     return render_to_response('home.html', locals())
 
 def get_groups_view_json(request):
@@ -73,11 +74,14 @@ def group_home(request, group_slug):
     """
     user=request.user
     query = GroupProfile.objects.filter(slug=group_slug)
+    user_permissions = ''
     if query.count() == 0:
         raise Http404("Can't find a group with the slug: %s" % group_slug)
     else:
         group = query[0]
         user_permission_type = get_user_permissions(user, group)
+        if user_permission_type != 3 and user_permission_type != "Not logged in":
+            user_permissions = 'allowed'
     query = group.mission_statements.all().order_by("-created_at")
     if query.count() > 0:
         mission_statement = query[0]
@@ -91,44 +95,22 @@ def group_home(request, group_slug):
     except:
         pass
     #initializing the forms
-    show_errors_in_form = False
-    show_errors_in_mission_statement_form = False
     discussion_form = DiscussionForm()
+    show_errors_in_mission_statement_form = False
     mission_statement_form = MissionStatementForm()
     #saving new discussion
     if request.POST:
-        if 'slug' in request.POST:
-            discussion_form = DiscussionForm(request.POST)
-            if discussion_form.is_valid():
-                save_discussion_from_form(discussion_form, group, user)
-                discussion_form = DiscussionForm()
-            else:
-                show_errors_in_form = True
+        mission_statement_form = MissionStatementForm(request.POST)
+        if mission_statement_form.is_valid():
+            save_mission_statement_from_form(mission_statement_form, group, user)
+            mission_statement_form = DiscussionForm()
         else:
-            mission_statement_form = MissionStatementForm(request.POST)
-            if mission_statement_form.is_valid():
-                save_mission_statement_from_form(mission_statement_form, group, user)
-                mission_statement_form = DiscussionForm()
-            else:
-                show_errors_in_mission_statement_form = True
+            show_errors_in_mission_statement_form = True
     #adding beautiful css
-    for key in discussion_form.fields:
-        discussion_form.fields[key].widget.attrs["class"] = "text ui-widget-content ui-corner-all"
     for key in mission_statement_form.fields:
         mission_statement_form.fields[key].widget.attrs["class"] = "text ui-widget-content ui-corner-all"
     #last_related_update = str(group.last_related_update) # set an initial value for the update timestamp
     return render_to_response('group_home.html', locals())
-
-def save_discussion_from_form(discussion_form, group, user):
-    discussion = Discussion()
-    discussion.group = group.group
-    discussion.name = discussion_form.cleaned_data['name']
-    discussion.slug = discussion_form.cleaned_data['slug']
-    discussion.type = discussion_form.cleaned_data['type']
-    discussion.description = discussion_form.cleaned_data['description']
-    discussion.created_by = user
-    discussion.save()
-    return
 
 def save_mission_statement_from_form(mission_statement_form, group, user):
     mission_statement = MissionStatement()

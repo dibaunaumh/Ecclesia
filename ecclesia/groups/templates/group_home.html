@@ -9,16 +9,17 @@
 {% endblock %}
 {% block extrahead %}
 <script>
-    var config = {
-        canvas_id   : 'discsvu',
-        data_url    : '/get_discussions_view_json/{{ group.slug }}',
-        dialog_title: '{% trans 'Create Discussion' %}',
-        bg_pic      : '/static/img/cork_board.jpg'
-    }
     $(document).ready(function () {
-        var VUC = new VUController({});
-        var GC	= new GroupController(VUC, config);
-        GC.init();
+        var config = {
+                canvas_id           : 'discsvu',
+                data_url            : '/get_discussions_view_json/{{ group.slug }}',
+                update_status_url	: '/common/presentation_status/GroupProfile/{{ group.pk }}',
+                dialog_title        : '{% trans 'Create Discussion' %}',
+                bg_pic              : '/static/img/cork_board.jpg',
+                user_permissions    : '{{ user_permissions }}'
+            },
+            VUC = new VUController({}),
+            GC	= new GroupController(VUC, config).init();
 
         $(function() {
             $("#mission_statement_dialog").dialog({

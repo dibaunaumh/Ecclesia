@@ -1,3 +1,4 @@
+$(document).keydown(function (e) { if (e.which === 13) {e.stopImmediatePropagation();alert(e.target.name);return false;}});
 Math.lineToPointDist = function (x, y, x1, y1, x2, y2) {
     return this.round(this.abs((x2-x1)*(y1-y)-(x1-x)*(y2-y1))/this.sqrt(this.pow(x2-x1,2)+this.pow(y2-y1,2)));
 };
@@ -252,7 +253,7 @@ Discussion.prototype = {
 };
 
 Story = function (node_class, config) {
-	this.config = {
+    this.config = {
 		alias	    	        : 'story',
 		model_name  	        : 'Story',
 		type	    	        : 'goal',
@@ -770,6 +771,7 @@ VUController = function (options) {
         meta_url	        : '',
         last_changed        : '',
         update_timeout      : 5000,
+        user_permissions    : null,
         dialog_title        : '',
         zoom_slider	        : {
             change		: $.bindFn(this, this.zoom),
@@ -790,6 +792,7 @@ VUController = function (options) {
 	this.ctx = null;
 	this.menu = new ContextMenu();
     this.timeoutID = 0;
+    this.hold_requests = false;
 };
 VUController.prototype = {
 	init				: function (loaded) {
@@ -831,6 +834,7 @@ VUController.prototype = {
 				alert('No canvas context.');
 			}
 		}
+        return this;
 	},
     setVUUpdater        : function (clear_only) {
         if ( this.timeoutID ) {
@@ -864,6 +868,7 @@ VUController.prototype = {
                     clearTimeout(_VUC.timeoutID);
                     if(_VUC.options.last_changed !== response) {
                         _VUC.options.last_changed = response;
+                        _VUC.hold_requests = true;
                         _VUC.init.call(_VUC, 'reload');
                     } else {
                         _VUC.setVUUpdater.call(_VUC);
@@ -871,7 +876,7 @@ VUController.prototype = {
                 }
             },
             error   : function (xhr, status, error) {
-                alert(status+' : '+error);
+                alert(status+' : '+xhr.responseText);
             }
         });
     },
@@ -927,42 +932,45 @@ VUController.prototype = {
 		return this.ctx;
 	},
 	setVUEvents			: function () {
-		var _VUC = this;
+		var _VUC = this,
+            o = this.options;
         // turn off the context menu on the canvas' container
-        $('#'+this.options.container_id)[0].oncontextmenu = function() {
+        $('#'+o.container_id)[0].oncontextmenu = function() {
             return false;
-        }
-        $('#'+this.options.canvas_id).mousedown(function (e) {
-            var event = e;
-            $(this).mouseup(function () {
-                $(this).unbind('mouseup');
-                //  if the click property is set then unset it and clear the menu
-                if(_VUC.click) {
-                    _VUC.click = null;
-                    _VUC.menu.close.call(_VUC.menu, e);
-                } else {
-                    // if this is a right click > start rolling
-                    if(event.which == 3) {
-                        var offset = $.clickOffset(e);
-                        $.each(_VUC.elems, function (id, el) {
-                            if(el.clicked.call(el, offset.left, offset.top)) {
-                                if(el.click && $.isFunction(el.click)) {
-                                    _VUC.click = el;
-                                    _VUC.menu.pop.call(_VUC.menu, el.click.call(el, e), _VUC);
+        };
+        if (o.user_permissions && o.user_permissions === 'allowed') {
+            $('#'+o.canvas_id).mousedown(function (e) {
+                var event = e;
+                $(this).mouseup(function () {
+                    $(this).unbind('mouseup');
+                    //  if the click property is set then unset it and clear the menu
+                    if(_VUC.click) {
+                        _VUC.click = null;
+                        _VUC.menu.close.call(_VUC.menu, e);
+                    } else {
+                        // if this is a right click > start rolling
+                        if(event.which == 3) {
+                            var offset = $.clickOffset(e);
+                            $.each(_VUC.elems, function (id, el) {
+                                if(el.clicked.call(el, offset.left, offset.top)) {
+                                    if(el.click && $.isFunction(el.click)) {
+                                        _VUC.click = el;
+                                        _VUC.menu.pop.call(_VUC.menu, el.click.call(el, e), _VUC);
+                                    }
                                 }
+                            });
+                            // there was click, we should open the menu, but not on an element
+                            // open it on the canvas
+                            if(!_VUC.click) {
+                                // just to indicate that menu is popped
+                                _VUC.click = true;
+                                _VUC.menu.pop.call(_VUC.menu, _VUC.getClickConfig.call(_VUC, e), _VUC);
                             }
-                        });
-                        // there was click, we should open the menu, but not on an element
-                        // open it on the canvas
-                        if(!_VUC.click) {
-                            // just to indicate that menu is popped
-                            _VUC.click = true;
-                            _VUC.menu.pop.call(_VUC.menu, _VUC.getClickConfig.call(_VUC, e), _VUC);
                         }
                     }
-                }
-            })
-		});
+                })
+            });
+        }
 	},
 	initZoom			: function () {
 		if($('#vuslider').length == 0) {
@@ -976,27 +984,29 @@ VUController.prototype = {
 	},
     initDialog          : function () {
         var _VUC = this;
-        $('#create_form').dialog({
-			bgiframe: true,
-            autoOpen: false,
-			height: 402,
-			width: 787,
-			modal: true,
-            title: _VUC.options.dialog_title,
-			buttons: {
-				'Create': function() {
-					var _config = {
-                        callback : $.bindFn(_VUC, _VUC.init)
+        if (this.options.user_permissions && this.options.user_permissions === 'allowed') {
+            $('#create_form').dialog({
+                bgiframe: true,
+                autoOpen: false,
+                height: 402,
+                width: 787,
+                modal: true,
+                title: _VUC.options.dialog_title,
+                buttons: {
+                    'Create': function() {
+                        var _config = {
+                            callback : $.bindFn(_VUC, _VUC.init)
+                        },
+                        FC = new FormController();
+                        $(this).dialog('close');
+                        return FC.submit.call(FC, this, _config);
                     },
-                    FC = new FormController();
-                    $(this).dialog('close');
-                    return FC.submit.call(FC, this, _config);
-				},
-				'Cancel': function() {
-					$(this).dialog('close');
-				}
-			}
-		});
+                    'Cancel': function() {
+                        $(this).dialog('close');
+                    }
+                }
+            });
+        }
     },
     createNodes			: function () {
 		var _VUC = this;
@@ -1075,11 +1085,16 @@ VUController.prototype = {
 	},
 	setDraggable		: function (el) {
 		var _VUC = this;
+        // release the hold of GUI AJAX requests
+        this.hold_requests = false;
+        // checking for user permissions
+        if (! this.options.user_permissions || this.options.user_permissions !== 'allowed') {return this;}
 		// set a specific element as draggable
 		if(el) {
 			if(el.DOMid) {
 				$('#'+el.DOMid).draggable('destroy').draggable({
-					containment: 'parent',
+					containment : 'parent',
+                    delay       : 50,
 					start: function (e, ui) {
 						el.config.state.drag = true;
 						_VUC.drag = el;
@@ -1090,7 +1105,7 @@ VUController.prototype = {
 	                    el.config.state.drag = false;
 	                    el.config.dimensions.x = parseInt(position.left);
 						el.config.dimensions.y = parseInt(position.top);
-						_VUC.drop.call(_VUC);
+                        _VUC.drop.call(_VUC);
 					}
 				});
 			}
@@ -1135,42 +1150,44 @@ VUController.prototype = {
                     }
                 );
             }
-            // attach the event to all elements, no need to add children because of bubbling
-			$el.mousedown(function (e) {
-                var event = e;
-                if(_VUC.click) {
-                    // if this is a click on the context menu on a Group
-                    if(_VUC.click instanceof Group && $(event.target).parents('ul').length) {
-                        if($(event.target).parents('ul')[0].id === _VUC.menu[0].id) {
-                            _VUC.click = null;
-                            $(event.target).mousedown();
-                            if(event.which === 3) {
-                                $(this)[0].oncontextmenu = function () {
-                                    return false;
+            if (this.options.user_permissions && this.options.user_permissions === 'allowed') {
+                // attach the event to all elements, no need to add children because of bubbling
+                $el.mousedown(function (e) {
+                    var event = e;
+                    if(_VUC.click) {
+                        // if this is a click on the context menu on a Group
+                        if(_VUC.click instanceof Group && $(event.target).parents('ul').length) {
+                            if($(event.target).parents('ul')[0].id === _VUC.menu[0].id) {
+                                _VUC.click = null;
+                                $(event.target).mousedown();
+                                if(event.which === 3) {
+                                    $(this)[0].oncontextmenu = function () {
+                                        return false;
+                                    }
                                 }
+                                return false;
                             }
-                            return false;
-                        }
-                    } else {
-                        _VUC.click = null;
-                        _VUC.menu.close.call(_VUC.menu);
-                    }
-                }
-                $(this).mouseup(function () {
-                    event.stopPropagation();
-                    $(this).unbind('mouseup');
-                    if(el.click && $.isFunction(el.click)) {
-                        // if this is a right click > start rolling
-                        if(event.which === 3) {
-                            _VUC.click = el;
-                            _VUC.menu.pop.call(_VUC.menu, el.click.call(el, event), _VUC);
-                        }
-                        $(this)[0].oncontextmenu = function () {
-                            return false;
+                        } else {
+                            _VUC.click = null;
+                            _VUC.menu.close.call(_VUC.menu);
                         }
                     }
+                    $(this).mouseup(function () {
+                        event.stopPropagation();
+                        $(this).unbind('mouseup');
+                        if(el.click && $.isFunction(el.click)) {
+                            // if this is a right click > start rolling
+                            if(event.which === 3) {
+                                _VUC.click = el;
+                                _VUC.menu.pop.call(_VUC.menu, el.click.call(el, event), _VUC);
+                            }
+                            $(this)[0].oncontextmenu = function () {
+                                return false;
+                            }
+                        }
+                    });
                 });
-			});
+            }
         }
     },
 	position			: function (el) {
@@ -1210,8 +1227,11 @@ VUController.prototype = {
 	},
 	drop				: function () {
         $('#'+this.drag.config.alias+'_'+this.drag.config.id).removeClass('dragon');
-		this.draw()
-		    .updateDB();
+		if (this.hold_requests) {
+            this.draw();
+        } else {
+            this.draw().updateDB();
+        }
 	},
 	zoom				: function (event, ui) {
 		this.options.scale = ui.value;
@@ -1274,42 +1294,44 @@ GroupController.prototype = {
                     }
                 );
             }
-            // attach the event to all elements, no need to add children because of bubbling
-			$el.mousedown(function (e) {
-                var event = e;
-                if(_VUC.click) {
-                    // if this is a click on the context menu on a Discussion
-                    if(_VUC.click instanceof Discussion && $(event.target).parents('ul').length) {
-                        if($(event.target).parents('ul')[0].id === _VUC.menu[0].id) {
-                            _VUC.click = null;
-                            $(event.target).mousedown();
-                            if(event.which === 3) {
-                                $(this)[0].oncontextmenu = function () {
-                                    return false;
+            if (this.options.user_permissions && this.options.user_permissions === 'allowed') {
+                // attach the event to all elements, no need to add children because of bubbling
+                $el.mousedown(function (e) {
+                    var event = e;
+                    if(_VUC.click) {
+                        // if this is a click on the context menu on a Discussion
+                        if(_VUC.click instanceof Discussion && $(event.target).parents('ul').length) {
+                            if($(event.target).parents('ul')[0].id === _VUC.menu[0].id) {
+                                _VUC.click = null;
+                                $(event.target).mousedown();
+                                if(event.which === 3) {
+                                    $(this)[0].oncontextmenu = function () {
+                                        return false;
+                                    }
                                 }
+                                return false;
                             }
-                            return false;
-                        }
-                    } else {
-                        _VUC.click = null;
-                        _VUC.menu.close.call(_VUC.menu);
-                    }
-                }
-                $(this).mouseup(function () {
-                    event.stopPropagation();
-                    $(this).unbind('mouseup');
-                    if(el.click && $.isFunction(el.click)) {
-                        // if this is a right click > start rolling
-                        if(event.which === 3) {
-                            _VUC.click = el;
-                            _VUC.menu.pop.call(_VUC.menu, el.click.call(el, event), _VUC);
-                        }
-                        $(this)[0].oncontextmenu = function () {
-                            return false;
+                        } else {
+                            _VUC.click = null;
+                            _VUC.menu.close.call(_VUC.menu);
                         }
                     }
+                    $(this).mouseup(function () {
+                        event.stopPropagation();
+                        $(this).unbind('mouseup');
+                        if(el.click && $.isFunction(el.click)) {
+                            // if this is a right click > start rolling
+                            if(event.which === 3) {
+                                _VUC.click = el;
+                                _VUC.menu.pop.call(_VUC.menu, el.click.call(el, event), _VUC);
+                            }
+                            $(this)[0].oncontextmenu = function () {
+                                return false;
+                            }
+                        }
+                    });
                 });
-			});
+            }
         }
     },
     getCreateDiscussionForm : function  (event) {
@@ -1363,7 +1385,6 @@ DiscussionController.prototype = {
 	},
 	getVisualizationMetaData: function () {
 		var _DC = this;
-        this.unsetDraggable();
 		$.getJSON(this.options.meta_url, {discussion_type:this.options.discussion_type}, function (json) {
             // apply the received data
             _DC.metaData = json;
@@ -1483,42 +1504,44 @@ DiscussionController.prototype = {
                     }
                 );
             }
-            // attach the event to all elements, no need to add children because of bubbling
-			$el.mousedown(function (e) {
-                var event = e;
-                if(_DC.click) {
-                    // if this is a click on the context menu on a Story
-                    if(_DC.click instanceof Story && $(event.target).parents('ul').length) {
-                        if($(event.target).parents('ul')[0].id === _DC.menu[0].id) {
-                            _DC.click = null;
-                            $(event.target).mousedown();
-                            if(event.which === 3) {
-                                $(this)[0].oncontextmenu = function () {
-                                    return false;
+            if (this.options.user_permissions && this.options.user_permissions === 'allowed') {
+                // attach the event to all elements, no need to add children because of bubbling
+                $el.mousedown(function (e) {
+                    var event = e;
+                    if(_DC.click) {
+                        // if this is a click on the context menu on a Story
+                        if(_DC.click instanceof Story && $(event.target).parents('ul').length) {
+                            if($(event.target).parents('ul')[0].id === _DC.menu[0].id) {
+                                _DC.click = null;
+                                $(event.target).mousedown();
+                                if(event.which === 3) {
+                                    $(this)[0].oncontextmenu = function () {
+                                        return false;
+                                    }
                                 }
+                                return false;
                             }
-                            return false;
-                        }
-                    } else {
-                        _DC.click = null;
-                        _DC.menu.close.call(_DC.menu);
-                    }
-                }
-                $(this).mouseup(function () {
-                    event.stopPropagation();
-                    $(this).unbind('mouseup');
-                    if(el.click && $.isFunction(el.click)) {
-                        // if this is a right click > start rolling
-                        if(event.which === 3) {
-                            _DC.click = el;
-                            _DC.menu.pop.call(_DC.menu, el.click.call(el, event), _DC);
-                        }
-                        $(this)[0].oncontextmenu = function () {
-                            return false;
+                        } else {
+                            _DC.click = null;
+                            _DC.menu.close.call(_DC.menu);
                         }
                     }
+                    $(this).mouseup(function () {
+                        event.stopPropagation();
+                        $(this).unbind('mouseup');
+                        if(el.click && $.isFunction(el.click)) {
+                            // if this is a right click > start rolling
+                            if(event.which === 3) {
+                                _DC.click = el;
+                                _DC.menu.pop.call(_DC.menu, el.click.call(el, event), _DC);
+                            }
+                            $(this)[0].oncontextmenu = function () {
+                                return false;
+                            }
+                        }
+                    });
                 });
-			});
+            }
         }
     },
     getClickConfig          : function (event) {
@@ -1693,12 +1716,13 @@ FormController.prototype = {
 	bind				: function (configs) {
 		var this_ = this;
 		$.each(configs, function(name, config){
-			if(document.forms[name]) {
-                $(':button[type=submit],:input[type=submit]', document.forms[name]).bind('click', function(e){
+			var form = $('form[name='+name+']');
+            if(form.length) {
+                $(':button[type=submit],:input[type=submit]', form).bind('click', function(e){
                     if($(e.target).attr('name').length && $(e.target).attr('name') == 'action') {
                         $.extend(config, { action : $(e.target).val() });
                     };
-                    return this_.submit.call(this_, this.form, config);
+                    return this_.submit.call(this_, form[0], config);
                 });
             }
 		});
@@ -1770,7 +1794,7 @@ FormController.prototype = {
 	 * @return Boolean false : !! must return false to prevent from redirect to the action url
 	 */
 	submit				: function (form, options) {
-		this.init(form, options);
+        this.init(form, options);
         if(this.validate()) {
 			if(this.before()) {
 				if(this.options.dont_post) {
