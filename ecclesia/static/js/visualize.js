@@ -1,4 +1,3 @@
-$(document).keydown(function (e) { if (e.which === 13) {e.stopImmediatePropagation();alert(e.target.name);return false;}});
 Math.lineToPointDist = function (x, y, x1, y1, x2, y2) {
     return this.round(this.abs((x2-x1)*(y1-y)-(x1-x)*(y2-y1))/this.sqrt(this.pow(x2-x1,2)+this.pow(y2-y1,2)));
 };
