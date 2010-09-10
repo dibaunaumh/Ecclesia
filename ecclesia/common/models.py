@@ -25,4 +25,4 @@ class Subscription(models.Model):
     followed_object = generic.GenericForeignKey('content_type', 'object_id')
 
     def __unicode__(self):
-        return '%s\'s follow on %s' % (self.user, followed_object)
+        return '%s\'s follow on %s' % (self.user, self.followed_object)
