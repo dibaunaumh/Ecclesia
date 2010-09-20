@@ -36,7 +36,7 @@ class Notification(models.Model):
     def deliver(self, instance):
         if instance.recipient and instance.recipient.email:
             try:
-                send_mail('ekkli@gmail.com', instance.recipient.email, 
+                send_mail('alexarsh5@gmail.com', instance.recipient.email, 
                           'Email from ekkli', instance.text)
                 instance.delivered_at = datetime.now()
                 instance.save()
