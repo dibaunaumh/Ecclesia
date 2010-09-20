@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from django.db import models
-from django.core.mail import send_mail
+#from django.core.mail import send_mail
 from django.contrib.auth.models import User, Group
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
@@ -10,6 +10,7 @@ from django.utils.translation import gettext_lazy as _
 from groups.models import GroupProfile
 from discussions.models import Discussion, Story
 from common.models import Subscription
+from common.send_mail import send_mail
 
 
 class Notification(models.Model):
@@ -35,8 +36,8 @@ class Notification(models.Model):
     def deliver(self, instance):
         if instance.recipient and instance.recipient.email:
             try:
-                send_mail('Email from ekkli', instance.text, 'ekkli@gmail.com',
-                          [instance.recipient.email], fail_silently=False)
+                send_mail('ekkli@gmail.com', instance.recipient.email, 
+                          'Email from ekkli', instance.text)
                 instance.delivered_at = datetime.now()
                 instance.save()
             except Exception as inst:
@@ -62,4 +63,4 @@ def send_notification(sender, instance, **kwargs):
         instance.deliver(instance)
             
 # connecting post_save signal of Notifications to the function that sends emails 
-models.signals.post_save.connect(send_notification, sender=Notification)
+models.signals.post_init.connect(send_notification, sender=Notification)

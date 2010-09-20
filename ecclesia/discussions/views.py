@@ -110,7 +110,7 @@ def add_story(request, discussion, user, title, slug, speech_act):
     story.save()
     notification = Notification(text="There is a new story in %s discussion: %s" % (discussion.slug, title), 
                  entity=story, acting_user=request.user)
-    #notification.save()
+    notification.save()
     return HttpResponse("reload")
 
 def add_opinion(request, discussion, user, title, slug, speech_act):
@@ -134,7 +134,7 @@ def add_opinion(request, discussion, user, title, slug, speech_act):
     opinion.save()
     notification = Notification(text="There is a new opinion in %s discussion: %s" % (discussion.slug, title), 
                  entity=opinion, acting_user=request.user)
-    #notification.save()
+    notification.save()
     return HttpResponse("reload")
 
 def add_relation(request, discussion, user, title, slug, speech_act):

@@ -120,3 +120,4 @@ ACCOUNT_ACTIVATION_DAYS = 7 # One-week activation window
 EMAIL_HOST = 'localhost'
 DEFAULT_FROM_EMAIL = 'support@ekkli.com'
 LOGIN_REDIRECT_URL = '/'
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
