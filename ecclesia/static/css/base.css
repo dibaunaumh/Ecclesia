@@ -762,6 +762,7 @@ table#change-history tbody th {
 #version {
 	color: #BBBBD6;
 	padding-top: 29px;
+	float: left;
 }
 
 /* Context Menu */
