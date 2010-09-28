@@ -2,6 +2,7 @@ from ecclesia.groups.models import GroupProfile, GroupPermission, MissionStateme
 from ecclesia.discussions.models import *
 from ecclesia.notifications.models import Notification
 from ecclesia.common.views import _follow
+from ecclesia.common.utils import is_heb
 from django.contrib.auth.models import Group
 from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponse, Http404, HttpResponseRedirect
@@ -65,7 +66,11 @@ def add_discussion(request):
             discussion.group = Group.objects.get(id=request.POST.get('group'))
             discussion.type = DiscussionType.objects.get(id=request.POST.get('type'))
             discussion.name = discussion_form.cleaned_data['name']
-            discussion.slug = slugify(discussion_form.cleaned_data['name'])
+            if is_heb(discussion.name):
+                encoded_discussion_name = discussion.name.__repr__().encode("ascii")[2:-1]
+                discussion.slug = slugify(encoded_discussion_name)
+            else:
+                discussion.slug = slugify(discussion.name)
             discussion.description = discussion_form.cleaned_data['description']
             discussion.created_by = request.user
             discussion.x = request.POST.get('x', None)
@@ -83,7 +88,11 @@ def add_base_story(request):
         discussion = get_object_or_404(Discussion, pk=request.POST["discussion"])
         story_type = request.POST["story-class"]
         title = request.POST["title"]
-        slug = slugify(title)
+        if is_heb(title):
+            encoded_title = title.__repr__().encode("ascii")[2:-1]
+            slug = slugify(encoded_title)
+        else:
+            slug = slugify(title)
         user = request.user
         speech_act = get_object_or_404(SpeechAct, pk=int(request.POST["speech_act"]))
         result = {
