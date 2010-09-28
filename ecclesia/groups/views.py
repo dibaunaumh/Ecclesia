@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404, render_to_response
-from django.http import HttpResponseRedirect, HttpResponse, Http404
+from django.http import HttpResponseRedirect, HttpResponse, Http404, HttpResponseBadRequest
 from django.contrib.auth.decorators import login_required
 from django.core import serializers
 from groups.models import *
@@ -64,7 +64,7 @@ def add_group(request):
             group_profile.save()
             return HttpResponse('reload')
         else:
-            return HttpResponse('error')
+            return HttpResponseBadRequest('No name provided')
     else:
         return HttpResponse('Wrong usage: HTTP POST expected')
 

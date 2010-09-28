@@ -7,10 +7,10 @@ function switch_lang(lang) {
 }
 </script>
 <form name="language_form" action="/i18n/setlang/" method="post" style="display: inline;">
-  <div style="display: inline;">
+  <div style="display: inline; float: right;">
     <input type="hidden" name="language" value="en"/>
     {% for lang in LANGUAGES %}
-        <a href="javascript:switch_lang('{{ lang.0 }}')">{% ifequal LANGUAGE_CODE lang.0 %}<strong>{% endifequal %}{{ lang.1 }}{% ifequal LANGUAGE_CODE lang.0 %}</strong>{% endifequal %}</a>
+        <a href="javascript:switch_lang('{{ lang.0 }}')">{% ifequal LANGUAGE_CODE lang.0 %}<strong>{% endifequal %}{{ lang.0|cut:"-us" }}{% ifequal LANGUAGE_CODE lang.0 %}</strong>{% endifequal %}</a>
     {% endfor %}
   </div>
 </form>

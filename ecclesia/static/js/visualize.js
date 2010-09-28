@@ -376,7 +376,7 @@ Story.prototype = {
             title: 'Add Relation',
             buttons: {
                 'Create': function() {
-                    $(this).dialog('close');
+                    //$(this).dialog('close');
                     return CRFC.submit.call(CRFC, this, config);
                 },
                 'Cancel': function() {
@@ -407,7 +407,7 @@ Story.prototype = {
                 title: 'Add Opinion',
                 buttons: {
                     'Create': function() {
-                        $(this).dialog('close');
+                        //$(this).dialog('close');
                         return COFC.submit.call(COFC, this, config);
                     },
                     'Cancel': function() {
@@ -526,7 +526,7 @@ Relation.prototype = {
                 title: 'Add Opinion',
                 buttons: {
                     'Create': function() {
-                        $(this).dialog('close');
+                        //$(this).dialog('close');
                         return COFC.submit.call(COFC, this, config);
                     },
                     'Cancel': function() {
@@ -997,7 +997,7 @@ VUController.prototype = {
                             callback : $.bindFn(_VUC, _VUC.init)
                         },
                         FC = new FormController();
-                        $(this).dialog('close');
+                        //$(this).dialog('close');
                         return FC.submit.call(FC, this, _config);
                     },
                     'Cancel': function() {
@@ -1461,7 +1461,7 @@ DiscussionController.prototype = {
                             callback : $.bindFn(_DC, _DC.init)
                         },
                         FC = new FormController();
-                        $(this).dialog('close');
+                        //$(this).dialog('close');
                         return FC.submit.call(FC, this, _config);
                     },
                     'Cancel': function() {
@@ -1818,7 +1818,10 @@ FormController.prototype = {
 			dataType: this_.options.data_type,
 			success	: function(response){
                 this_.after.call(this_, response);
-			}
+			},
+            error   : function(xhr, textStatus, errorThrown) {
+                alert("Please fix the following problems:\n" + xhr.responseText);
+            }
 		});
 	},
 	/**
@@ -1840,6 +1843,7 @@ FormController.prototype = {
         var o = this.options;
         if(o.reset_after_send) {
             this.f_html.reset();
+            this.f_jq.dialog('close');
         }
         if(o.callback && typeof o.callback == 'function') {
 			o.callback(response);
@@ -1865,6 +1869,7 @@ FormController.prototype = {
 	},
 	alert_field			: function (el_name) {
 		$(this.elements[el_name]).addClass('field_alert');
+        alert(el_name + " can't be empty!")
 	},
 	clear_alert			: function (el_name) {
 		$(this.elements[el_name]).removeClass('field_alert');

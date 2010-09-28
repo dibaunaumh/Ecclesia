@@ -13,6 +13,7 @@ from django.template.defaultfilters import slugify
 from django.utils import simplejson
 import datetime
 import discussion_actions
+import sys
 
 def visualize(request, discussion_slug):
     user=request.user
@@ -72,7 +73,7 @@ def add_discussion(request):
             discussion.save()
             return HttpResponse('reload')
         else:
-            return HttpResponse('error')
+            return HttpResponse(discussion_form.errors.as_text(), status=400)
     else:
         return HttpResponse('Wrong usage: HTTP POST expected')
 
@@ -97,20 +98,26 @@ def add_base_story(request):
 def add_story(request, discussion, user, title, slug, speech_act):
 #    x = request.POST.get('x', None)
     y = request.POST.get('y', None)
-    story = Story()
-    story.discussion = discussion
-    story.created_by = user
-    story.title = title
-    story.slug = slug
-    story.speech_act = speech_act
-#    if x:
-#        story.x = x
-    if y:
-        story.y = y
-    story.save()
-    notification = Notification(text="There is a new story in %s discussion: %s" % (discussion.slug, title), 
-                 entity=story, acting_user=request.user)
-    notification.save()
+    try:
+        story = Story()
+        story.discussion = discussion
+        story.created_by = user
+        story.title = title
+        story.slug = slug
+        story.speech_act = speech_act
+        #    if x:
+        #        story.x = x
+        if y:
+            story.y = y
+        story.save()
+        notification = Notification(text="There is a new story in %s discussion: %s" % (discussion.slug, title),
+                                    entity=story, acting_user=request.user)
+        notification.save()
+    except:
+        resp = HttpResponse(str(sys.exc_info()[1]))
+        resp.status_code = 500
+        return resp
+
     return HttpResponse("reload")
 
 def add_opinion(request, discussion, user, title, slug, speech_act):
@@ -336,11 +343,11 @@ def merge_stories(story1_slug, story2_slug):
             #change_from_relation(story1, story2)
     story1.save()
     story2.save()
-   
+
 def extract_stories(story1, story2_slug):
     #how to return merged relations?
     pass
- 
+
 def change_from_relation(story1, story2):
     for relation in StoryRelation.objects.filter(from_story=story1):
         relation.from_story=story2
