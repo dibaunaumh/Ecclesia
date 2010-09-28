@@ -1,5 +1,7 @@
 from django.shortcuts import  render_to_response
 from django.http import HttpResponseRedirect, HttpResponse, Http404, HttpResponseBadRequest
+from django.contrib.auth.decorators import login_required
+from django.core import serializers
 from groups.models import *
 from discussions.models import *
 from discussions.forms import DiscussionForm
@@ -9,6 +11,7 @@ from django.contrib.auth.models import User
 from services.search_filter_pagination import search_filter_paginate
 from services.utils import get_user_permissions
 from django.template.defaultfilters import slugify
+from common.utils import is_heb
 
 def home(request):
     """
@@ -25,7 +28,8 @@ def get_groups_view_json(request):
     groups = GroupProfile.objects.all()
     json = ','
     for group in groups:
-        json = '%s{"group":{"id":%s,"url":"%s","name":"%s","dimensions":{"x":%s,"y":%s,"w":%s,"h":%s}}},' % (json, group.id, group.get_absolute_url(), group.group.name, group.x, group.y, group.w, group.h)
+        json = '%s{"group":{"id":%s,"url":"%s","name":"%s","dimensions":{"x":%s,"y":%s,"w":%s,"h":%s}}},' % (
+        json, group.id, group.get_absolute_url(), group.group.name, group.x, group.y, group.w, group.h)
     #json_serializer = serializers.get_serializer("json")()
     #json_serializer.serialize(groups, ensure_ascii=False, stream=response, fields=('x', 'y', 'w', 'h'))
     json = json.strip(',')
@@ -37,7 +41,9 @@ def get_discussions_view_json(request, group_slug):
     discussions = Discussion.objects.filter(group=group)
     json = ','
     for discussion in discussions:
-        json = '%s{"discussion":{"id":%s,"url":"%s","name":"%s","dimensions":{"x":%s,"y":%s,"w":%s,"h":%s}}},' % (json, discussion.id, discussion.get_absolute_url(), discussion.name, discussion.x, discussion.y, discussion.w, discussion.h)
+        json = '%s{"discussion":{"id":%s,"url":"%s","name":"%s","dimensions":{"x":%s,"y":%s,"w":%s,"h":%s}}},' % (
+        json, discussion.id, discussion.get_absolute_url(), discussion.name, discussion.x, discussion.y, discussion.w,
+        discussion.h)
     #json_serializer = serializers.get_serializer("json")()
     #json_serializer.serialize(groups, ensure_ascii=False, stream=response, fields=('x', 'y', 'w', 'h'))
     json = json.strip(',')
@@ -55,7 +61,11 @@ def add_group(request):
                     group.save()
                 group_profile = GroupProfile()
                 group_profile.group = group
-                group_profile.slug = slugify(name)
+                if is_heb(name):
+                    encoded_name = name.__repr__().encode("ascii")[2:-1]
+                    group_profile.slug = slugify(encoded_name)
+                else:
+                    group_profile.slug = slugify(name)
                 group_profile.description = request.POST.get('description', '')
                 group_profile.created_by = request.user
                 group_profile.x = request.POST.get('x', None)
@@ -75,7 +85,7 @@ def group_home(request, group_slug):
     """
     Homepage of a group, displaying the group's description & active content.
     """
-    user=request.user
+    user = request.user
     query = GroupProfile.objects.filter(slug=group_slug)
     user_permissions = ''
     if query.count() == 0:
@@ -109,7 +119,7 @@ def group_home(request, group_slug):
             mission_statement_form = DiscussionForm()
         else:
             show_errors_in_mission_statement_form = True
-    #adding beautiful css
+        #adding beautiful css
     for key in mission_statement_form.fields:
         mission_statement_form.fields[key].widget.attrs["class"] = "text ui-widget-content ui-corner-all"
     #last_related_update = str(group.last_related_update) # set an initial value for the update timestamp
@@ -134,7 +144,7 @@ def members_list(request, group_slug):
         raise Http404("Can't find group named: %s" % group_slug)
     else:
         group = query[0]
-        user=request.user
+        user = request.user
         if str(user) != 'AnonymousUser':
             if GroupPermission.objects.filter(group=group).filter(user=user):
                 permission = GroupPermission.objects.filter(group=group.group).filter(user=user)[0]

@@ -759,6 +759,12 @@ table#change-history tbody th {
     margin-top: 27px
 }
 
+#version {
+	color: #BBBBD6;
+	padding-top: 29px;
+	float: left;
+}
+
 /* Context Menu */
 ul#vu-context-menu{display:none;position:absolute;list-style:none;width:115px;margin:0;padding:0;z-index:1000}
 ul#vu-context-menu li{list-style:none;margin:0;padding:0}

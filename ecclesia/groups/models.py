@@ -36,7 +36,7 @@ class GroupProfile(Presentable):
 	use the above to manage the actual group membership.
     """
     group = models.ForeignKey(Group, unique=True, verbose_name=_('group'), related_name='profile', help_text=_("The internal Group entity. If you are adding a Profile Group, please create a new Group & don't select an existing one"))
-    slug = models.SlugField(_('slug'), unique=True, blank=False, help_text=_("The url representation of the group's name. No whitespaces allowed - use hyphen/underscore to separate words."))
+    slug = models.SlugField(_('slug'),max_length=500, unique=True, blank=False, help_text=_("The url representation of the group's name. No whitespaces allowed - use hyphen/underscore to separate words."))
     description = models.TextField(_('description'), max_length=1000, null=True, blank=True, help_text=_("The group's description"))
     parent = models.ForeignKey('self', verbose_name=_('parent'), related_name='children', null=True, blank=True, help_text=_('The parent group containing this group'))
     forked_from = models.ForeignKey('self', verbose_name=_('forked from'), related_name='forks', null=True, blank=True, help_text=_('The group from which this group forked'))

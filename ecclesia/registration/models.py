@@ -111,7 +111,7 @@ class RegistrationManager(models.Manager):
             profile_callback(user=new_user)
         
         if send_email:
-            from django.core.mail import send_mail
+            from ecclesia.common.send_mail import send_mail
             current_site = Site.objects.get_current()
             
             subject = render_to_string('registration/activation_email_subject.txt',
@@ -124,7 +124,7 @@ class RegistrationManager(models.Manager):
                                          'expiration_days': settings.ACCOUNT_ACTIVATION_DAYS,
                                          'site': current_site })
             
-            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [new_user.email])
+            send_mail(settings.DEFAULT_FROM_EMAIL, new_user.email, subject, message)
         return new_user
     
     def create_profile(self, user):

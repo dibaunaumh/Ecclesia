@@ -12,3 +12,11 @@ def get_domain():
 
 def clear_whitespaces(s):
     return s.replace("\n", "").replace(" ", "")
+
+
+# check if the story is in hebrew
+def is_heb(s):
+    for c in s:
+        if ord(c) > 128:
+            return True
+    return False
