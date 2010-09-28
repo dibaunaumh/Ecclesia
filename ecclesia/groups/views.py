@@ -1,7 +1,5 @@
-from django.shortcuts import get_object_or_404, render_to_response
+from django.shortcuts import  render_to_response
 from django.http import HttpResponseRedirect, HttpResponse, Http404, HttpResponseBadRequest
-from django.contrib.auth.decorators import login_required
-from django.core import serializers
 from groups.models import *
 from discussions.models import *
 from discussions.forms import DiscussionForm
@@ -49,20 +47,25 @@ def add_group(request):
     if request.POST:
         name = request.POST.get('group_name', None)
         if name:
-            if Group.objects.filter(name=name):
-                group = Group.objects.filter(name=name)[0]
-            else:
-                group = Group(name=name)
-                group.save()
-            group_profile = GroupProfile()
-            group_profile.group = group
-            group_profile.slug = slugify(name)
-            group_profile.description = request.POST.get('description', '')
-            group_profile.created_by = request.user
-            group_profile.x = request.POST.get('x', None)
-            group_profile.y = request.POST.get('y', None)
-            group_profile.save()
-            return HttpResponse('reload')
+            try:
+                if Group.objects.filter(name=name):
+                    group = Group.objects.filter(name=name)[0]
+                else:
+                    group = Group(name=name)
+                    group.save()
+                group_profile = GroupProfile()
+                group_profile.group = group
+                group_profile.slug = slugify(name)
+                group_profile.description = request.POST.get('description', '')
+                group_profile.created_by = request.user
+                group_profile.x = request.POST.get('x', None)
+                group_profile.y = request.POST.get('y', None)
+                group_profile.save()
+                return HttpResponse('reload')
+            except:
+                resp = HttpResponse(str(sys.exc_info()[1]))
+                resp.status_code = 500
+                return resp
         else:
             return HttpResponseBadRequest('No name provided')
     else:
@@ -151,7 +154,7 @@ def user_home(request, user_name):
         user = query[0]
         if UserProfile.objects.filter(user=user):
             user_profile = UserProfile.objects.filter(user=user)[0]
-    groups = get_user_groups(user)  
+    groups = get_user_groups(user)
     return render_to_response('user_home.html', locals())
 
 
