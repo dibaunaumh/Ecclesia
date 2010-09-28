@@ -11,6 +11,7 @@ from django.contrib.auth.models import User
 from services.search_filter_pagination import search_filter_paginate
 from services.utils import get_user_permissions
 from django.template.defaultfilters import slugify
+from common.utils import is_heb
 
 def home(request):
     """
@@ -56,7 +57,11 @@ def add_group(request):
                 group.save()
             group_profile = GroupProfile()
             group_profile.group = group
-            group_profile.slug = slugify(name)
+            if is_heb(name):
+                encoded_name = name.__repr__().encode("ascii")[2:-1]
+                group_profile.slug = slugify(encoded_name)
+            else:
+                group_profile.slug = slugify(name)
             group_profile.description = request.POST.get('description', '')
             group_profile.created_by = request.user
             group_profile.x = request.POST.get('x', None)
