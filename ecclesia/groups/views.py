@@ -135,6 +135,7 @@ def save_mission_statement_from_form(mission_statement_form, group, user):
 
 def groups_list(request):
     groups = GroupProfile.objects.all()
+    user = request.user
     (my_items, get_parameters, f) = search_filter_paginate('group', groups, request)
     return render_to_response('groups_list.html', locals())
 

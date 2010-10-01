@@ -27,6 +27,7 @@
         {
             document.getElementById('user-tools').style.display="none";
         }
+        {% if user.is_authenticated %}
         if (URL.indexOf('/group') > 0)
         {
             $.get("/group/is_in_group/",
@@ -45,6 +46,7 @@
                     }
                  });
         }
+        {% endif %}
         <!-- Edit inline for -->
         $('.edit').editable('/edit_inline/', {
             width   : 150
