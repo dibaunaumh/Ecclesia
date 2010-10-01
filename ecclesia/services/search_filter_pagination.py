@@ -16,7 +16,7 @@ def search_filter_paginate(entity_name, all_objects, request):
         if entity_name == 'member':
             i = get_query(request.GET['search'].strip(), ['first_name', 'last_name', 'email'])
         if entity_name == 'discussion':
-            i = get_query(request.GET['search'].strip(), ['name', 'description', 'type'])
+            i = get_query(request.GET['search'].strip(), ['name', 'description'])
         if entity_name == 'story':
             i = get_query(request.GET['search'].strip(), ['title', 'content'])
         items_search = all_objects.filter(i)
