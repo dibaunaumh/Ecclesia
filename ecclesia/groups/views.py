@@ -86,12 +86,11 @@ def group_home(request, group_slug):
     Homepage of a group, displaying the group's description & active content.
     """
     user = request.user
-    query = GroupProfile.objects.filter(slug=group_slug)
+    group = GroupProfile.objects.get(slug=group_slug)
     user_permissions = ''
-    if query.count() == 0:
+    if not group:
         raise Http404("Can't find a group with the slug: %s" % group_slug)
     else:
-        group = query[0]
         user_permission_type = get_user_permissions(user, group)
         if user_permission_type != 3 and user_permission_type != "Not logged in":
             user_permissions = 'allowed'
@@ -109,29 +108,21 @@ def group_home(request, group_slug):
         pass
     #initializing the forms
     discussion_form = DiscussionForm()
-    show_errors_in_mission_statement_form = False
     mission_statement_form = MissionStatementForm()
-    #saving new discussion
-    if request.POST:
-        mission_statement_form = MissionStatementForm(request.POST)
-        if mission_statement_form.is_valid():
-            save_mission_statement_from_form(mission_statement_form, group, user)
-            mission_statement_form = DiscussionForm()
-        else:
-            show_errors_in_mission_statement_form = True
-        #adding beautiful css
-    for key in mission_statement_form.fields:
-        mission_statement_form.fields[key].widget.attrs["class"] = "text ui-widget-content ui-corner-all"
-    #last_related_update = str(group.last_related_update) # set an initial value for the update timestamp
     return render_to_response('group_home.html', locals())
 
-def save_mission_statement_from_form(mission_statement_form, group, user):
-    mission_statement = MissionStatement()
-    mission_statement.group_profile = group
-    mission_statement.mission_statement = mission_statement_form.cleaned_data['mission_statement']
-    mission_statement.created_by = user
-    mission_statement.save()
-    return
+def set_mission_statement(request, group_pk):
+    result = ''
+    if request.POST and group_pk:
+        mission_statement = MissionStatement()
+        mission_statement.group_profile = GroupProfile.objects.get(pk=group_pk)
+#        mission_statement_form = MissionStatementForm(request.POST)
+#        mission_statement.mission_statement = mission_statement_form.cleaned_data['mission_statement']
+        mission_statement.mission_statement = request.POST.get('mission_statement', '')
+        mission_statement.created_by = request.user
+        mission_statement.save()
+        result = mission_statement.mission_statement
+    return HttpResponse(result)
 
 def groups_list(request):
     groups = GroupProfile.objects.all()

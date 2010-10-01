@@ -30,15 +30,28 @@
                 modal: true,
                 buttons: {
                     Create: function() {
-                        $("#mission_statement_form").submit();
+                        //$("#mission_statement_form").submit();
+                        var that = this;
+                        $.ajax({
+                            url     : '/groups/set_mission_statement/{{ group.pk }}',
+                            type    : 'post',
+                            data    : $('#mission_statement_form').serialize(),
+                            success : function (response) {
+                                if (response) {
+                                    $('#mission_statement_button').hide();
+                                    $('#mission_statement_edit').show().children('div').text(response);
+                                    $('div', '#mission_statement').text(response);
+                                }
+                                $(that).dialog('close');
+                            },
+                            error   : function (xhr, status, error) {
+                                $(that).dialog('close');
+                            }
+                        });
                     },
-
                     Cancel: function() {
                         $(this).dialog('close');
                     }
-                },
-                close: function() {
-                    window.location = window.location;
                 }
             });
 
