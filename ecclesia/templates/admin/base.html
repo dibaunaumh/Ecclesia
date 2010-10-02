@@ -135,7 +135,7 @@
         <div id="branding">
         {% block branding %}{% endblock %}
 		{#{% load version %}#}
-		<div id="version">v0.03</div>
+		<div id="version">v0.04</div>
 		</div>
         {% if user.is_authenticated %}
 	        {#<div id="user-tools">{% trans 'Welcome,' %} <strong>{% firstof user.first_name user.username %}</strong>. {% block userlinks %}{% url django-admindocs-docroot as docsroot %}{% if docsroot %}<a href="{{ docsroot }}">{% trans 'Documentation' %}</a> / {% endif %}<a href="/user-profile/">{% trans 'Edit profile' %}</a> / <a href="/admin/password_change/">{% trans 'Change password' %}</a> / <a href="/admin/logout/">{% trans 'Log out' %}</a>{% endblock %}</div>#}
