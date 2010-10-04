@@ -8,39 +8,45 @@
 {% endblock %}
 {% block extrahead %}
 <script>
-	$(document).ready(function() {
-	    $('#opinions').accordion().removeClass('hide');
+    $(document).ready(function() {
+        $('#opinions').accordion().removeClass('hide');
+        $('.edit_opinion_button').click(function () {
+            
+        });
         $('.delete_opinion_button').click(function () {
+            var $this = $(this),
+                $opinion = $('#opinion_body_'+$this.attr('pk')).add('#opinion_head_'+$this.attr('pk'));
             $.ajax({
                 url : '/discussions/delete_opinion/',
                 data: { opinion_pk : $(this).attr('pk') },
                 type: 'post',
                 success: function (response) {
                     if (response && response === 'OK') {
-                        alert('OK');
+                        $opinion.remove();
+                        alert('{% trans 'Opinion was deleted successfully!' %}');
                     }
                 }
             });
             return false;
         });
         $('.edit-textarea').editable('/edit_inline/', {
-			height	: 150,
-	        width   : 500,
-			type    : 'textarea',
-			cancel  : 'Cancel',
-         	submit  : 'OK'
-	    });
+            height  : 150,
+            width   : 500,
+            type    : 'textarea',
+            cancel  : 'Cancel',
+            submit  : 'OK'
+       });
         $('.edit').editable('/edit_inline/', {
-	        width   : 500,
-			cancel  : 'Cancel',
-         	submit  : 'OK'
-	    });
+           width   : 500,
+           cancel  : 'Cancel',
+            submit  : 'OK'
+       });
         $('.edit-opinion-content').editable('/discussions/update_opinion/', {
-            height	: 150,
-	        width   : 500,
-			type    : 'textarea',
-			cancel  : 'Cancel',
-         	submit  : 'OK'
+            height  : 150,
+            width   : 500,
+            type    : 'textarea',
+            cancel  : 'Cancel',
+            submit  : 'OK'
         });
         $('.editable_select_json').each(function () {
             var span = $(this),
@@ -53,7 +59,7 @@
                 submit : 'OK'
             });
         });
-	});
+    });
 </script>
 {% endblock %}
 {% block content %}
@@ -75,9 +81,9 @@
     <h2>{% trans 'Opinions' %}:</h2>
     <div id="opinions" class="hide">
     {% for opinion in opinions %}
-        <h3><a href="#"><span class="opinion opinion_{{ opinion.speech_act }}">{{ opinion.speech_act }}</span><span class="edit-opinion-title">{{ opinion.title }}</span></a></h3>
-        <div>
-            <a href="#" class="delete_opinion_button" pk="{{ opinion.pk }}" title="{% trans 'Delete opinion' %}"></a><span>{% trans 'By' %}: {{ opinion.created_by }}, {% trans 'at' %}: {{ opinion.created_at }}</span>
+        <h3 id="opinion_head_{{ opinion.pk }}"><a href="#"><span class="opinion opinion_{{ opinion.speech_act }}">{{ opinion.speech_act }}</span>{{ opinion.title }}</a><button class="edit_opinion_button"></button></h3>
+        <div id="opinion_body_{{ opinion.pk }}">
+            {% if user.is_authenticated and user == opinion.created_by %}<a href="#" class="delete_opinion_button" pk="{{ opinion.pk }}" title="{% trans 'Delete opinion' %}"></a>{% endif %}<span>{% trans 'By' %}: {{ opinion.created_by }}, {% trans 'at' %}: {{ opinion.created_at }}</span>
             <p class="edit-opinion-content">{{ opinion.content }}</p>
         </div>
     {% endfor %}

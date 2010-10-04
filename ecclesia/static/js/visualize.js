@@ -886,6 +886,7 @@ VUController.prototype = {
             type		: "POST",
             url			: _VUC.options.update_db_url,
             data		: _VUC.data,
+            async       : false,
             success		: function (response){
                 _VUC.options.last_changed = response;
             }
@@ -1091,7 +1092,7 @@ VUController.prototype = {
 		// set a specific element as draggable
 		if(el) {
 			if(el.DOMid) {
-				$('#'+el.DOMid).draggable('destroy').draggable({
+				$('#'+el.DOMid).draggable({
 					containment : 'parent',
                     delay       : 50,
 					start: function (e, ui) {
