@@ -162,8 +162,9 @@ def pick_outstanding_scores(scores):
     """
     if len(scores) == 0:
         return []
-    avg_score = sum(scores.values()) / len(scores)
-    squares = [(s - avg_score) ** 2 for s in scores]
+    values = scores.values()
+    avg_score = sum(values) / len(values)
+    squares = [(s - avg_score) ** 2 for s in values]
     stddev = int((sum(squares) / len(squares)) ** 0.5)
     return [id for id in scores.keys() if (scores[id]-avg_score) >= stddev]
     

@@ -190,7 +190,7 @@ def last_changed_updater(sender, instance, **kwargs):
     container = sender.get_visual_container(instance)
     container.last_related_update = instance.updated_at if hasattr(instance, 'updated_at') else datetime.datetime.now()
     container.save()
-    if container is Discussion:
+    if isinstance(container, Discussion):
         evaluate_stories(instance.discussion)
 
 
