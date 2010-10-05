@@ -1,9 +1,25 @@
 Ekkli
 ======
 
-Ekkli (pka Ecclesia) is an application for helping organizations meet they're goals. It is developed to test various technologies that facilitate Direct Democracy, as part of the initiatives of the Israeli Movement for Direct Democracy (http://kol1.org/wiki).
+Ekkli is an application for collective decision making in applications.
+It was commissioned to test various technologies that facilitate Direct Democracy, 
+by the Israeli Movement for Direct Democracy (http://kol1.org/wiki).
 
-The project is fully open-source & any testing/contribution is highly welcome.
+The project is fully open-source & also provides a beta online service:
+http://beta.ekkli.com
+
+The list of project members is:
+ alexarsh (Alex Arshavski)
+ pl47ypus (Adi Baron)
+ ydaniv (Yehonatan Daniv)
+ staros (Roman Mester)
+ vlad73 (Vladislav Voskoboynik)
+ tberg (Tomer Bergman)
+ talyaron (Tal Yaron)
+ dibau_naum_h (Udi h Bauman)
+
 
 For more information, check out the project wiki's:
 http://ekkli.org/
+
+
