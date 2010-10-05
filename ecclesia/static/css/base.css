@@ -14,7 +14,7 @@ body {
 /* LINKS */
 
 a:link, a:visited {
-    color: #5b80b2;
+    color: #002039;
     text-decoration: none;
 }
 
@@ -377,7 +377,7 @@ input[type=text], input[type=password], textarea, select, .vTextField {
 }
 
 .button.default, input[type=submit].default, .submit-row input.default {
-    border: 2px solid #5b80b2;
+    border: 2px solid #002039;
     background: #7CA0C7 url(../img/admin/default-bg.gif) bottom repeat-x;
     font-weight: bold;
     color: white;
@@ -689,8 +689,8 @@ table#change-history tbody th {
 /* HEADER */
 
 #header {
-    background: #5B80B2;
-    color: #ffc;
+    background: #002039;
+    color: #8181C7;
     overflow: hidden;
 }
 
