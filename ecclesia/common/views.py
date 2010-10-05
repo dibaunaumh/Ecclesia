@@ -16,20 +16,19 @@ def update_presentation(request):
         pk = request.POST.get('pk', None)
         if pk:
             object = model_class.objects.get(pk=pk)
-            container = object.get_visual_container()
-            if object and hasattr(container, 'last_related_update'):
-                last_changed = request.POST.get('last_changed', None)
-                if last_changed:
-                    try:
-                        last_changed_datetime = datetime.datetime.strptime(last_changed, '%Y-%m-%d %H:%M:%S.%f')
-                    except:
-                        last_changed_datetime = datetime.datetime.strptime(last_changed, '%Y-%m-%d %H:%M:%S')
-                    if last_changed_datetime < container.last_related_update:
-                        timestamp = last_changed
-                    else:
-                        update_time = True
-                else:
-                    timestamp = datetime.datetime.now()
+            if hasattr(object, 'get_visual_container'):
+                container = object.get_visual_container()
+                if object and hasattr(container, 'last_related_update'):
+                    last_changed = request.POST.get('last_changed', None)
+                    if last_changed:
+                        try:
+                            last_changed_datetime = datetime.datetime.strptime(last_changed, '%Y-%m-%d %H:%M:%S.%f')
+                        except:
+                            last_changed_datetime = datetime.datetime.strptime(last_changed, '%Y-%m-%d %H:%M:%S')
+                        if last_changed_datetime < container.last_related_update:
+                            timestamp = last_changed
+                        else:
+                            update_time = True
             #object.h = int(request.POST.get('h', object.h))
             #object.w = int(request.POST.get('w', object.w))
             object.x = int(request.POST.get('x', object.x))

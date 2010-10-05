@@ -9,8 +9,8 @@ from django.conf import settings
 
 class UserProfile(models.Model):
     """
-	Enhances the definitions of User.
-	"""
+    Enhances the definitions of User.
+    """
     user = models.ForeignKey(User, unique=True, verbose_name=_('user'), related_name='profile', help_text=_("The internal User entity. Add this entity before you create a profile and set a User for it."))
     picture = models.ImageField(max_length=100, default='img/user_pics/default_photo.gif', upload_to='img/user_pics', help_text=_('The name of the image file.'))
     gravatar = models.EmailField(max_length=100, help_text=_('The email of your gravatar.'), null=True, blank=True)
@@ -33,7 +33,7 @@ class GroupProfile(Presentable):
     """
     Represents an organization of people trying to meet some
     common goals. This is an extension of the django.contrib.auth Group model,
-	use the above to manage the actual group membership.
+    use the above to manage the actual group membership.
     """
     group = models.ForeignKey(Group, unique=True, verbose_name=_('group'), related_name='profile', help_text=_("The internal Group entity. If you are adding a Profile Group, please create a new Group & don't select an existing one"))
     slug = models.SlugField(_('slug'),max_length=500, unique=True, blank=False, help_text=_("The url representation of the group's name. No whitespaces allowed - use hyphen/underscore to separate words."))
@@ -66,12 +66,13 @@ class GroupProfile(Presentable):
                 group_permission = GroupPermission(group=self.group, user=self.created_by, permission_type=1)
                 group_permission.save()
 
-    def __unicode__(self):
-        return self.group.name
-
     def get_group_members(self):
         members = [user for user in User.objects.all() if self.group in user.groups.all()]
         return members
+
+    def __unicode__(self):
+        return self.group.name
+
 
 def get_user_groups(user):
     """
