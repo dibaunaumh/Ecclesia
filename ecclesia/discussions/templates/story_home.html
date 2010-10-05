@@ -129,7 +129,7 @@
     <hr/>
     {% endif %}
 </div>
-{% if user == opinion.created_by or user.is_superuser %}
+{% if user.is_authenticated %}
 <form action="{% url discussions.views.edit_opinion %}" method="post" id="opinion_edit">
     <input type="hidden" name="pk" value="" />
     <fieldset>
