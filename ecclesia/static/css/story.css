@@ -13,4 +13,12 @@ h4#discussion-name-header {margin:0}
 div#opinions {padding:0;}
 div#opinions {}
 div#opinions h3 a{color:#fff}
+form#opinion_edit {display:none;}
 #opinions h3 a:hover{}
+.opinion_title + button {display:none;margin-left:10px;}
+.ui-state-active a .opinion_title + button {display:inline;}
+.opinion_title + button span.ui-button-text {padding:2px 1em 2px 2em;}
+
+/* Opinion Edit Form */
+fieldset{margin-bottom:10px;paddin:2px;border:none}
+fieldset input[type=text], fieldset textarea {width:99%;}

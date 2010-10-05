@@ -241,6 +241,30 @@ def stories_list(request, discussion_slug):
     (my_items, get_parameters, f) = search_filter_paginate('story', stories, request)
     return render_to_response('stories_list.html', locals())
 
+def edit_opinion(request):
+    result = ''
+    if request.POST:
+        pk = request.POST.get('pk', None)
+        if not pk:
+            result = '[{"error":"Missing opinion\'s ID."}]'
+        else:
+            opinion = Opinion.objects.get(pk=pk)
+            title = request.POST.get('title', None)
+            if title:
+                opinion.title = title
+                opinion.slug = slugify(title)
+            opinion.content = request.POST.get('content', '')
+            speech_act = request.POST.get('speech_act', None)
+            if speech_act:
+                speech_act = SpeechAct.objects.get(pk=speech_act)
+                opinion.speech_act = speech_act
+            opinion.save()
+#            result = serializers.serialize('json', (opinion,), ensure_ascii=False)
+            result = '[{"pk":%d, "fields":{"speech_act":"%s","title":"%s","content":"%s"}}]' % (opinion.pk, opinion.speech_act, opinion.title, opinion.content)
+    else:
+        result = "Wrong usage: HTTP POST expected"
+    return HttpResponse(result)
+
 def delete_story(request, story_pk):
     story = Story.objects.get(pk=story_pk)
     discussion = story.discussion
@@ -331,6 +355,7 @@ def story_home(request, discussion_slug, ctype, slug):
     group = GroupProfile.objects.get(group=Group.objects.get(id=discussion.group.pk))
     user = request.user
     opinions = object.opinions.all().order_by('speech_act')
+    opinion_types = SpeechAct.objects.filter(discussion_type=discussion.type, story_type=2)
     user_in_group = check_if_user_in_group(user, discussion)
     return render_to_response('story_home.html', locals())
 

@@ -10,8 +10,53 @@
 <script>
     $(document).ready(function() {
         $('#opinions').accordion().removeClass('hide');
-        $('.edit_opinion_button').click(function () {
-            
+        $('.edit_opinion_button').button({icons: {primary:'ui-icon-pencil'}}).click(function () {
+            var $that = $(this),
+            $form = $('#opinion_edit'),
+            $fieldsets = $form.children('fieldset'),
+            pk = $that.attr('pk'),
+            speech_act = $that.siblings('.opinion').text(),
+                dialog_config = {
+                bgiframe: true,
+                autoOpen: false,
+                height: 350,
+                width: 600,
+                modal: true,
+                title: '{% trans 'Edit Opinion' %}',
+                buttons: {
+                    '{% trans 'Submit' %}': function() {
+                        var that = this, _config = {
+                            callback : function (response) {
+                                var json = $.parseJSON(response);
+                                $.each(json, function (i, item) {
+                                    if (i === 'error') {
+                                        alert(item);
+                                    } else {
+                                        var $head = $('#opinion_head_'+item.pk+' > a'),
+                                            $body = $('#opinion_body_'+item.pk+' p');
+                                        $head.children('.opinion').attr('class', 'opinion opinion_'+item.fields.speech_act).text(item.fields.speech_act);
+                                        $head.children('.opinion_title').text(item.fields.title);
+                                        $body.text(item.fields.content);
+                                    }
+                                });
+                                $(that).dialog('close');
+                            }
+                        },
+                        FC = new FormController();
+                        return FC.submit.call(FC, this, _config);
+                    },
+                    '{% trans 'Cancel' %}': function() {
+                        $(this).dialog('close');
+                    }
+                }
+            };
+            // set the form inputs
+            $form.children(':input[name=pk]').val(pk);
+            $fieldsets.children('#opinion_'+speech_act).attr('checked', 'checked');
+            $fieldsets.children(':input[name=title]').val($that.siblings('.opinion_title').text());
+            $fieldsets.children(':input[name=content]').val($('p', '#opinion_body_'+pk).text());
+            // init and open dialog
+            $form.dialog(dialog_config).dialog('open');
         });
         $('.delete_opinion_button').click(function () {
             var $this = $(this),
@@ -37,17 +82,10 @@
             submit  : 'OK'
        });
         $('.edit').editable('/edit_inline/', {
-           width   : 500,
-           cancel  : 'Cancel',
-            submit  : 'OK'
-       });
-        $('.edit-opinion-content').editable('/discussions/update_opinion/', {
-            height  : 150,
             width   : 500,
-            type    : 'textarea',
             cancel  : 'Cancel',
             submit  : 'OK'
-        });
+       });
         $('.editable_select_json').each(function () {
             var span = $(this),
                 speech_act = span.attr('speech_act'),
@@ -81,14 +119,33 @@
     <h2>{% trans 'Opinions' %}:</h2>
     <div id="opinions" class="hide">
     {% for opinion in opinions %}
-        <h3 id="opinion_head_{{ opinion.pk }}"><a href="#"><span class="opinion opinion_{{ opinion.speech_act }}">{{ opinion.speech_act }}</span>{{ opinion.title }}</a><button class="edit_opinion_button"></button></h3>
+        <h3 id="opinion_head_{{ opinion.pk }}"><a href="#"><span class="opinion opinion_{{ opinion.speech_act }}">{{ opinion.speech_act }}</span><span class="opinion_title">{{ opinion.title }}</span>{% if user == opinion.created_by or user.is_superuser %}<button class="edit_opinion_button" pk="{{ opinion.pk }}">{% trans 'Edit' %}</button>{% endif %}</a></h3>
         <div id="opinion_body_{{ opinion.pk }}">
-            {% if user.is_authenticated and user == opinion.created_by %}<a href="#" class="delete_opinion_button" pk="{{ opinion.pk }}" title="{% trans 'Delete opinion' %}"></a>{% endif %}<span>{% trans 'By' %}: {{ opinion.created_by }}, {% trans 'at' %}: {{ opinion.created_at }}</span>
-            <p class="edit-opinion-content">{{ opinion.content }}</p>
+            {% if user == opinion.created_by or user.is_superuser %}<a href="#" class="delete_opinion_button" pk="{{ opinion.pk }}" title="{% trans 'Delete opinion' %}"></a>{% endif %}<span>{% trans 'By' %}: {{ opinion.created_by }}, {% trans 'at' %}: {{ opinion.created_at }}</span>
+            <p>{{ opinion.content }}</p>
         </div>
     {% endfor %}
     </div>
     <hr/>
     {% endif %}
 </div>
+{% if user == opinion.created_by or user.is_superuser %}
+<form action="{% url discussions.views.edit_opinion %}" method="post" id="opinion_edit">
+    <input type="hidden" name="pk" value="" />
+    <fieldset>
+        <legend>{% trans 'Speech act:' %}</legend>
+        {% for sa in opinion_types %}
+        <input type="radio" name="speech_act" value="{{ sa.pk }}" id="opinion_{{ sa.name }}" /><label for="opinion_{{ sa.name }}"> {{ sa.name }}</label><br/>
+        {% endfor %}
+    </fieldset>
+    <fieldset>
+		<legend>{% trans 'Title:' %}</legend>
+		<input type="text" name="title" class="is_value"/>
+	</fieldset>
+    <fieldset>
+		<legend>{% trans 'Content:' %}</legend>
+		<textarea name="content"></textarea>
+	</fieldset>
+</form>
+{% endif %}
 {% endblock %}
