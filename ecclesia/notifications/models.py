@@ -60,6 +60,10 @@ class Notification(models.Model):
 
 def send_notification(sender, instance, **kwargs):
     if instance.delivered_at is None:
+        if instance.entity and instance.entity.discussion and \
+            instance.text.find("To go to discussion click on the following link") == -1: 
+            instance.text = "%s\nTo go to discussion click on the following link: %s" % \
+            (instance.text, instance.entity.discussion.get_absolute_url())
         instance.deliver(instance)
             
 # connecting post_save signal of Notifications to the function that sends emails 
