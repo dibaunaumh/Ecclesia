@@ -8,7 +8,20 @@
 <form method="post" action=".">
 	{% csrf_token %}
 	<table>
-	  {{ form }}
+		{% for field in form %}
+			<tr>
+				<td>{{field.label}}:</td>
+				{% ifequal field.name "agreement" %}
+					<td>
+						{{field}}
+    		            <a href="https://sites.google.com/site/ekklipub/user-agreement" value="Terms of use"/>Terms of use</a>
+		            </td>
+				{% else %}
+					<td>{{field}}</td>
+				{% endifequal%}
+				<td>{{field.errors}}</td>
+			</tr>
+		{% endfor %}
 	</table>
   <input type="submit" value="{% trans 'Submit' %}" />
 </form>
