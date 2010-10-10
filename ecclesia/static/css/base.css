@@ -9,6 +9,7 @@ body {
     font-family: "Lucida Grande","DejaVu Sans","Bitstream Vera Sans",Verdana,Arial,sans-serif;
     color: #333;
     background: #fff;
+    cursor: auto;
 }
 
 /* LINKS */
@@ -765,9 +766,30 @@ table#change-history tbody th {
 	float: left;
 }
 
-/* Context Menu */
+/* CONTEXT MENU */
 ul#vu-context-menu{display:none;position:absolute;list-style:none;width:115px;margin:0;padding:0;z-index:1000}
 ul#vu-context-menu li{list-style:none;margin:0;padding:0}
 ul#vu-context-menu li a, ul#vu-context-menu li a:link{display:block;padding:5px;border:2px solid #5B80B2;background-color:#eee;-moz-border-radius:3px;-webkit-border-radius:3px;border-radius:3px;font-weight:normal}
 ul#vu-context-menu li a:hover{font-weight:bold;border:2px outset #5B80B2}
 ul#vu-context-menu li a:active{border:2px inset #5B80B2;background-color:#ccc}
+
+/* AJAX LOADER */
+body.cursor_wait {
+    cursor: wait;
+}
+#ajax_loader {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 150px;
+    height: 90px;
+    margin-top: -46px;
+    margin-left: -76px;
+    text-align: center;
+    border: 1px solid #002039;
+    background: url('../img/ajax-loader.gif') left center no-repeat;
+}
+#ajax_loader p {
+    margin: 36px 40px 0;
+}
