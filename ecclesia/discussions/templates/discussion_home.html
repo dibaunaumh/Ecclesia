@@ -6,10 +6,10 @@
 {% block coltype %}diagram{% endblock %}
 {% block extrastyle %}
     <link rel="stylesheet" type="text/css" href="/static/css/discussions.css" />
-	<link rel="stylesheet" type="text/css" href="http://dev.jquery.com/view/trunk/plugins/tooltip/jquery.tooltip.css" />
+	<link rel="stylesheet" type="text/css" href="/static/js/jquery/jquery-tooltip/jquery.tooltip.css" />
 {% endblock %}
 {% block extrahead %}
-	<script src="http://dev.jquery.com/view/trunk/plugins/tooltip/jquery.tooltip.js"></script>
+	<script src="/static/js/jquery/jquery-tooltip/jquery.tooltip.pack.js"></script>
 
 	<script>
         $(document).ready(function () {
@@ -23,7 +23,7 @@
                     user_permissions    : '{{ user_permissions }}'
                 },
                 VUC = new VUController({}),
-                DC = new DiscussionController(VUC, config).init();
+                DC = new DiscussionController(VUC, config).init(true);
             $('button').filter('.ekkli-button').hover(
                 function () {
                     $(this).addClass('ui-state-hover');
@@ -56,7 +56,7 @@
 {% block content %}
 <div id="buttons_container">
 	<input type="button" class="ui-button ui-state-default ui-corner-all" value="{% trans 'Stories List' %}" onclick="document.location.href='/stories_list/{{discussion.slug}}/'" />
-    {% if not user_follows_discussion %}
+    {% if user.is_authenticated and not user_follows_discussion %}
     <input type="button" class="ui-button ui-state-default ui-corner-all" id="follow_button" value="{% trans 'Follow' %}" />
     {% endif %}
 </div>

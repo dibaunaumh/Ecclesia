@@ -12,9 +12,11 @@ from services.utils import get_user_permissions
 from django.core import serializers
 from django.template.defaultfilters import slugify
 from django.utils import simplejson
+from django.conf import settings
 import datetime
 import discussion_actions
 import sys
+
 
 def visualize(request, discussion_slug):
     user=request.user
@@ -130,7 +132,7 @@ def add_story(request, discussion, user, title, slug, speech_act):
         resp.status_code = 500
         return resp
 
-    return HttpResponse("reload")
+    return HttpResponse("%s" % story.discussion.last_related_update)
 
 def add_opinion(request, discussion, user, title, slug, speech_act):
     parent_story = request.POST.get('parent_story', None)
@@ -154,7 +156,7 @@ def add_opinion(request, discussion, user, title, slug, speech_act):
     notification = Notification(text="There is a new opinion in %s discussion: %s" % (discussion.slug, title), 
                  entity=opinion, acting_user=request.user)
     notification.save()
-    return HttpResponse("reload")
+    return HttpResponse("%s" % opinion.discussion.last_related_update)
 
 def add_relation(request, discussion, user, title, slug, speech_act):
     from_story = request.POST.get('from_story', None)
@@ -170,7 +172,7 @@ def add_relation(request, discussion, user, title, slug, speech_act):
     relation.from_story = Story.objects.get(pk=from_story)
     relation.to_story = Story.objects.get(pk=to_story)
     relation.save()
-    return HttpResponse("reload")
+    return HttpResponse("%s" % relation.discussion.last_related_update)
 
 def get_stories_view_json(request, discussion_slug):
     discussion = Discussion.objects.get(slug=discussion_slug)
@@ -183,7 +185,10 @@ def get_stories_view_json(request, discussion_slug):
     for story in stories:
         is_conclusion = "true" if story.id in conclusions_map else "false"
         children = story.get_children_js_array()
-        json = '%s{"story":{"id":%s,"url":"%s","name":"%s","type":"%s","content":"%s","state":{"indicated":%s},"dimensions":{"x":%s,"y":%s,"w":%s,"h":%s},"children":%s,"icon":"/static/%s"}},' % (json, story.id, story.get_absolute_url(), story.title, story.speech_act, story.get_json_safe_content(), is_conclusion, story.x, story.y, story.w, story.h, children, story.speech_act.icon)
+        icon = ''
+        if story.speech_act.icon:
+            icon = '%s%s' % (settings.MEDIA_URL, story.speech_act.icon)
+        json = '%s{"story":{"id":%s,"url":"%s","name":"%s","type":"%s","content":"%s","state":{"indicated":%s},"dimensions":{"x":%s,"y":%s,"w":%s,"h":%s},"children":%s,"icon":"%s"}},' % (json, story.id, story.get_absolute_url(), story.title, story.speech_act, story.get_json_safe_content(), is_conclusion, story.x, story.y, story.w, story.h, children, icon)
     relations = StoryRelation.objects.filter(discussion=discussion)
     for relation in relations:
         children = relation.get_children_js_array()

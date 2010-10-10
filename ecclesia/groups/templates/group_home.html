@@ -19,7 +19,7 @@
                 user_permissions    : '{{ user_permissions }}'
             },
             VUC = new VUController({}),
-            GC	= new GroupController(VUC, config).init();
+            GC	= new GroupController(VUC, config).init(true);
 
         $(function() {
             $("#mission_statement_dialog").dialog({

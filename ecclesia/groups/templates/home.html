@@ -10,7 +10,7 @@
                 dialog_title    : '{% trans 'Create Group' %}',
                 user_permissions: '{{ user_permissions }}'
             },
-            VUC = new VUController(config).init();
+            VUC = new VUController(config).init(true);
     });
 </script>
 {% endblock %}

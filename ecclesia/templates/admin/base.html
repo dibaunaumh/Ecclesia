@@ -23,6 +23,15 @@
 <script>
 	URL = window.location.href;
 	$(document).ready(function() {
+        var $loader = $('#ajax_loader');
+        if ($loader.length) {
+            $('#ajax_loader').ajaxStart(function () {
+                $(this).show();
+            });
+            $('#ajax_loader').ajaxStop(function () {
+                $(this).hide();
+            });
+        }
         if ((URL.indexOf('login') > 0) || (URL.indexOf('logout') > 0 || (URL.indexOf('register') > 0)))
         {
             document.getElementById('user-tools').style.display="none";
@@ -129,6 +138,7 @@
 <div style="display:none" title="Leave Group Confirmation" id="leave_group_confirmation">Are you sure you want to leave the group?</div>
 <!-- Container -->
 <div id="container">
+    {% block ajaxloader %}<div id="ajax_loader"><p>{% trans 'Loading...' %}</p></div>{% endblock %}
     {% if not is_popup %}
     <!-- Header -->
     <div id="header">
