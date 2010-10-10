@@ -167,6 +167,7 @@ Group = function (node_class, config) {
 	// set the id that connects this instance to the DOM
     this.DOMid = this.config.alias+'_'+this.config.id;
     this.$element = $('#'+this.DOMid);
+    this.draggable = false;
 
 	this.loadImage();
 };
@@ -232,6 +233,7 @@ Discussion = function (node_class, config) {
 	// set the id that connects this instance to the DOM
     this.DOMid = this.config.alias+'_'+this.config.id;
     this.$element = {};
+    this.draggable = false;
 
 	this.loadImage();
 };
@@ -292,6 +294,7 @@ Story = function (node_class, config) {
     // set the id that connects this instance to the DOM
     this.DOMid = this.config.alias+'_'+this.config.id;
     this.$element = {};
+    this.draggable = false;
 };
 Story.prototype = {
 	serialize	: function () {
@@ -1119,6 +1122,7 @@ VUController.prototype = {
                         _VUC.drop.call(_VUC);
 					}
 				});
+                el.draggable = true;
 			}
 		}
 		// set all elements as draggable
@@ -1131,32 +1135,42 @@ VUController.prototype = {
 	},
     disableDraggable		: function (el) {
         var _VUC = this;
-		// unset a specific element's draggable state
+		// disable draggable functionality
 		if(el) {
-            if(el.DOMid) {
-				el.$element.draggable('disable');
+            if(el.draggable) {
+                el.$element.draggable('disable');
+                return true
+            } else {
+            // draggable was not initialized yet, bail out
+            return false;
             }
         }
-        // unset all the elements' draggable state
+        // disable all the elements' draggable functionality
 		else {
 			$.each(this.elems, function (id, el) {
-				_VUC.disableDraggable(el);
+				var keep_going = _VUC.disableDraggable(el);
+                if (! keep_going) { return false; } // break
 			});
 		}
         return this;
     },
     enableDraggable		: function (el) {
         var _VUC = this;
-		// unset a specific element's draggable state
+		// enable draggable functionality
 		if(el) {
-            if(el.DOMid) {
-				el.$element.draggable('enable');
+            if(el.draggable) {
+                el.$element.draggable('enable');
+                return true;
+            } else {
+                // draggable was not initialized yet, bail out
+                return false;
             }
         }
-        // unset all the elements' draggable state
+        // enable all the elements' draggable functionality
 		else {
 			$.each(this.elems, function (id, el) {
-				_VUC.enableDraggable(el);
+				var keep_going = _VUC.enableDraggable(el);
+                if (! keep_going) { return false; } // break
 			});
 		}
         return this;
