@@ -17,9 +17,9 @@ div.opinion {display:none}
 .stories_container{float: left; text-align: center}
 .stories_container h2{font-size: 16px}
 div.story {position: absolute; margin: 0; padding: 0; font-weight: bold; cursor: move}
-/* Enforce wait cursor for AJAX loading */body.cursor_wait div.story {cursor: wait;}
-/* Enforce wait cursor for AJAX loading */body.cursor_wait div.story a.story_title {cursor: wait;}
-/* Enforce wait cursor for AJAX loading */body.cursor_wait div.story a.story_content {cursor: wait;}
+/* Enforce wait cursor for AJAX loading */body.wait div.story {cursor: wait;}
+/* Enforce wait cursor for AJAX loading */body.wait div.story a.story_title {cursor: wait;}
+/* Enforce wait cursor for AJAX loading */body.wait div.story a.story_content {cursor: wait;}
 div.story a.story_title {display: block; float: left; padding: 2px; color: #000; overflow: hidden}
 div.story a.story_title:hover {color: #033; text-decoration: underline}
 div.story a.story_content {position: absolute; left: 0; bottom: 0; height: 32px; width: 32px; background:url('../img/icons/tool_tip_icon.gif') center center no-repeat;}
@@ -31,7 +31,7 @@ a.member img {width: 50px; height: 50px; margin: 2px; border: 1px solid #933}
 .opinions { position: absolute; width: 24px; height: 24px }
 .opinions a { position: relative; left: 0; top: 3px; color: #222 }
 .opinion_container_bg{ position: absolute; left: 0; top: 0 }
-/* Enforce wait cursor for AJAX loading */body.cursor_wait .opinions a {cursor: wait;}
+/* Enforce wait cursor for AJAX loading */body.wait .opinions a {cursor: wait;}
 
 /* Story Input Form */
 /*fieldset{padding:2px;border:1px solid #5B80B2}*/
@@ -41,3 +41,6 @@ fieldset{margin-bottom:10px;paddin:2px;border:none}
 #story_input-stories{}
 #story_input-submit{float:right}
 #story_input-types{}
+
+/* jQuery UI Hacking */
+/* Enforce disabled state on body.wait on *//*body.disabled .ui-state-disabled, body.disabled .ui-widget-content .ui-state-disabled, body.disabled .ui-widget-header .ui-state-disabled { opacity: .35; filter:Alpha(Opacity=35); background-image: none; }*/

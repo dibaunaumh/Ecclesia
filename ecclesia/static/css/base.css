@@ -774,7 +774,7 @@ ul#vu-context-menu li a:hover{font-weight:bold;border:2px outset #5B80B2}
 ul#vu-context-menu li a:active{border:2px inset #5B80B2;background-color:#ccc}
 
 /* AJAX LOADER */
-body.cursor_wait {
+body.wait #canvasContainer{
     cursor: wait;
 }
 #ajax_loader {
@@ -793,3 +793,7 @@ body.cursor_wait {
 #ajax_loader p {
     margin: 36px 40px 0;
 }
+
+/* jQuery UI Hacking */
+/* Enforce wait cursor for AJAX loading */.ui-state-disabled { cursor: wait !important; }
+/* Cancel disabled state on default */.ui-state-disabled, .ui-widget-content .ui-state-disabled, .ui-widget-header .ui-state-disabled { opacity: 1; filter:Alpha(Opacity=1);}

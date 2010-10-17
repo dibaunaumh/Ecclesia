@@ -16,7 +16,12 @@ from django.conf import settings
 import datetime
 import discussion_actions
 import sys
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
 
+
+DEFAULT_FORM_ERROR_MSG = 'Your input was invalid. Please correct and try again.'
+UNIQUENESS_ERROR_PATTERN = 'already exists'
 
 def visualize(request, discussion_slug):
     user=request.user
@@ -123,16 +128,26 @@ def add_story(request, discussion, user, title, slug, speech_act):
         #        story.x = x
         if y:
             story.y = y
+        try:
+            story.full_clean()
+        except ValidationError, e:
+            message = DEFAULT_FORM_ERROR_MSG
+            if e.message_dict['__all__'] and re.search(UNIQUENESS_ERROR_PATTERN, e.message_dict['__all__'][0]):
+                message = 'Oops! A story with this title was already created inside this discussion.'
+            resp = HttpResponse(message)
+            resp.status_code = 500
+            return resp
+
         story.save()
-        notification = Notification(text="There is a new story in %s discussion: %s" % (discussion.slug, title),
-                                    entity=story, acting_user=request.user)
-        notification.save()
+        resp = HttpResponse("%s" % discussion.last_related_update)
+
+        create_notification(text="There is a new story in %s discussion: %s" % (discussion.slug, title),
+                                        entity=story, acting_user=request.user)
     except:
         resp = HttpResponse(str(sys.exc_info()[1]))
         resp.status_code = 500
-        return resp
 
-    return HttpResponse("%s" % story.discussion.last_related_update)
+    return resp
 
 def add_opinion(request, discussion, user, title, slug, speech_act):
     parent_story = request.POST.get('parent_story', None)
@@ -152,17 +167,35 @@ def add_opinion(request, discussion, user, title, slug, speech_act):
         '2': Opinion.objects.get,
         '3': StoryRelation.objects.get
     }[parent_class](pk=parent_story)
-    opinion.save()
-    notification = Notification(text="There is a new opinion in %s discussion: %s" % (discussion.slug, title), 
-                 entity=opinion, acting_user=request.user)
-    notification.save()
-    return HttpResponse("%s" % opinion.discussion.last_related_update)
+    try:
+        try:
+            opinion.full_clean()
+        except ValidationError, e:
+            message = DEFAULT_FORM_ERROR_MSG
+            if e.message_dict['__all__'] and re.search(UNIQUENESS_ERROR_PATTERN, e.message_dict['__all__'][0]):
+                message = 'Oops! An opinion with this title was already created inside this discussion.'
+            resp = HttpResponse(message)
+            resp.status_code = 500
+            return resp
+
+        opinion.save()
+        resp = HttpResponse("%s" % discussion.last_related_update)
+
+        create_notification(text="There is a new opinion in %s discussion: %s" % (discussion.slug, title),
+                     entity=opinion, acting_user=request.user)
+    except:
+       resp = HttpResponse(str(sys.exc_info()[1]))
+       resp.status_code = 500
+
+    return resp
 
 def add_relation(request, discussion, user, title, slug, speech_act):
     from_story = request.POST.get('from_story', None)
     to_story = request.POST.get('to_story', None)
     if from_story is None or to_story is None:
-        return HttpResponse("Did not get from and to stories.")
+        resp = HttpResponse(_("Did not get from and to stories."))
+        resp.status_code = 500
+        return resp
     relation = StoryRelation()
     relation.discussion = discussion
     relation.created_by = user
@@ -171,8 +204,27 @@ def add_relation(request, discussion, user, title, slug, speech_act):
     relation.speech_act = speech_act
     relation.from_story = Story.objects.get(pk=from_story)
     relation.to_story = Story.objects.get(pk=to_story)
-    relation.save()
-    return HttpResponse("%s" % relation.discussion.last_related_update)
+    try:
+        try:
+            relation.full_clean()
+        except ValidationError, e:
+            message = DEFAULT_FORM_ERROR_MSG
+            if e.message_dict['__all__'] and re.search(UNIQUENESS_ERROR_PATTERN, e.message_dict['__all__'][0]):
+                message = 'Oops! A relation with this title was already created inside this discussion.'
+            resp = HttpResponse(message)
+            resp.status_code = 500
+            return resp
+
+        relation.save()
+        resp = HttpResponse("%s" % discussion.last_related_update)
+
+        create_notification(text="There is a new relation in %s discussion: %s" % (discussion.slug, title),
+                                        entity=relation, acting_user=request.user)
+    except:
+       resp = HttpResponse(str(sys.exc_info()[1]))
+       resp.status_code = 500
+
+    return resp
 
 def get_stories_view_json(request, discussion_slug):
     discussion = Discussion.objects.get(slug=discussion_slug)
@@ -401,3 +453,13 @@ def follow(request, discussion_slug):
         return _follow(request.user, discussion)
     else:
         return HttpResponse('error')
+
+def create_notification(text, entity, acting_user):
+    try:
+        notification = Notification(text, entity, acting_user)
+        notification.save()
+        return HttpResponse(_('Notification create successfully'))
+    except:
+        resp = HttpResponse(str(sys.exc_info()[1]))
+        resp.status_code = 500
+        return resp

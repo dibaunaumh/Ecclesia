@@ -1,4 +1,4 @@
-(function () {
+(function ($) {
     if ( ! Math.lineToPointDist ) {
         Math.lineToPointDist = function (x, y, x1, y1, x2, y2) {
             return this.round(this.abs((x2-x1)*(y1-y)-(x1-x)*(y2-y1))/this.sqrt(this.pow(x2-x1,2)+this.pow(y2-y1,2)));
@@ -380,6 +380,10 @@ Story.prototype = {
             dialog_config,
             config = {
                 callback                    : $.bindFn(context_controller, context_controller.init),
+                error_callback              : function (response) {
+                    $('button', '.ui-dialog-buttonset').removeAttr('disabled');
+                    alert(response);
+                },
                 from_story_title            : that.config.name,
                 clean_title_container_class : 'clean_title'
             },
@@ -397,7 +401,7 @@ Story.prototype = {
             title: 'Add Relation',
             buttons: {
                 'Create': function() {
-                    //$(this).dialog('close');
+                    $('button', '.ui-dialog-buttonset').attr('disabled', 'disabled');
                     return CRFC.submit.call(CRFC, this, config);
                 },
                 'Cancel': function() {
@@ -414,6 +418,10 @@ Story.prototype = {
             form = context_controller.getCreateOpinionForm.apply(context_controller, arguments),
             config = {
                 callback                    : $.bindFn(context_controller, context_controller.init),
+                error_callback              : function (response) {
+                    $('button', '.ui-dialog-buttonset').removeAttr('disabled');
+                    alert(response);
+                },
                 parent_story_title          : that.config.name,
                 clean_title_container_class : 'clean_title'
             },
@@ -428,7 +436,7 @@ Story.prototype = {
                 title: 'Add Opinion',
                 buttons: {
                     'Create': function() {
-                        //$(this).dialog('close');
+                        $('button', '.ui-dialog-buttonset').attr('disabled', 'disabled');
                         return COFC.submit.call(COFC, this, config);
                     },
                     'Cancel': function() {
@@ -533,6 +541,10 @@ Relation.prototype = {
             form = context_controller.getCreateOpinionForm.apply(context_controller, arguments),
             config = {
                 callback                    : $.bindFn(context_controller, context_controller.init),
+                error_callback              : function (response) {
+                    $('button', '.ui-dialog-buttonset').removeAttr('disabled');
+                    alert(response);
+                },
                 parent_story_title          : that.config.name,
                 clean_title_container_class : 'clean_title'
             },
@@ -547,7 +559,7 @@ Relation.prototype = {
                 title: 'Add Opinion',
                 buttons: {
                     'Create': function() {
-                        //$(this).dialog('close');
+                        $('button', '.ui-dialog-buttonset').attr('disabled', 'disabled');
                         return COFC.submit.call(COFC, this, config);
                     },
                     'Cancel': function() {
@@ -807,7 +819,7 @@ VUController = function (options) {
         },
         scale		: 0.8
     }, options || {});
-    
+
     this.data = {};
 	this.elems = {};
 	this.drag = {};
@@ -815,6 +827,7 @@ VUController = function (options) {
 	this.ctx = null;
 	this.menu = new ContextMenu();
     this.timeoutID = 0;
+    this.drag_disabled = false;
 };
 VUController.prototype = {
 	init				: function (loaded) {
@@ -891,6 +904,7 @@ VUController.prototype = {
     updateView          : function () {
         if(!this.options.update_status_url) { return; } // ignore and don't update
         var _VUC = this;
+        this.drag_disabled = true;
         $.ajax({
             type    : 'POST',
             url     : _VUC.options.update_status_url,
@@ -899,15 +913,13 @@ VUController.prototype = {
             success : function (response) {
                 if(response) {
                     clearTimeout(_VUC.timeoutID);
+                    this.drag_disabled = false;
                     if(_VUC.options.last_changed !== response) {
                         _VUC.init.call(_VUC, response);
                     } else {
                         _VUC.setVUUpdater.call(_VUC);
                     }
                 }
-            },
-            error   : function (xhr, status, error) {
-                alert(status+' : '+xhr.responseText);
             }
         });
     },
@@ -1009,8 +1021,13 @@ VUController.prototype = {
                 title: _VUC.options.dialog_title,
                 buttons: {
                     'Create': function() {
+                        $('button', '.ui-dialog-buttonset').attr('disabled', 'disabled');
                         var _config = {
-                            callback : $.bindFn(_VUC, _VUC.init)
+                            callback        : $.bindFn(_VUC, _VUC.init),
+                            error_callback  : function (response) {
+                                $('button', '.ui-dialog-buttonset').removeAttr('disabled');
+                                alert(response);
+                            }
                         },
                         FC = new FormController();
                         //$(this).dialog('close');
@@ -1356,13 +1373,19 @@ VUController.prototype = {
         // cancel the appearance of
         $('#ajax_loader').remove();
         $body.ajaxStart(function () {
-            $('body').addClass('cursor_wait');
+            $body.addClass('wait');
+            if (_VUC.drag_disabled) {
+                $body.addClass('disabled');
+            }
             _VUC.disableDraggable();
-        });
-        $body.ajaxStop(function () {
+        })
+             .ajaxStop(function () {
             _VUC.enableDraggable();
-            $('body').removeClass('cursor_wait');
+            $body.removeClass('wait disabled');
         });
+//             .ajaxError(function (event, XMLHttpRequest, ajaxOptions, thrownError) {
+//            alert(XMLHttpRequest.responseText);
+//        });
         return this;
     }
 };
@@ -1559,8 +1582,13 @@ DiscussionController.prototype = {
                 title: 'Add Story',
                 buttons: {
                     'Create': function() {
+                        $('button', '.ui-dialog-buttonset').attr('disabled', 'disabled');
                         var _config = {
-                            callback : $.bindFn(_DC, _DC.init)
+                            callback        : $.bindFn(_DC, _DC.init),
+                            error_callback  : function (response) {
+                                $('button', '.ui-dialog-buttonset').removeAttr('disabled');
+                                alert(response);
+                            }
                         },
                         FC = new FormController();
                         //$(this).dialog('close');
@@ -1776,7 +1804,7 @@ DiscussionController.prototype = {
             var pos = 0;
             for (var i=0; i<len; i++){
                 pos = text.indexOf('-',pos)+1;
-            }            
+            }
             var text1 = text.substring(0,pos);
             var text2 = text.substring(pos);
             this.ctx.fillText(text1,0,-10);
@@ -1805,6 +1833,7 @@ FormController = function() {
 	this.f_jq		= null;
 	this.options	= {};
 	this.elements	= {};
+    this.error      = false;
 };
 FormController.prototype = {
 	/**
@@ -1839,6 +1868,7 @@ FormController.prototype = {
 	        data_type	    : 'text',
             reset_after_send: true,
             callback        : null,
+            error_callback  : null,
 	        editor		    : {}
 	    }, options || {});
 		this.elements = {};
@@ -1917,11 +1947,12 @@ FormController.prototype = {
 			url		: this_.options.url,
 			data	: this_.f_jq.serialize(),
 			dataType: this_.options.data_type,
-			success	: function(response){
+			success	: function (response) {
                 this_.after.call(this_, response);
 			},
-            error   : function(xhr, textStatus, errorThrown) {
-                alert("Please fix the following problems:\n" + xhr.responseText);
+            error   : function (XMLHttpRequest, textStatus, errorThrown) {
+                this_.error = true;
+                this_.after.call(this_, XMLHttpRequest.responseText);
             }
 		});
 	},
@@ -1942,15 +1973,26 @@ FormController.prototype = {
 	 */
 	after				: function (response) {
         var o = this.options;
-        if(o.reset_after_send) {
-            this.f_html.reset();
-            this.f_jq.dialog('close');
+        if(!this.error) {
+            if(o.reset_after_send) {
+                try {
+                    this.f_jq.dialog('close');
+                } catch (ex) {}
+                this.f_html.reset();
+            }
+            if(o.callback && typeof o.callback === 'function') {
+                o.callback(response);
+            } else {
+                alert(response);
+            }
+        } else {
+            this.error = false;
+            if(o.error_callback && typeof o.error_callback === 'function') {
+                o.error_callback(response);
+            } else {
+                alert(response);
+            }
         }
-        if(o.callback && typeof o.callback == 'function') {
-			o.callback(response);
-		} else {
-            alert(response);
-		}
 	},
 	extractValidation	: function () {
 		var additional_validation = {};
