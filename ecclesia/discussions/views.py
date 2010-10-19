@@ -1,34 +1,41 @@
+import sys
+import datetime
+from datetime import timedelta
+
+from django.contrib.auth.models import Group
+from django.shortcuts import render_to_response, get_object_or_404
+from django.http import HttpResponse, Http404, HttpResponseRedirect
+from django.core import serializers
+from django.core.exceptions import ValidationError
+from django.template.defaultfilters import slugify
+from django.utils import simplejson
+from django.utils.translation import gettext_lazy as _
+from django.conf import settings
+
+from forms import *
+import discussion_actions
 from ecclesia.groups.models import GroupProfile, GroupPermission, MissionStatement
 from ecclesia.discussions.models import *
 from ecclesia.notifications.models import Notification
 from ecclesia.common.views import _follow
 from ecclesia.common.utils import is_heb
-from django.contrib.auth.models import Group
-from django.shortcuts import render_to_response, get_object_or_404
-from django.http import HttpResponse, Http404, HttpResponseRedirect
-from forms import *
 from services.search_filter_pagination import search_filter_paginate
 from services.utils import get_user_permissions
-from django.core import serializers
-from django.template.defaultfilters import slugify
-from django.utils import simplejson
-from django.conf import settings
-import datetime
-import discussion_actions
-import sys
-from django.core.exceptions import ValidationError
-from django.utils.translation import gettext_lazy as _
-
+from voting.models import *
+from voting.forms import *
 
 DEFAULT_FORM_ERROR_MSG = 'Your input was invalid. Please correct and try again.'
 UNIQUENESS_ERROR_PATTERN = 'already exists'
 
 def visualize(request, discussion_slug):
     user=request.user
-    discussion = Discussion.objects.get(slug=discussion_slug)
+    discussion = Discussion.objects.get(slug=discussion_slug)    
     group = GroupProfile.objects.get(group=Group.objects.get(id=discussion.group.pk))
     stories = Story.objects.filter(discussion=discussion.pk)
     user_in_group = False
+    errors_in_voting_form = ''
+    has_voting = discussion_has_voting(discussion) 
+    voting_form = VotingForm()
     try:
         user_in_group = user.groups.filter(id=group.group.id).count() > 0
     except:
@@ -45,7 +52,48 @@ def visualize(request, discussion_slug):
         user_permissions = 'allowed'
     else:
         user_permissions = ''
+    if request.POST:
+        voting_form = VotingForm(request.POST)
+        if voting_form.is_valid():
+            voting = save_voting_data(user, discussion, voting_form.cleaned_data)
+            add_ballots_to_members(group, voting)
+        else:
+            errors_in_voting_form = True
+    if has_voting:
+        voting_progress_bar_value = calculate_progress_bar_value(discussion)
+        voting = Voting.objects.filter(discussion=discussion, status='Started')[0]
+        ballots = len(Ballot.objects.filter(user=user, voting=voting, status="Not used"))
     return render_to_response('discussion_home.html', locals())
+
+def calculate_progress_bar_value(discussion):
+    voting = Voting.objects.filter(discussion=discussion, status='Started')[0]
+    group = GroupProfile.objects.get(group=Group.objects.get(id=discussion.group.pk))
+    members = group.get_group_members()
+    members_that_voted = [member for member in members if not Ballot.objects.filter(user=member, voting=voting, status="Not used")]
+    return len(members_that_voted) / len(members) * 100 
+    
+def add_ballots_to_members(group, voting):
+    members = group.get_group_members()
+    for member in members:
+        for vote in range(voting.votes_per_participant):
+            Ballot(user=member, voting=voting, status="Not used").save()
+    
+def save_voting_data(user, discussion, voting_data):
+    voting = Voting(discussion=discussion, created_by=user)
+    voting.votes_per_participant = voting_data['votes_per_participant']
+    voting.status = 'Started'
+    minutes = 0
+    if voting_data['days']:
+        minutes += voting_data['days'] * 24 * 60
+    if voting_data['hours']:
+        minutes += voting_data['hours'] * 60
+    if voting_data['minutes']:
+        minutes += voting_data['minutes']
+    voting.save()
+    duration = timedelta(minutes=minutes) 
+    voting.end_time = voting.start_time + duration
+    voting.save()
+    return voting
 
 def evaluate(request, discussion_slug):
     discussion = get_object_or_404(Discussion, slug=discussion_slug)

@@ -50,15 +50,79 @@
                     }
                 });
             });
+			<!-- Create new dialog -->
+			$(function() {
+				$("#create_dialog").dialog({
+					bgiframe: true,
+		            autoOpen: false,
+					height: 400,
+					width: 220,
+					modal: true,
+					buttons: {
+						'Start': function() {
+							var that = this, FC = new FormController();
+							FC.submit.call(FC, $("#create_form")[0], {
+								callback : function () {
+									$(that).dialog('close');
+									$('#start_vote').hide();
+									$('#voting_progress').show();
+								}
+							});
+						},
+		
+						Cancel: function() {
+							$(this).dialog('close');
+						}
+					}
+				});
+				$('#start_vote').click(function() {
+					$('#create_dialog').dialog('open');
+				});
+				$('#end_vote').click(function() {
+					var that = this;
+					$.ajax({
+						url : '/voting/end_voting/',
+						type : 'post',
+						data : { 'discussion_id': {{ discussion.id }} },
+						success : function () {
+							$(that).hide();
+							$('#voting_progress').hide();
+							$('#start_vote').show();
+						}
+					});
+				});
+			});
+			{% if errors_in_voting_form %}
+				$('#create_dialog').dialog('open');
+			{% endif %}
+			$( "#progressbar" ).progressbar({
+				value: '{{ voting_progress_bar_value }}'
+			});
         });
     </script>
 {% endblock %}
 {% block content %}
 <div id="buttons_container">
-	<input type="button" class="ui-button ui-state-default ui-corner-all" value="{% trans 'Stories List' %}" onclick="document.location.href='/stories_list/{{discussion.slug}}/'" />
+	{% if user.is_authenticated and not has_voting %}
+		<input type="button" class="ui-button ui-state-default ui-corner-all" id="start_vote" value="{% trans 'Start Vote' %}" />
+	{% endif %}	
+	<!--{% if has_voting %}
+		Voting in progress:
+		<div id="progressbar"></div>
+		Your ballots:
+		{{ballots}}
+	{% endif %}-->
+	<div {% if not has_voting %}class="hidden"{% endif %} id="voting_progress">
+		Voting in progress:
+		<div id="progressbar"></div>
+		Your ballots:
+		{{ballots}}
+	</div>
+	<input type="button" class="{% if not has_voting %}hidden{% endif %} ui-button ui-state-default ui-corner-all" id="end_vote" value="{% trans 'End Vote' %}" />
     {% if user.is_authenticated and not user_follows_discussion %}
-    <input type="button" class="ui-button ui-state-default ui-corner-all" id="follow_button" value="{% trans 'Follow' %}" />
+    	<input type="button" class="ui-button ui-state-default ui-corner-all" id="follow_button" value="{% trans 'Follow' %}" />
     {% endif %}
+	<input type="button" class="ui-button ui-state-default ui-corner-all" value="{% trans 'Stories List' %}" onclick="document.location.href='/stories_list/{{discussion.slug}}/'" />
 </div>
 
 <h2>
@@ -78,10 +142,9 @@
 	{{ discussion.description }}
 </p>
 
-
-<div id="create_dialog" class="hidden" title="Create new Story">
-	<form method="POST" action="" id="create_form">
-	{{ story_form.as_p }}
+<div id="create_dialog" class="hidden" title="Start Voting">
+	<form method="POST" action="/discussions/discussion/{{discussion.slug}}/" id="create_form">
+	{{ voting_form.as_p }}
 	</form>
 </div>
 

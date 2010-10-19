@@ -108,11 +108,12 @@ INSTALLED_APPS = (
     'registration',
     'groups',
     'discussions',
+    'voting',
     'operations',
     'common',
     'notifications',
-    #'privatebeta',
-#    'multilingual'
+#   'privatebeta',
+#   'multilingual'
 )
 
 AUTH_PROFILE_MODULE = 'groups.UserProfile'

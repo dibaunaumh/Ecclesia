@@ -43,4 +43,5 @@ fieldset{margin-bottom:10px;paddin:2px;border:none}
 #story_input-types{}
 
 /* jQuery UI Hacking */
+/*enlarge voting progress bar*/.ui-progressbar-value {height:20px}
 /* Enforce disabled state on body.wait on *//*body.disabled .ui-state-disabled, body.disabled .ui-widget-content .ui-state-disabled, body.disabled .ui-widget-header .ui-state-disabled { opacity: .35; filter:Alpha(Opacity=35); background-image: none; }*/

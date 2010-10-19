@@ -106,31 +106,6 @@
 		});
 		$('#leave_group_confirmation').dialog('open');
 	}
-	<!-- Create new dialog -->
-	$(function() {
-		$("#create_dialog").dialog({
-			bgiframe: true,
-            autoOpen: false,
-			height: 402,
-			width: 787,
-			modal: true,
-			buttons: {
-				'Create': function() {
-					$("#create_form").submit();
-				},
-
-				Cancel: function() {
-					$(this).dialog('close');
-				}
-			},
-			close: function() {
-				window.location = window.location;
-			}
-		});
-		$('#create').click(function() {
-			$('#create_dialog').dialog('open');
-		})
-	});
 </script>
 </head>
 {% load i18n %}
