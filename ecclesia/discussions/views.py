@@ -33,9 +33,7 @@ def visualize(request, discussion_slug):
     group = GroupProfile.objects.get(group=Group.objects.get(id=discussion.group.pk))
     stories = Story.objects.filter(discussion=discussion.pk)
     user_in_group = False
-    errors_in_voting_form = ''
     has_voting = discussion_has_voting(discussion) 
-    voting_form = VotingForm()
     try:
         user_in_group = user.groups.filter(id=group.group.id).count() > 0
     except:
@@ -52,19 +50,30 @@ def visualize(request, discussion_slug):
         user_permissions = 'allowed'
     else:
         user_permissions = ''
+    (voting_form, errors_in_voting_form, voting_progress_bar_value, \
+     ballots) = handle_voting(request, discussion, has_voting)
+    return render_to_response('discussion_home.html', locals())
+
+def handle_voting(request, discussion, has_voting):
+    errors_in_voting_form = ''
+    voting_form = VotingForm()
+    voting_progress_bar_value = 0
+    ballots = 0
+    group = GroupProfile.objects.get(group=Group.objects.get(id=discussion.group.pk))
     if request.POST:
         voting_form = VotingForm(request.POST)
         if voting_form.is_valid():
-            voting = save_voting_data(user, discussion, voting_form.cleaned_data)
+            voting = save_voting_data(request.user, discussion, voting_form.cleaned_data)
             add_ballots_to_members(group, voting)
         else:
             errors_in_voting_form = True
     if has_voting:
         voting_progress_bar_value = calculate_progress_bar_value(discussion)
         voting = Voting.objects.filter(discussion=discussion, status='Started')[0]
-        ballots = len(Ballot.objects.filter(user=user, voting=voting, status="Not used"))
-    return render_to_response('discussion_home.html', locals())
-
+        ballots = len(Ballot.objects.filter(user=request.user, voting=voting, status="Not used"))
+    return (voting_form, errors_in_voting_form, voting_progress_bar_value, \
+     ballots)
+      
 def calculate_progress_bar_value(discussion):
     voting = Voting.objects.filter(discussion=discussion, status='Started')[0]
     group = GroupProfile.objects.get(group=Group.objects.get(id=discussion.group.pk))
