@@ -1,7 +1,7 @@
 from datetime import datetime
 from django.http import HttpResponse
 
-from discussions.models import Discussion 
+from discussions.models import Discussion, Story
 from models import Voting, Ballot
 
 def end_voting(request):
@@ -21,6 +21,7 @@ def add_ballot(request, discussion_pk, story_pk):
     ballot.status = 'Used'
     ballot.story = story
     ballot.save()
+    return HttpResponse("SUCCESS")
     
 def remove_ballot(request, discussion_pk, story_pk):
     discussion = Discussion.objects.get(pk=discussion_pk)
@@ -30,4 +31,5 @@ def remove_ballot(request, discussion_pk, story_pk):
     ballot.status = 'not used'
     ballot.story = None
     ballot.save()
+    return HttpResponse("SUCCESS")
     

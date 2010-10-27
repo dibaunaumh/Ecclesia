@@ -20,7 +20,10 @@
                     update_status_url	: '/common/presentation_status/Discussion/{{ discussion.pk }}',
                     last_changed        : '{{ last_related_update }}',
                     discussion_type     : {{ discussion.type.id }},
-                    user_permissions    : '{{ user_permissions }}'
+                    user_permissions    : '{{ user_permissions }}',
+					has_voting			: '{{ has_voting }}' == 'True',
+					add_vote_url		: '{% url add_ballot discussion.pk 1 %}',
+					stories_with_votes  : {{ stories_with_votes }}
                 },
                 VUC = new VUController({}),
                 DC = new DiscussionController(VUC, config).init(true);
@@ -106,12 +109,6 @@
 	{% if user.is_authenticated and not has_voting %}
 		<input type="button" class="ui-button ui-state-default ui-corner-all" id="start_vote" value="{% trans 'Start Vote' %}" />
 	{% endif %}	
-	<!--{% if has_voting %}
-		Voting in progress:
-		<div id="progressbar"></div>
-		Your ballots:
-		{{ballots}}
-	{% endif %}-->
 	<div {% if not has_voting %}class="hidden"{% endif %} id="voting_progress">
 		Voting in progress:
 		<div id="progressbar"></div>

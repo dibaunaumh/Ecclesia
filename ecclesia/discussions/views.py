@@ -51,7 +51,7 @@ def visualize(request, discussion_slug):
     else:
         user_permissions = ''
     (voting_form, errors_in_voting_form, voting_progress_bar_value, \
-     ballots) = handle_voting(request, discussion, has_voting)
+     ballots, stories_with_votes) = handle_voting(request, discussion, has_voting)
     return render_to_response('discussion_home.html', locals())
 
 def handle_voting(request, discussion, has_voting):
@@ -59,6 +59,7 @@ def handle_voting(request, discussion, has_voting):
     voting_form = VotingForm()
     voting_progress_bar_value = 0
     ballots = 0
+    stories_with_votes = {}
     group = GroupProfile.objects.get(group=Group.objects.get(id=discussion.group.pk))
     if request.POST:
         voting_form = VotingForm(request.POST)
@@ -71,8 +72,15 @@ def handle_voting(request, discussion, has_voting):
         voting_progress_bar_value = calculate_progress_bar_value(discussion)
         voting = Voting.objects.filter(discussion=discussion, status='Started')[0]
         ballots = len(Ballot.objects.filter(user=request.user, voting=voting, status="Not used"))
+        used_ballots = Ballot.objects.filter(user=request.user, voting=voting, status="Used")
+        if used_ballots:
+            for ballot in used_ballots:
+                if ballot.story.pk in stories_with_votes.keys():
+                    stories_with_votes[ballot.story.pk] = stories_with_votes[ballot.story.pk] + 1
+                else:
+                    stories_with_votes[ballot.story.pk] = 1
     return (voting_form, errors_in_voting_form, voting_progress_bar_value, \
-     ballots)
+     ballots, stories_with_votes)
       
 def calculate_progress_bar_value(discussion):
     voting = Voting.objects.filter(discussion=discussion, status='Started')[0]

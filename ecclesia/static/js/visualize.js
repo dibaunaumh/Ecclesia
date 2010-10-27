@@ -267,7 +267,7 @@ Discussion.prototype = {
     }
 };
 
-Story = function (node_class, config) {
+Story = function (node_class, config, options) {
     this.config = {
 		alias	    	        : 'story',
 		model_name  	        : 'Story',
@@ -284,7 +284,10 @@ Story = function (node_class, config) {
         stroke_hover_indicated  : '#000',
         children                : {},
         icon_w                  : 32,
-        icon_h                  : 32
+        icon_h                  : 32,
+		has_voting				: options.has_voting,
+		add_vote_url			: options.add_vote_url,
+		stories_with_votes		: options.stories_with_votes
 	};
 	// inheriting Node class
 	var dummy = $.extend(true, node_class, this);
@@ -341,6 +344,26 @@ Story.prototype = {
                 });
             }
         } catch(e) {}
+		var that = this;
+		if (!$('input.story_vote_button', el).length && this.config.type == 'course_of_action' && this.config.has_voting) {
+			var add_vote_button = $("<input type=button class='story_vote_button' value='Vote'/>");
+			el.append(add_vote_button);
+			$.each($(that)[0].config.stories_with_votes, function(key, value) {
+			    if (key == $(that)[0].config.id) {
+					el.append(value);
+				}
+			});
+			add_vote_button.click(function(){
+				var url = $(that)[0].config.add_vote_url;
+				var add_vote_url = url.substring(0, url.length - 1) + $(that)[0].config.id;
+				$.ajax({
+					url: add_vote_url,
+					type: "post",
+					success: function(xhr){}
+				});
+			});
+			
+		}
         return this;
 	},
     hover       : function (ctx) {
@@ -1053,7 +1076,7 @@ VUController.prototype = {
 						node = new Discussion(node, conf);
 						break;
 					case 'story':
-						node = new Story(node, conf);
+						node = new Story(node, conf, _VUC.options);
 						break;
 					case 'relation':
 						node = new Relation(node, conf);
