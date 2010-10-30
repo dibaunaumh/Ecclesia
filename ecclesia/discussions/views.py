@@ -6,10 +6,10 @@ from django.contrib.auth.models import Group
 from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.core import serializers
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
 from django.template.defaultfilters import slugify
 from django.utils import simplejson
-from django.utils.translation import gettext_lazy as _
+from django.utils.translation import gettext as _
 from django.conf import settings
 
 from forms import *
@@ -176,7 +176,7 @@ def add_base_story(request):
             '3': add_relation,
         }[story_type](request, discussion, user, title, slug, speech_act)
     else:
-        result = HttpResponse("Wrong usage: HTTP POST expected")
+        result = HttpResponse(_("Wrong usage: HTTP POST expected"))
     return result
 
 def add_story(request, discussion, user, title, slug, speech_act):
@@ -197,8 +197,8 @@ def add_story(request, discussion, user, title, slug, speech_act):
             story.full_clean()
         except ValidationError, e:
             message = DEFAULT_FORM_ERROR_MSG
-            if e.message_dict['__all__'] and re.search(UNIQUENESS_ERROR_PATTERN, e.message_dict['__all__'][0]):
-                message = 'Oops! A story with this title was already created inside this discussion.'
+            if e.message_dict[NON_FIELD_ERRORS] and re.search(UNIQUENESS_ERROR_PATTERN, e.message_dict[NON_FIELD_ERRORS][0]):
+                message = _('Oops! A story with this title was already created inside this discussion.')
             resp = HttpResponse(message)
             resp.status_code = 500
             return resp
@@ -237,8 +237,8 @@ def add_opinion(request, discussion, user, title, slug, speech_act):
             opinion.full_clean()
         except ValidationError, e:
             message = DEFAULT_FORM_ERROR_MSG
-            if e.message_dict['__all__'] and re.search(UNIQUENESS_ERROR_PATTERN, e.message_dict['__all__'][0]):
-                message = 'Oops! An opinion with this title was already created inside this discussion.'
+            if e.message_dict[NON_FIELD_ERRORS] and re.search(UNIQUENESS_ERROR_PATTERN, e.message_dict[NON_FIELD_ERRORS][0]):
+                message = _('Oops! An opinion with this title was already created inside this discussion.')
             resp = HttpResponse(message)
             resp.status_code = 500
             return resp
@@ -274,8 +274,8 @@ def add_relation(request, discussion, user, title, slug, speech_act):
             relation.full_clean()
         except ValidationError, e:
             message = DEFAULT_FORM_ERROR_MSG
-            if e.message_dict['__all__'] and re.search(UNIQUENESS_ERROR_PATTERN, e.message_dict['__all__'][0]):
-                message = 'Oops! A relation with this title was already created inside this discussion.'
+            if e.message_dict[NON_FIELD_ERRORS] and re.search(UNIQUENESS_ERROR_PATTERN, e.message_dict[NON_FIELD_ERRORS][0]):
+                message = _('Oops! A relation with this title was already created inside this discussion.')
             resp = HttpResponse(message)
             resp.status_code = 500
             return resp
