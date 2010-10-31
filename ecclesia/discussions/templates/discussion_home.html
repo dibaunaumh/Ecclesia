@@ -112,6 +112,9 @@
 	<div {% if not has_voting %}class="hidden"{% endif %} id="voting_progress">
 		Voting in progress:
 		<div id="progressbar"></div>
+		{% ifnotequal time_left_for_voting '0' %}
+			Time left: {{ time_left_for_voting }}
+		{% endifnotequal %}
 		Your ballots:
 		{{ballots}}
 	</div>
