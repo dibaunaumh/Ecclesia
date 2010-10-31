@@ -25,6 +25,11 @@ def handle_voting(request, discussion, has_voting):
         voting = Voting.objects.filter(discussion=discussion, status='Started')[0]
         if voting.end_time:
             time_left_for_voting = str(voting.end_time - datetime.now()).split(".")[0]
+            if time_left_for_voting.startswith("-"):
+                voting.end_time = datetime.now()
+                voting.status = "Ended"
+                voting.save()
+                has_voting = discussion_has_voting(discussion)
         if str(request.user) != 'AnonymousUser':
             ballots = len(Ballot.objects.filter(user=request.user, voting=voting, status="Not used"))
             used_ballots = Ballot.objects.filter(user=request.user, voting=voting, status="Used")

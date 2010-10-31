@@ -99,7 +99,7 @@
 				$('#create_dialog').dialog('open');
 			{% endif %}
 			$( "#progressbar" ).progressbar({
-				value: '{{ voting_progress_bar_value }}'
+				value: {{ voting_progress_bar_value }}
 			});
         });
     </script>
@@ -115,10 +115,12 @@
 		{% ifnotequal time_left_for_voting '0' %}
 			Time left: {{ time_left_for_voting }}
 		{% endifnotequal %}
-		Your ballots:
-		{{ballots}}
+		{% if user.is_authenticated %}
+			Your ballots:
+			{{ballots}}
+		{% endif %}
 	</div>
-	<input type="button" class="{% if not has_voting %}hidden{% endif %} ui-button ui-state-default ui-corner-all" id="end_vote" value="{% trans 'End Vote' %}" />
+	<input type="button" class="{% if not user.is_authenticated or not has_voting %}hidden{% endif %} ui-button ui-state-default ui-corner-all" id="end_vote" value="{% trans 'End Vote' %}" />
     {% if user.is_authenticated and not user_follows_discussion %}
     	<input type="button" class="ui-button ui-state-default ui-corner-all" id="follow_button" value="{% trans 'Follow' %}" />
     {% endif %}
