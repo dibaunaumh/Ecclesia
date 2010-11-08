@@ -12,7 +12,7 @@ FALSE_SPEECH_ACT = "false"
 GOOD_SPEECH_ACT = "good"
 BAD_SPEECH_ACT = "bad"
 
-PENALTY_FOR_NOT_ENDING_IN_GOAL = 0.3
+PENALTY_FOR_NOT_ENDING_IN_GOAL = 0
 
 def evaluate_stories(discussion):
     """
@@ -56,6 +56,7 @@ def evaluate_stories(discussion):
             new_conclusion.save()
     return conclusions
 
+def multiply (x,y): return x*y
 
 def evaluate_discussion_stories(discussion, stories):
     scores = {}
@@ -91,15 +92,20 @@ def evaluate_discussion_stories(discussion, stories):
     for coa in coa_stories:
         paths = paths_starting_in(graph, coa)
         score = 0
+        path_eval_inv_prob = 1
+        
         for p in paths:
             # step 2.2: calculate the aggregated evaluation of the nodes in the path
-            path_eval = sum([evals[s] for s in p])
+            path_eval_ls = ([evals[s] for s in p])
+            path_eval = reduce (multiply, path_eval_ls)
+            path_eval_inv_prob = path_eval_inv_prob*(1-path_eval)
             # step 2.3: check whether it ends in a Goal
             ends_in_goal = types[p[-1]] == GOAL_SPEECH_ACT
             if not ends_in_goal:
                 path_eval = path_eval * PENALTY_FOR_NOT_ENDING_IN_GOAL
             score = score + path_eval
-        scores[coa] = score
+                        
+        scores[coa] = 1-path_eval_inv_prob
 
     return scores
     
@@ -115,16 +121,27 @@ def evaluate_story(story, discussion):
 
 def evaluate_truth(story, discussion):
     Opinion = get_model('discussions', 'Opinion')
-    true_count = Opinion.objects.filter(discussion=discussion, object_id=story.id, speech_act__name=TRUE_SPEECH_ACT).count()
-    false_count = Opinion.objects.filter(discussion=discussion, object_id=story.id, speech_act__name=FALSE_SPEECH_ACT).count()
-    return 1 or true_count - false_count
+    true_count = float(Opinion.objects.filter(discussion=discussion, object_id=story.id, speech_act__name=TRUE_SPEECH_ACT).count())
+    false_count = float(Opinion.objects.filter(discussion=discussion, object_id=story.id, speech_act__name=FALSE_SPEECH_ACT).count())
+    # calculation should be 1, if no opinions. if only false amount of belif 0 , if some true and some false true/(true+false)
+    if true_count == 0 and false_count==0:
+        true_count=1
+    return true_count/(true_count + false_count) 
 
 
 def evaluate_goodness(story, discussion):
     Opinion = get_model('discussions', 'Opinion')
-    good_count = Opinion.objects.filter(discussion=discussion, object_id=story.id, speech_act__name=GOOD_SPEECH_ACT).count()
-    bad_count = Opinion.objects.filter(discussion=discussion, object_id=story.id, speech_act__name=BAD_SPEECH_ACT).count()
-    return 1 or good_count - bad_count
+    good_count = float(Opinion.objects.filter(discussion=discussion, object_id=story.id, speech_act__name=GOOD_SPEECH_ACT).count())
+    bad_count = float(Opinion.objects.filter(discussion=discussion, object_id=story.id, speech_act__name=BAD_SPEECH_ACT).count())
+   
+    if good_count == 0 and bad_count == 0: good_count=1
+    eval_good = (good_count/(good_count+bad_count))
+    
+    if eval_good<=.5:
+        x=0
+    else:
+        x=1
+    return x
 
 
 
