@@ -102,7 +102,7 @@ def evaluate_discussion_stories(discussion, stories):
             # step 2.3: check whether it ends in a Goal
             ends_in_goal = types[p[-1]] == GOAL_SPEECH_ACT
             if not ends_in_goal:
-                path_eval = path_eval * PENALTY_FOR_NOT_ENDING_IN_GOAL
+                path_eval_inv_prob = 1
             score = score + path_eval
                         
         scores[coa] = 1-path_eval_inv_prob
