@@ -98,12 +98,11 @@ def evaluate_discussion_stories(discussion, stories):
             # step 2.2: calculate the aggregated evaluation of the nodes in the path
             path_eval_ls = ([evals[s] for s in p])
             path_eval = reduce (multiply, path_eval_ls)
-            path_eval_inv_prob = path_eval_inv_prob*(1-path_eval)
             # step 2.3: check whether it ends in a Goal
             ends_in_goal = types[p[-1]] == GOAL_SPEECH_ACT
             if not ends_in_goal:
-                path_eval_inv_prob = 1
-            score = score + path_eval
+                path_eval = 0
+            path_eval_inv_prob = path_eval_inv_prob*(1-path_eval)
                         
         scores[coa] = 1-path_eval_inv_prob
 
