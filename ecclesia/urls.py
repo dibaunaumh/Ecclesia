@@ -2,6 +2,7 @@ from django.conf.urls.defaults import *
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
+from django.conf import settings
 admin.autodiscover()
 
 urlpatterns = patterns('',
@@ -31,4 +32,11 @@ urlpatterns = patterns('',
     (r'^', include('ecclesia.groups.urls')),
     (r'^edit_inline/$', 'ecclesia.discussions.views.get_inline_field'),
     (r'^i18n/', include('django.conf.urls.i18n')),
+
+
 )
+
+if 'rosetta' in settings.INSTALLED_APPS:
+    urlpatterns += patterns('',
+        url(r'^rosetta/', include('rosetta.urls')),
+    )

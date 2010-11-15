@@ -1,8 +1,9 @@
+# -*- coding: UTF-8 -*-
 import hashlib
 from django.db import models
 from django.contrib.contenttypes import generic
 from django.contrib.auth.models import Group, User
-from django.utils.translation import gettext_lazy as _
+from django.utils.translation import ugettext_lazy as _
 from common.utils import get_domain
 from common.models import Presentable, Subscription
 from django.conf import settings

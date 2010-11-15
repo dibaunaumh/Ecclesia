@@ -5,7 +5,7 @@ from django.db import models
 from django.contrib.auth.models import User, Group
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
-from django.utils.translation import gettext_lazy as _
+from django.utils.translation import ugettext_lazy as _
 
 from groups.models import GroupProfile
 from discussions.models import Discussion, Story

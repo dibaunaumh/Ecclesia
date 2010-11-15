@@ -21,15 +21,15 @@
 			<table border="0" cellpadding="0" cellspacing="0" class="sortable">
 				<thead>
 				<tr>
-					<th width="20">ID</th>
-					<th width="100">Name</th>
-					<th width="350">Description</th>
-					<th><link>Parent</link></th>
-					<th>Forked From</th>
-					<th>Location</th>
-					<th>Created by</th>
-					<th>Created at</th>
-					<th>Updated at</th>
+					<th width="20">{% trans 'ID' %}</th>
+					<th width="100">{% trans 'Name' %}</th>
+					<th width="350">{% trans 'Description' %}</th>
+					<th><link>{% trans 'Parent' %}</link></th>
+					<th>{% trans 'Forked From' %}</th>
+					<th>{% trans 'Location' %}</th>
+					<th>{% trans 'Created by' %}</th>
+					<th>{% trans 'Created at' %}</th>
+					<th>{% trans 'Updated at' %}</th>
 					{#<th width="60">Created</th>#}
 				</tr>
 				</thead>
@@ -55,7 +55,7 @@
 			<form action="" method="get">
 		        <input type="text" name="search" value="{{search_string}}"/>
 				<input type="submit" value="Search"/>
-				<h2>Filters</h2>
+				<h2>{% trans  'Filters' %}</h2>
 				{{ f.form.as_p }}
 				<input type="submit" value="Filter"/>
 		    </form>
@@ -66,7 +66,7 @@
 <div class="pagination">
     <span class="step-links">
         {% if my_items.has_previous %}
-            <a href="{{ get_parameters }}page={{ my_items.previous_page_number }}">previous</a>
+            <a href="{{ get_parameters }}page={{ my_items.previous_page_number }}">{% trans 'previous' %}</a>
         {% endif %}
 
         <span class="current">
@@ -74,7 +74,7 @@
         </span>
 
         {% if my_items.has_next %}
-            <a href="{{ get_parameters }}page={{ my_items.next_page_number }}">next</a>
+            <a href="{{ get_parameters }}page={{ my_items.next_page_number }}">{% trans 'next' %}</a>
         {% endif %}
     </span>
 </div>

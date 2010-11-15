@@ -1,6 +1,5 @@
 {% extends 'admin/base_site.html' %}
 {% load i18n %}
-{% load i18n %}
 {% block breadcrumbs %}<div class="breadcrumbs"><a href="/">{% trans 'Home' %}</a> &rsaquo; {{ user.username }}{% trans "'s Home" %}</div>{% endblock %}
 {% block userlinks %}<a href="/admin/password_change/">{% trans 'Change password' %}</a> / <a href="/admin/logout/">{% trans 'Log out' %}</a>{% endblock %}
 {% block title %}{{ user.username }}{% trans "'s Home" %}{% endblock %}
@@ -19,7 +18,7 @@
 
 <hr/>
 
-<h4>Current groups</h4>
+<h4>{% trans Current groups %}</h4>
 <ul>
 {% for group in groups %}
     <li><a href="{{ group.get_absolute_url }}">{{ group.group.name }}</a>

@@ -1,7 +1,5 @@
 from models import *
 from django.contrib import admin
-from django.utils.translation import gettext_lazy as __unicode__
-from django.utils.translation import gettext_lazy as _
 
 class DiscussionTypeAdmin(admin.ModelAdmin):
     list_display = ('name',)
