@@ -28,6 +28,7 @@ urlpatterns = patterns('',
     (r'^common/', include('ecclesia.common.urls')),
     #(r'^accounts/', include('registration.urls')),
     (r'accounts/', include('registration.urls')),
+    (r'^feedback/', include('feedback.urls')),
 
     (r'^', include('ecclesia.groups.urls')),
     (r'^edit_inline/$', 'ecclesia.discussions.views.get_inline_field'),

@@ -106,6 +106,31 @@
 		});
 		$('#leave_group_confirmation').dialog('open');
 	}
+	<!-- Create new dialog -->
+	$(function() {
+		$("#create_dialog").dialog({
+			bgiframe: true,
+            autoOpen: false,
+			height: 402,
+			width: 787,
+			modal: true,
+			buttons: {
+				'Create': function() {
+					$("#create_form").submit();
+				},
+
+				Cancel: function() {
+					$(this).dialog('close');
+				}
+			},
+			close: function() {
+				window.location = window.location;
+			}
+		});
+		$('#create').click(function() {
+			$('#create_dialog').dialog('open');
+		})
+	});
 </script>
 </head>
 {% load i18n %}
@@ -160,7 +185,48 @@
     </div>
     <!-- END Content -->
 
-    {% block footer %}<div id="footer"></div>{% endblock %}
+    {% block footer %}
+
+    <div id="footer">
+
+
+
+    </div>
+        <div id="feedback_button" style="display:block; position:fixed; bottom:250px; right:10px;">
+            <a class="feedback toggle" href="/feedback/"><div style="writing-mode: tb-rl">{% trans 'Feedback' %}</div></a>
+            <div id="feedback" style="display:none;"></div>
+        </div>
+
+
+        <script type="text/javascript">
+        $(function() {
+            var $feedback = $('#feedback'),
+                $toggle = $('a.toggle.feedback'),
+                url = $toggle.attr('href');
+
+            $feedback.load('/feedback/', function(e) {
+                $('form', $feedback).submit(function(e) {
+                    var $form = $(this),
+                        speech_act = $form.find("#id_speech_act").val(),
+                        sentiment = $form.find("#id_sentiment").val(),
+                        message = $form.find("#id_message").val(),
+                        url = '/feedback/';
+                        $.post(url, { message : message, speech_act: speech_act, sentiment: sentiment}, function(resp) {
+                            console.log(resp)
+                        $feedback.html(resp);
+                    });
+                    return false;
+                });
+            });
+            $toggle.click(function(e) {
+                $feedback.toggle('fast');
+                return false;
+            });
+        });
+        </script>
+
+
+    {% endblock %}
 </div>
 <!-- END Container -->
 

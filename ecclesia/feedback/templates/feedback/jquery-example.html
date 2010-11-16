@@ -1,0 +1,43 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
+   "http://www.w3.org/TR/html4/strict.dtd">
+
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>index</title>
+    <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/themes/ui-lightness/jquery-ui.css" type="text/css" media="screen" title="no title" charset="utf-8">
+    <script type="text/javascript" charset="utf-8" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/jquery-ui.min.js"></script>
+</head>
+<body>
+<a class="feedback toggle" href="{% url feedback %}">Feedback</a>
+<div id="feedback" style="display:none;"></div>
+
+<script type="text/javascript">
+$(function() {
+    var $feedback = $('#feedback'),
+        $toggle = $('a.toggle.feedback'),
+        url = $toggle.attr('href');
+
+    $feedback.load('/feedback/', function(e) {
+        $('form', $feedback).submit(function(e) {
+            var $form = $(this),
+                speech_act = $form.find("#id_speech_act").val(),
+                sentiment = $form.find("#id_sentiment").val(),
+                message = $form.find("#id_message").val(),
+                url = '/feedback/';
+                $.post(url, { message : message, speech_act: speech_act, sentiment: sentiment}, function(resp) {
+                    console.log(resp)
+                $feedback.html(resp);
+            });
+            e.preventDefault();
+        });
+    });
+    $toggle.click(function(e) {
+        $feedback.show();
+        e.preventDefault();
+    });
+});
+</script>
+</body>
+</html>

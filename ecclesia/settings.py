@@ -106,13 +106,14 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'south',
     'registration',
+    'feedback',
     'groups',
     'discussions',
     'voting',
     'operations',
     'common',
     'notifications',
-    'rosetta',
+#    'rosetta',
 #   'privatebeta',
 #   'multilingual'
 )
