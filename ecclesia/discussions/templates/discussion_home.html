@@ -13,17 +13,18 @@
 
 	<script>
         $(document).ready(function () {
-            var config = {
+            var has_voting = '{{ has_voting }}' === 'True',
+                config = {
                     canvas_id	        : 'storysvu',
                     data_url	        : '/discussions/get_stories_view_json/{{ discussion.slug }}',
                     meta_url	        : '/discussions/get_visualization_meta_data/',
-                    update_status_url	: '/common/presentation_status/Discussion/{{ discussion.pk }}',
+                    update_status_url   : '/common/presentation_status/Discussion/{{ discussion.pk }}',
                     last_changed        : '{{ last_related_update }}',
                     discussion_type     : {{ discussion.type.id }},
                     user_permissions    : '{{ user_permissions }}',
-					has_voting			: '{{ has_voting }}' == 'True',
-					add_vote_url		: '{% url add_ballot discussion.pk 1 %}',
-					stories_with_votes  : {{ stories_with_votes }}
+                    voting              : {
+                        add_vote_url		: '{% url add_ballot discussion.pk %}'
+                    }
                 },
                 VUC = new VUController({}),
                 DC = new DiscussionController(VUC, config).init(true);
@@ -55,33 +56,47 @@
             });
 			<!-- Create new dialog -->
 			$(function() {
-				$("#create_dialog").dialog({
+				var $voting_form = $("#voting_form"),
+                    closeDialog = function () {
+                        $voting_form.dialog('close').html('<p>{% trans 'Loading form...' %}</p>');
+                    };
+                $voting_form.dialog({
 					bgiframe: true,
 		            autoOpen: false,
 					height: 400,
 					width: 220,
 					modal: true,
+                    title: '{% trans 'Vote Details:' %}',
 					buttons: {
-						'Start': function() {
-							var that = this, FC = new FormController();
-							FC.submit.call(FC, $("#create_form")[0], {
+						'Start' : function() {
+							var FC = new FormController();
+							FC.submit.call(FC, this, {
 								callback : function () {
-									$(that).dialog('close');
+									closeDialog();
+                                    has_voting = true;
 									$('#start_vote').hide();
 									$('#voting_progress').show();
-								}
+								},
+                                error_callback : function (response) {
+                                    $voting_form.html(response);
+                                }
 							});
 						},
-		
-						Cancel: function() {
-							$(this).dialog('close');
+						'Cancel': function() {
+							closeDialog();
 						}
 					}
 				});
 				$('#start_vote').click(function() {
-					$('#create_dialog').dialog('open');
-				});
-				$('#end_vote').click(function() {
+                    $.ajax({
+                        url     : '/voting/get_voting_form',
+                        success : function (html) {
+                            $voting_form.html(html);
+                        }
+                    });
+                    $voting_form.dialog('open');
+                });
+                $('#end_vote').click(function() {
 					var that = this;
 					$.ajax({
 						url : '/voting/end_voting/',
@@ -95,35 +110,31 @@
 					});
 				});
 			});
-			{% if errors_in_voting_form %}
-				$('#create_dialog').dialog('open');
-			{% endif %}
 			$( "#progressbar" ).progressbar({
-				value: {{ voting_progress_bar_value }}
+				value: '{{ voting_progress_bar_value }}'
 			});
         });
     </script>
 {% endblock %}
 {% block content %}
 <div id="buttons_container">
-	{% if user.is_authenticated and not has_voting %}
-		<input type="button" class="ui-button ui-state-default ui-corner-all" id="start_vote" value="{% trans 'Start Vote' %}" />
-	{% endif %}	
-	<div {% if not has_voting %}class="hidden"{% endif %} id="voting_progress">
-		Voting in progress:
+{% if user.is_authenticated %}
+	{% if not has_voting %}
+    <form method="post" class="hidden" action="/voting/start_voting/{{discussion.pk}}" id="voting_form"><p>{% trans 'Loading form...' %}</p></form>
+    <input type="button" class="ui-button ui-state-default ui-corner-all" id="start_vote" value="{% trans 'Start Vote' %}" />
+	<div id="voting_progress" class="hidden">
+		{% trans 'Voting in progress:' %}
 		<div id="progressbar"></div>
-		{% ifnotequal time_left_for_voting '0' %}
-			Time left: {{ time_left_for_voting }}
-		{% endifnotequal %}
-		{% if user.is_authenticated %}
-			Your ballots:
-			{{ballots}}
-		{% endif %}
+        {% trans 'Time left:' %} <span id="voting_time_left"></span>
+        {% trans 'Your ballots:' %}
+        <span id="voting_ballots"></span>
 	</div>
-	<input type="button" class="{% if not user.is_authenticated or not has_voting %}hidden{% endif %} ui-button ui-state-default ui-corner-all" id="end_vote" value="{% trans 'End Vote' %}" />
-    {% if user.is_authenticated and not user_follows_discussion %}
+    <input type="button" class="hidden ui-button ui-state-default ui-corner-all" id="end_vote" value="{% trans 'End Vote' %}" />
+    {% endif %}
+    {% if not user_follows_discussion %}
     	<input type="button" class="ui-button ui-state-default ui-corner-all" id="follow_button" value="{% trans 'Follow' %}" />
     {% endif %}
+{% endif %}
 	<input type="button" class="ui-button ui-state-default ui-corner-all" value="{% trans 'Stories List' %}" onclick="document.location.href='/stories_list/{{discussion.slug}}/'" />
 </div>
 
@@ -143,12 +154,6 @@
 <p>
 	{{ discussion.description }}
 </p>
-
-<div id="create_dialog" class="hidden" title="Start Voting">
-	<form method="POST" action="/discussions/discussion/{{discussion.slug}}/" id="create_form">
-	{{ voting_form.as_p }}
-	</form>
-</div>
 
 <div id="canvasContainer"></div>
 

@@ -3,7 +3,8 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import User
 from discussions.models import Discussion, Story
-    
+from ecclesia.groups.models import GroupProfile
+
 class Voting(models.Model):
     discussion = models.ForeignKey(Discussion, verbose_name=_('discussion'), related_name='voting', help_text=_('The discussion that is being voted.'))
     votes_per_participant = models.PositiveIntegerField(_('votes per participant'), default=1)
@@ -14,11 +15,18 @@ class Voting(models.Model):
     decision_story = models.ForeignKey(Story, verbose_name=_('decision story'), related_name='voting', help_text=_('The story that has been chosen after voting.'), null=True, blank=True)
     created_by = models.ForeignKey(User, verbose_name=_('created by'), help_text=_('The user that started the voting.'))
 
+    __unicode__ = lambda self: u'Vote on %s' % self.discussion
+
+    def get_voting_group(self):
+        return GroupProfile.objects.get(group=self.discussion.group)
+
+
 class Ballot(models.Model):
     user = models.ForeignKey(User, verbose_name=_('created by'), help_text=_('The user that has the ballot.'))
     story = models.ForeignKey(Story, verbose_name=_('story'), null=True, blank=True, related_name='ballot', help_text=_('The story that have the ballot.'))
     voting = models.ForeignKey(Voting, verbose_name=_('voting'), related_name='ballot', help_text=_('The voting that ballot belongs to.'))
     status = models.CharField(max_length=50, choices = (('Used', 'Used'), ('Not used', 'Not used')))
+
 
 def discussion_has_voting(discussion):
     if Voting.objects.filter(discussion=discussion):

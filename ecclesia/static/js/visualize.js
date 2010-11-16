@@ -267,7 +267,7 @@ Discussion.prototype = {
     }
 };
 
-Story = function (node_class, config, options) {
+Story = function (node_class, config) {
     this.config = {
 		alias	    	        : 'story',
 		model_name  	        : 'Story',
@@ -285,9 +285,11 @@ Story = function (node_class, config, options) {
         children                : {},
         icon_w                  : 32,
         icon_h                  : 32,
-		has_voting				: options.has_voting,
-		add_vote_url			: options.add_vote_url,
-		stories_with_votes		: options.stories_with_votes
+        voting                  : {
+            has_voting              : false,
+            add_vote_url			: '',
+            stories_with_votes		: {}
+        }
 	};
 	// inheriting Node class
 	var dummy = $.extend(true, node_class, this);
@@ -344,26 +346,6 @@ Story.prototype = {
                 });
             }
         } catch(e) {}
-		var that = this;
-		if (!$('input.story_vote_button', el).length && this.config.type == 'course_of_action' && this.config.has_voting) {
-			var add_vote_button = $("<input type=button class='story_vote_button' value='Vote'/>");
-			el.append(add_vote_button);
-			$.each($(that)[0].config.stories_with_votes, function(key, value) {
-			    if (key == $(that)[0].config.id) {
-					el.append(value);
-				}
-			});
-			add_vote_button.click(function(){
-				var url = $(that)[0].config.add_vote_url;
-				var add_vote_url = url.substring(0, url.length - 1) + $(that)[0].config.id;
-				$.ajax({
-					url: add_vote_url,
-					type: "post",
-					success: function(xhr){}
-				});
-			});
-			
-		}
         return this;
 	},
     hover       : function (ctx) {
@@ -382,6 +364,7 @@ Story.prototype = {
 	click		: function (event) {
 		var position = $.clickOffset(event),
             that = this,
+            c = this.config,
 			config = {
 				element : that.$element,
                 actions : {
@@ -391,8 +374,11 @@ Story.prototype = {
                 },
 				position: position
 			};
-        if ( this.config.type !== 'goal' ) {
+        if ( c.type !== 'goal' ) {
             config = $.extend(true, {actions : {add_relation: $.bindFn(that, that.addRelation)}}, config);
+        }
+        if ( c.type === 'course_of_action' ) {
+            config = $.extend(true, {actions : {vote : $.bindFn(that, that.vote)}}, config);
         }
 		return config;
 	},
@@ -486,6 +472,16 @@ Story.prototype = {
         } else {
             return false;
         }
+    },
+    vote        : function (context_controller) {
+        var that = this;
+        $.ajax({
+            url     : context_controller.options.voting.add_vote_url,
+            data    : { story_pk : that.config.id },
+            success : function (response) {
+                alert(response);
+            }
+        });
     }
 };
 Relation = function (node_class, config) {
@@ -1284,10 +1280,11 @@ VUController.prototype = {
     },
     checkScale          : function () {
         var containers = {},
-            max_height = this.options.height,
+            o = this.options,
+            max_height = o.height,
             margin = 10,
             down_scale = false,
-            scale = this.options.scale,
+            scale = o.scale,
             new_scale;
         $.each(this.elems, function (id, el) {
             var c = el.config, type;
@@ -1306,9 +1303,11 @@ VUController.prototype = {
             }
         });
         if (down_scale) {
-            new_scale = (this.options.scale*10) - (this.options.zoom_slider.step*10);
-            if (new_scale >= this.options.zoom_slider.min*10) {
-                this.options.scale = new_scale/10;
+            new_scale = (o.scale*10) - (o.zoom_slider.step*10);
+            if (new_scale >= o.zoom_slider.min*10) {
+                o.scale = new_scale/10;
+                // resize GUI text
+                $('#' + o.container_id).css('fontSize', 16*o.scale + 'px');
             }
             if (new_scale > this.options.zoom_slider.min*10) { this.checkScale(); }
         }
@@ -1362,7 +1361,7 @@ VUController.prototype = {
         this.draw().updateDB();
 	},
 	zoom				: function (event, ui) {
-		this.options.scale = ui.value;
+        this.options.scale = ui.value;
         // resize titles
 		$('#'+this.options.container_id).animate( { fontSize: 16*ui.value+'px' }, 'fast');
 		this.init(true);
@@ -1381,7 +1380,7 @@ VUController.prototype = {
         var _VUC = this,
             position = $.clickOffset(event),
             config = {
-                actions	: {
+                actions : {
                     add_group : function () {
                         _VUC.click = null;
                         _VUC.getCreateGroupForm(event).dialog('open');
@@ -2005,15 +2004,11 @@ FormController.prototype = {
             }
             if(o.callback && typeof o.callback === 'function') {
                 o.callback(response);
-            } else {
-                alert(response);
             }
         } else {
             this.error = false;
             if(o.error_callback && typeof o.error_callback === 'function') {
                 o.error_callback(response);
-            } else {
-                alert(response);
             }
         }
 	},

@@ -1,6 +1,5 @@
 import sys
 
-from django.contrib.auth.models import Group
 from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.core import serializers
@@ -12,15 +11,14 @@ from django.conf import settings
 
 from forms import *
 import discussion_actions
-from ecclesia.groups.models import GroupProfile, GroupPermission, MissionStatement
+from ecclesia.groups.models import GroupPermission, MissionStatement
 from ecclesia.discussions.models import *
 from ecclesia.notifications.models import Notification
 from ecclesia.common.views import _follow
 from ecclesia.common.utils import is_heb
 from services.search_filter_pagination import search_filter_paginate
 from services.utils import get_user_permissions
-from voting.models import discussion_has_voting
-from voting.services import handle_voting
+from ecclesia.voting.models import discussion_has_voting
 
 DEFAULT_FORM_ERROR_MSG = 'Your input was invalid. Please correct and try again.'
 UNIQUENESS_ERROR_PATTERN = 'already exists'
@@ -31,7 +29,7 @@ def visualize(request, discussion_slug):
     group = GroupProfile.objects.get(group=Group.objects.get(id=discussion.group.pk))
     stories = Story.objects.filter(discussion=discussion.pk)
     user_in_group = False
-    has_voting = discussion_has_voting(discussion) 
+    has_voting = discussion_has_voting(discussion)
     try:
         user_in_group = user.groups.filter(id=group.group.id).count() > 0
     except:
@@ -48,9 +46,6 @@ def visualize(request, discussion_slug):
         user_permissions = 'allowed'
     else:
         user_permissions = ''
-    (voting_form, errors_in_voting_form, voting_progress_bar_value, \
-     ballots, stories_with_votes, time_left_for_voting) = handle_voting(request, \
-     discussion, has_voting)
     return render_to_response('discussion_home.html', locals())
 
 def evaluate(request, discussion_slug):
