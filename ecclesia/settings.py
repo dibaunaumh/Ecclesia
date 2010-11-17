@@ -113,7 +113,7 @@ INSTALLED_APPS = (
     'operations',
     'common',
     'notifications',
-#    'rosetta',
+    'rosetta',
 #   'privatebeta',
 #   'multilingual'
 )
