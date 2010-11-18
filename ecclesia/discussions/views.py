@@ -234,14 +234,18 @@ def get_stories_view_json(request, discussion_slug):
     conclusions_map = {}
     for c in conclusions:
         conclusions_map[c.story.id] = True
+    decision = discussion.decision.all()
+    if decision:
+        decision = decision[0]
     json = ','
     for story in stories:
         is_conclusion = "true" if story.id in conclusions_map else "false"
+        is_decision = "true" if decision and story.id == decision.decision_story.id else "false"
         children = story.get_children_js_array()
         icon = ''
         if story.speech_act.icon:
             icon = '%s%s' % (settings.MEDIA_URL, story.speech_act.icon)
-        json = '%s{"story":{"id":%s,"url":"%s","name":"%s","type":"%s","content":"%s","state":{"indicated":%s},"dimensions":{"x":%s,"y":%s,"w":%s,"h":%s},"children":%s,"icon":"%s"}},' % (json, story.id, story.get_absolute_url(), story.title, story.speech_act, story.get_json_safe_content(), is_conclusion, story.x, story.y, story.w, story.h, children, icon)
+        json = '%s{"story":{"id":%s,"url":"%s","name":"%s","type":"%s","content":"%s","state":{"indicated":%s,"decided":%s},"dimensions":{"x":%s,"y":%s,"w":%s,"h":%s},"children":%s,"icon":"%s"}},' % (json, story.id, story.get_absolute_url(), story.title, story.speech_act, story.get_json_safe_content(), is_conclusion, is_decision, story.x, story.y, story.w, story.h, children, icon)
     relations = StoryRelation.objects.filter(discussion=discussion)
     for relation in relations:
         children = relation.get_children_js_array()

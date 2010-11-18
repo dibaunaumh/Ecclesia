@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from ecclesia.discussions.models import Discussion, Story
 from models import Voting, Ballot
 from ecclesia.voting.forms import VotingForm
-from ecclesia.voting.services import add_ballots_to_members, save_voting_data
+from ecclesia.voting.services import add_ballots_to_members, save_voting_data, calculate_decision_of_voting
 from django.contrib.auth.decorators import login_required
 
 
@@ -13,6 +13,7 @@ def end_voting(request):
     if 'discussion_id' in request.POST and request.POST['discussion_id']:
         discussion = Discussion.objects.get(id=request.POST['discussion_id'])
         voting=Voting.objects.filter(discussion=discussion, status='Started')[0]
+        calculate_decision_of_voting(voting)
         voting.end_time = datetime.now()
         voting.status = "Ended"
         voting.save()

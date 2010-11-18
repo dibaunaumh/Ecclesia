@@ -16,6 +16,7 @@ def handle_voting(request, discussion_pk):
         if voting.end_time:
             time_left_for_voting = str(voting.end_time - datetime.now()).split(".")[0]
             if time_left_for_voting.startswith("-"):
+                calculate_decision_of_voting(voting)
                 voting.end_time = datetime.now()
                 voting.status = "Ended"
                 voting.save()
@@ -64,3 +65,31 @@ def save_voting_data(user, discussion, voting_data):
     voting.end_time = voting.start_time + duration
     voting.save()
     return voting
+
+def calculate_decision_of_voting(voting):
+    all_ballots = Ballot.objects.filter(voting=voting)
+    if all_ballots:
+        results = {}
+        for ballot in all_ballots:
+            if not ballot.story in results:
+                results[ballot.story] = 1
+            else:
+                results[ballot.story] += 1
+        items = [(v, k) for k, v in results.items()]
+        items.sort()
+        items.reverse()
+        voting.decision_story = items[0][1]
+        voting.save()
+        percent_of_ballots = int(items[0][0] / len(all_ballots))
+        if not Decision.objects.filter(voting=voting): 
+            decision = Decision(voting=voting, discussion=voting.discussion, \
+                     decision_story = items[0][1], percent_of_ballots=percent_of_ballots)
+        else:
+            decision = Decision.objects.filter(voting=voting)[0]
+            decision.decision_story = items[0][1]
+            decision.percent_of_ballots=percent_of_ballots
+        decision.save()
+    
+    
+    
+    

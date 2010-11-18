@@ -20,7 +20,14 @@ class Voting(models.Model):
     def get_voting_group(self):
         return GroupProfile.objects.get(group=self.discussion.group)
 
-
+class Decision(models.Model):
+    voting = models.ForeignKey(Voting, verbose_name=_('voting'), related_name='decision', help_text=_('The voting that decision belongs to.'))
+    discussion = models.ForeignKey(Discussion, verbose_name=_('discussion'), related_name='decision', help_text=_('The discussion that decision belong to.'))
+    decision_story = models.ForeignKey(Story, verbose_name=_('decision story'), related_name='decision', help_text=_('The story that has been chosen after voting.'))
+    percent_of_ballots = models.PositiveIntegerField(null=True, blank=True)
+    
+    __unicode__ = lambda self: u'Decision of %s' % self.discussion
+    
 class Ballot(models.Model):
     user = models.ForeignKey(User, verbose_name=_('created by'), help_text=_('The user that has the ballot.'))
     story = models.ForeignKey(Story, verbose_name=_('story'), null=True, blank=True, related_name='ballot', help_text=_('The story that have the ballot.'))
