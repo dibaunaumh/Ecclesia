@@ -116,6 +116,7 @@ Node.prototype = {
         	title_padding = parseInt(titles.css('padding-right'), 10)
                             + parseInt(titles.css('padding-left'), 10);
         titles.width(container_w - title_padding - 2);
+        return this;
     },
     roundedRect	: function (ctx,x,y,width,height,radius,fill_color,stroke_color){
 		ctx.save();
@@ -273,6 +274,7 @@ Story = function (node_class, config) {
 		model_name  	        : 'Story',
 		type	    	        : 'goal',
 		content					: '',
+        ballots                 : 0,
         icon                    : '',
         fill_normal             : '#e3e3e3',
         fill_normal_indicated   : '#418000',
@@ -286,9 +288,8 @@ Story = function (node_class, config) {
         icon_w                  : 32,
         icon_h                  : 32,
         voting                  : {
-            has_voting              : false,
-            add_vote_url			: '',
-            stories_with_votes		: {}
+            add_vote_url    : '',
+            remove_vote_url : ''
         }
 	};
 	// inheriting Node class
@@ -321,6 +322,18 @@ Story.prototype = {
 		this.$element.css('left', dims.x+'px')
 					  .css('top', dims.y+'px');
 	},
+    addBallots  : function () {
+        var $story_ballots, ballots = this.config.ballots, el = this.$element;
+        if (ballots) {
+            $story_ballots = $('span.story_ballots', el);
+            if (! $story_ballots.length) {
+                el.append('<span class="story_ballots">' + ballots + '</span>');
+            } else {
+                $story_ballots.text(ballots);
+            }
+        }
+        return this;
+    },
 	draw		: function (ctx) {
 		var c = this.config,
             dims = c.dimensions,
@@ -335,8 +348,9 @@ Story.prototype = {
 			// TODO: replace this tooltip plugin with jQueryUI-1.9's tooltip
 			$('a.story_content', el).tooltip({showURL: false});
 		}
-        this.wrapTitle(el);
-		this.roundedRect(ctx, dims.x, dims.y, dims.w*s, dims.h*s, 5, c['fill_'+state], c['stroke_'+state]);
+        this.wrapTitle(el)
+            .addBallots()
+		    .roundedRect(ctx, dims.x, dims.y, dims.w*s, dims.h*s, 5, c['fill_'+state], c['stroke_'+state]);
         try {
             if (c.icon) {
                 var img = new Image();
@@ -379,6 +393,9 @@ Story.prototype = {
         }
         if ( c.type === 'course_of_action' ) {
             config = $.extend(true, {actions : {vote : $.bindFn(that, that.vote)}}, config);
+            if ( c.ballots ) {
+                config = $.extend(true, {actions : {remove_vote : $.bindFn(that, that.removeVote)}}, config);
+            }
         }
 		return config;
 	},
@@ -466,7 +483,7 @@ Story.prototype = {
         if(confirm('Are you sure you want to delete this story?')) {
             $.post('/discussions/delete_story/'+this.config.id+'/', {}, function () {
                 if(context_controller) {
-                    $.bindFn(context_controller, context_controller.init)('reload');
+                    context_controller.init.call(context_controller, true);
                 }
             });
         } else {
@@ -476,10 +493,28 @@ Story.prototype = {
     vote        : function (context_controller) {
         var that = this;
         $.ajax({
+            type    : 'post',
             url     : context_controller.options.voting.add_vote_url,
             data    : { story_pk : that.config.id },
             success : function (response) {
-                alert(response);
+                if ( response === 'SUCCESS' ) {
+                    that.config.ballots += 1;
+                    context_controller.init.call(context_controller, true);
+                }
+            }
+        });
+    },
+    removeVote  : function (context_controller) {
+        var that = this;
+        $.ajax({
+            type    : 'post',
+            url     : context_controller.options.voting.remove_vote_url,
+            data    : { story_pk : that.config.id },
+            success : function (response) {
+                if ( response === 'SUCCESS' ) {
+                    that.config.ballots -= 1;
+                    context_controller.init.call(context_controller, true);
+                }
             }
         });
     }
@@ -596,7 +631,7 @@ Relation.prototype = {
         if(confirm('Are you sure you want to delete this relation?')) {
             $.post('/discussions/delete_relation/'+this.config.id+'/', {}, function () {
                 if(context_controller) {
-                    $.bindFn(context_controller, context_controller.init)('reload');
+                    context_controller.init.call(context_controller, true);
                 }
             });
         } else {
@@ -1395,15 +1430,15 @@ VUController.prototype = {
         // cancel the appearance of
         $('#ajax_loader').remove();
         $body.ajaxStart(function () {
-            $body.addClass('wait');
+//            $body.addClass('wait');
             if (_VUC.drag_disabled) {
-                $body.addClass('disabled');
+//                $body.addClass('disabled');
             }
             _VUC.disableDraggable();
         })
              .ajaxStop(function () {
             _VUC.enableDraggable();
-            $body.removeClass('wait disabled');
+//            $body.removeClass('wait disabled');
         });
 //             .ajaxError(function (event, XMLHttpRequest, ajaxOptions, thrownError) {
 //            alert(XMLHttpRequest.responseText);

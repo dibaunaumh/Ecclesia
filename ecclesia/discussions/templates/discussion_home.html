@@ -23,7 +23,8 @@
                     discussion_type     : {{ discussion.type.id }},
                     user_permissions    : '{{ user_permissions }}',
                     voting              : {
-                        add_vote_url		: '{% url add_ballot discussion.pk %}'
+                        add_vote_url    : '{% url add_ballot discussion.pk %}',
+                        remove_vote_url : '{% url remove_ballot discussion.pk %}'
                     }
                 },
                 VUC = new VUController({}),
@@ -71,11 +72,21 @@
 						'Start' : function() {
 							var FC = new FormController();
 							FC.submit.call(FC, this, {
-								callback : function () {
-									closeDialog();
+								callback : function (response) {
+									var $progress = $('#voting_progress'),
+                                        response = $.parseJSON(response),
+                                        ballots, time;
+                                    closeDialog();
                                     has_voting = true;
 									$('#start_vote').hide();
-									$('#voting_progress').show();
+									$('#end_vote').show();
+                                    ballots = response && response.ballots;
+                                    time = response && response.time_left;
+                                    if (time && (ballots || ballots === 0)) {
+                                        $progress.show();
+                                        $progress.children('#voting_ballots').text(ballots);
+                                        $progress.children('#voting_time_left').text(time);
+                                    }
 								},
                                 error_callback : function (response) {
                                     $voting_form.html(response);
@@ -111,7 +122,7 @@
 				});
 			});
 			$( "#progressbar" ).progressbar({
-				value: '{{ voting_progress_bar_value }}'
+				value: '{{ voting_data.voting_progress_bar_value }}'
 			});
         });
     </script>
@@ -119,18 +130,15 @@
 {% block content %}
 <div id="buttons_container">
 {% if user.is_authenticated %}
-	{% if not has_voting %}
-    <form method="post" class="hidden" action="/voting/start_voting/{{discussion.pk}}" id="voting_form"><p>{% trans 'Loading form...' %}</p></form>
-    <input type="button" class="ui-button ui-state-default ui-corner-all" id="start_vote" value="{% trans 'Start Vote' %}" />
-	<div id="voting_progress" class="hidden">
-		{% trans 'Voting in progress:' %}
+    <form method="post" class="hidden" action="{% url start_voting discussion.pk %}" id="voting_form"><p>{% trans 'Loading form...' %}</p></form>
+    <input type="button" class="{% if has_voting %}hidden {% endif %}ui-button ui-state-default ui-corner-all" id="start_vote" value="{% trans 'Start Vote' %}" />
+	<div id="voting_progress" {% if not has_voting %}class="hidden"{% endif %}>
+		{% trans 'Voting progress:' %}
 		<div id="progressbar"></div>
-        {% trans 'Time left:' %} <span id="voting_time_left"></span>
-        {% trans 'Your ballots:' %}
-        <span id="voting_ballots"></span>
+        {% trans 'Your ballots:' %}<span id="voting_ballots">{{ voting_data.ballots_left }}</span>
+        {% trans 'Time left:' %} <span id="voting_time_left">{{ voting_data.voting_time_left }}</span>
 	</div>
-    <input type="button" class="hidden ui-button ui-state-default ui-corner-all" id="end_vote" value="{% trans 'End Vote' %}" />
-    {% endif %}
+    <input type="button" class="{% if not has_voting %}hidden {% endif %}ui-button ui-state-default ui-corner-all" id="end_vote" value="{% trans 'End Vote' %}" />
     {% if not user_follows_discussion %}
     	<input type="button" class="ui-button ui-state-default ui-corner-all" id="follow_button" value="{% trans 'Follow' %}" />
     {% endif %}

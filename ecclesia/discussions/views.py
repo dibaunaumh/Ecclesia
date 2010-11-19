@@ -6,7 +6,6 @@ from django.core import serializers
 from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
 from django.template.defaultfilters import slugify
 from django.utils import simplejson
-from django.utils.translation import gettext as _
 from django.conf import settings
 
 from forms import *
@@ -19,17 +18,22 @@ from ecclesia.common.utils import is_heb
 from services.search_filter_pagination import search_filter_paginate
 from services.utils import get_user_permissions
 from ecclesia.voting.models import discussion_has_voting
+from ecclesia.voting.services import handle_voting
 
 DEFAULT_FORM_ERROR_MSG = 'Your input was invalid. Please correct and try again.'
 UNIQUENESS_ERROR_PATTERN = 'already exists'
 
 def visualize(request, discussion_slug):
-    user=request.user
+    user = request.user
     discussion = Discussion.objects.get(slug=discussion_slug)    
     group = GroupProfile.objects.get(group=Group.objects.get(id=discussion.group.pk))
     stories = Story.objects.filter(discussion=discussion.pk)
     user_in_group = False
     has_voting = discussion_has_voting(discussion)
+    if has_voting:
+        voting_data = handle_voting(user, discussion)
+        if voting_data is False:
+            has_voting = False
     try:
         user_in_group = user.groups.filter(id=group.group.id).count() > 0
     except:
@@ -234,18 +238,22 @@ def get_stories_view_json(request, discussion_slug):
     conclusions_map = {}
     for c in conclusions:
         conclusions_map[c.story.id] = True
-    decision = discussion.decision.all()
-    if decision:
-        decision = decision[0]
+    decisions_map = {}
+    voting = discussion.votings.filter(status='Ended').order_by('-end_time')
+    if voting:
+        decisions = voting[0].decisions.all()
+        for decision in decisions:
+            decisions_map[decision.decision_story.id] = True
     json = ','
     for story in stories:
         is_conclusion = "true" if story.id in conclusions_map else "false"
-        is_decision = "true" if decision and story.id == decision.decision_story.id else "false"
+        is_decision = "true" if story.id in decisions_map else "false"
         children = story.get_children_js_array()
+        ballots = 0 if not story.ballots else story.ballots.filter(user=request.user).count()
         icon = ''
         if story.speech_act.icon:
             icon = '%s%s' % (settings.MEDIA_URL, story.speech_act.icon)
-        json = '%s{"story":{"id":%s,"url":"%s","name":"%s","type":"%s","content":"%s","state":{"indicated":%s,"decided":%s},"dimensions":{"x":%s,"y":%s,"w":%s,"h":%s},"children":%s,"icon":"%s"}},' % (json, story.id, story.get_absolute_url(), story.title, story.speech_act, story.get_json_safe_content(), is_conclusion, is_decision, story.x, story.y, story.w, story.h, children, icon)
+        json = '%s{"story":{"id":%s,"url":"%s","name":"%s","type":"%s","content":"%s","ballots":%s,"state":{"indicated":%s,"decided":%s},"dimensions":{"x":%s,"y":%s,"w":%s,"h":%s},"children":%s,"icon":"%s"}},' % (json, story.id, story.get_absolute_url(), story.title, story.speech_act, story.get_json_safe_content(), ballots, is_conclusion, is_decision, story.x, story.y, story.w, story.h, children, icon)
     relations = StoryRelation.objects.filter(discussion=discussion)
     for relation in relations:
         children = relation.get_children_js_array()

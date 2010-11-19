@@ -1,7 +1,6 @@
 /*
     DJANGO Admin styles
 */
-
 body {
     margin: 0;
     padding: 0;
@@ -746,6 +745,12 @@ table#change-history tbody th {
 }
 
 /* ADDITIONAL EKKLI STUFF */
+::selection {
+    background: none;
+}
+::-moz-selection {
+    background: none;
+}
 #branding h1 {
     float: left;
     margin: 15px 0 0 5px;
@@ -795,5 +800,4 @@ body.wait #canvasContainer{
 }
 
 /* jQuery UI Hacking */
-/* Enforce wait cursor for AJAX loading */.ui-state-disabled { cursor: wait !important; }
 /* Cancel disabled state on default */.ui-state-disabled, .ui-widget-content .ui-state-disabled, .ui-widget-header .ui-state-disabled { opacity: 1; filter:Alpha(Opacity=1);}

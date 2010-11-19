@@ -2,44 +2,30 @@ from datetime import timedelta
 
 from models import *
 from forms import *
-from ecclesia.discussions.models import Discussion
 
-def handle_voting(request, discussion_pk):
-    voting_progress_bar_value = 0
-    ballots = 0
-    stories_with_votes = {}
+def handle_voting(user, discussion):
     time_left_for_voting = 0
-    discussion = Discussion.objects.get(id=discussion_pk)
-    if discussion_has_voting(discussion):
-        voting = Voting.objects.filter(discussion=discussion, status='Started')[0]
-        voting_progress_bar_value = calculate_progress_bar_value(voting)
-        if voting.end_time:
-            time_left_for_voting = str(voting.end_time - datetime.now()).split(".")[0]
-            if time_left_for_voting.startswith("-"):
-                calculate_decision_of_voting(voting)
-                voting.end_time = datetime.now()
-                voting.status = "Ended"
-                voting.save()
-        if request.user.is_authenticated():
-            ballots = len(Ballot.objects.filter(user=request.user, voting=voting, status="Not used"))
-            used_ballots = Ballot.objects.filter(user=request.user, voting=voting, status="Used")
-            if used_ballots:
-                for ballot in used_ballots:
-                    if ballot.story.pk in stories_with_votes.keys():
-                        stories_with_votes[ballot.story.pk] = stories_with_votes[ballot.story.pk] + 1
-                    else:
-                        stories_with_votes[ballot.story.pk] = 1
+    voting = Voting.objects.filter(discussion=discussion, status='Started')[0]
+    voting_progress_bar_value = calculate_progress_bar_value(voting)
+    if voting.end_time:
+        time_left_for_voting = str(voting.end_time - datetime.now()).split(".")[0]
+        if time_left_for_voting.startswith("-"):
+            calculate_decision_of_voting(voting)
+            voting.end_time = datetime.now()
+            voting.status = "Ended"
+            voting.save()
+            return False
+    ballots_left = Ballot.objects.count_left(user=user, voting=voting)
     return {
-        'stories_with_votes' : stories_with_votes,
         'voting_progress_bar_value' : voting_progress_bar_value,
-        'voting_ballots' : ballots,
+        'ballots_left' : ballots_left,
         'voting_time_left' : time_left_for_voting
     }
 
 def calculate_progress_bar_value(voting):
     group = voting.get_voting_group()
     members = group.get_group_members()
-    members_that_voted = [member for member in members if not Ballot.objects.filter(user=member, voting=voting, status="Not used")]
+    members_that_voted = [member for member in members if not Ballot.objects.count_left(user=member, voting=voting)]
     return len(members_that_voted) / len(members) * 100 
     
 def add_ballots_to_members(voting):
@@ -67,7 +53,7 @@ def save_voting_data(user, discussion, voting_data):
     return voting
 
 def calculate_decision_of_voting(voting):
-    all_ballots = Ballot.objects.filter(voting=voting)
+    all_ballots = Ballot.objects.filter(voting=voting, status='Used')
     if all_ballots:
         results = {}
         for ballot in all_ballots:
@@ -78,18 +64,15 @@ def calculate_decision_of_voting(voting):
         items = [(v, k) for k, v in results.items()]
         items.sort()
         items.reverse()
-        voting.decision_story = items[0][1]
-        voting.save()
-        percent_of_ballots = int(items[0][0] / len(all_ballots))
-        if not Decision.objects.filter(voting=voting): 
-            decision = Decision(voting=voting, discussion=voting.discussion, \
-                     decision_story = items[0][1], percent_of_ballots=percent_of_ballots)
-        else:
-            decision = Decision.objects.filter(voting=voting)[0]
-            decision.decision_story = items[0][1]
-            decision.percent_of_ballots=percent_of_ballots
-        decision.save()
-    
-    
-    
-    
+        best_score = items[0][0]
+        if not items[0][1]:
+            return False
+        for item in items:
+            if item[0] == best_score:
+                percent_of_ballots = int(items[0][0] / len(all_ballots))
+                decision = Decision(voting = voting, decision_story = item[1], percent_of_ballots=percent_of_ballots)
+                decision.save()
+            else:
+                break
+        return True
+    return False
