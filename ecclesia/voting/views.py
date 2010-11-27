@@ -1,12 +1,11 @@
 from datetime import datetime
-from django.http import HttpResponse, Http404, HttpResponseServerError
-from django.core.exceptions import ValidationError
+from django.http import HttpResponse, HttpResponseServerError
 from django.utils.translation import ugettext as _
+from django.contrib.auth.decorators import login_required
 from ecclesia.discussions.models import Discussion, Story
 from models import Voting, Ballot
 from ecclesia.voting.forms import VotingForm
-from ecclesia.voting.services import add_ballots_to_members, save_voting_data, calculate_decision_of_voting
-from django.contrib.auth.decorators import login_required
+from ecclesia.voting.services import add_ballots_to_members, save_voting_data, calculate_decision_of_voting, calculate_progress_bar_value, calculate_voting_time_left
 
 
 def end_voting(request):
@@ -74,4 +73,15 @@ def start_voting(request, discussion_pk):
             add_ballots_to_members(voting)
         else:
             return  HttpResponseServerError(voting_form.as_p())
-    return HttpResponse('{"ballots":%d,"time_left":"%s"}' % (voting_form.cleaned_data['votes_per_participant'], 'Two weeks'))
+    return HttpResponse('{"ballots":%d,"time_left":"%s"}' % (voting_form.cleaned_data['votes_per_participant'], voting.end_time - voting.start_time))
+
+@login_required
+def get_vote_progress(request, discussion_pk):
+    voting = Voting.objects.filter(discussion=discussion_pk, status='Started')
+    if voting:
+        voting = voting[0]
+        progress = calculate_progress_bar_value(voting)
+        time_left = voting.end_time - datetime.now()
+        return HttpResponse('{"progress":%d,"time_left":"%s"}' % (progress, time_left))
+    else:
+        return HttpResponseServerError(_("Sorry, can't find an active vote for this discussion."))

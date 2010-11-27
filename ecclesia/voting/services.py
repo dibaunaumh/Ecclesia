@@ -33,11 +33,8 @@ def add_ballots_to_members(voting):
     for member in members:
         for vote in range(voting.votes_per_participant):
             Ballot(user=member, voting=voting, status="Not used").save()
-    
-def save_voting_data(user, discussion, voting_data):
-    voting = Voting(discussion=discussion, created_by=user)
-    voting.votes_per_participant = voting_data['votes_per_participant']
-    voting.status = 'Started'
+
+def calculate_voting_time_left(voting_data):
     minutes = 0
     if voting_data['days']:
         minutes += voting_data['days'] * 24 * 60
@@ -45,6 +42,13 @@ def save_voting_data(user, discussion, voting_data):
         minutes += voting_data['hours'] * 60
     if voting_data['minutes']:
         minutes += voting_data['minutes']
+    return minutes
+
+def save_voting_data(user, discussion, voting_data):
+    voting = Voting(discussion=discussion, created_by=user)
+    voting.votes_per_participant = voting_data['votes_per_participant']
+    voting.status = 'Started'
+    minutes = calculate_voting_time_left(voting_data)
     voting.save()
     duration = timedelta(minutes=minutes) 
     voting.end_time = voting.start_time + duration

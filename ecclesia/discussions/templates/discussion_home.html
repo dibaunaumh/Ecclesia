@@ -10,7 +10,6 @@
 {% endblock %}
 {% block extrahead %}
 	<script src="/static/js/jquery/jquery-tooltip/jquery.tooltip.pack.js"></script>
-
 	<script>
         var has_voting = '{{ has_voting }}' === 'True';
         $(document).ready(function () {
@@ -40,7 +39,7 @@
             $('#follow_button').click(function () {
                 var $this = $(this).attr('disabled', 'disabled');
                 $.ajax({
-                    url : '/discussions/follow/{{ discussion.slug }}/',
+                    url : '{% url discussion_follow discussion.slug %}',
                     type: 'post',
                     data: {},
                     success: function (response) {
@@ -60,7 +59,9 @@
 				var $voting_form = $("#voting_form"),
                     closeDialog = function () {
                         $voting_form.dialog('close').html('<p>{% trans 'Loading form...' %}</p>');
-                    };
+                    },
+                    $progressbar = $( "#progressbar" ),
+                    $voting_time_left = $('#voting_time_left');
                 $voting_form.dialog({
 					bgiframe: true,
 		            autoOpen: false,
@@ -80,12 +81,13 @@
                                     has_voting = true;
 									$('#start_vote').hide();
 									$('#end_vote').show();
+                                    $('#vote_progress').show()
                                     ballots = response && response.ballots;
                                     time = response && response.time_left;
                                     if (time && (ballots || ballots === 0)) {
                                         $progress.show();
                                         $progress.children('#voting_ballots').text(ballots);
-                                        $progress.children('#voting_time_left').text(time);
+                                        $voting_time_left.text(time);
                                     }
 								},
                                 error_callback : function (response) {
@@ -100,7 +102,7 @@
 				});
 				$('#start_vote').click(function() {
                     $.ajax({
-                        url     : '/voting/get_voting_form',
+                        url     : '{%  url get_voting_form %}',
                         success : function (html) {
                             $voting_form.html(html);
                         }
@@ -110,21 +112,46 @@
                 $('#end_vote').click(function() {
 					var that = this;
 					$.ajax({
-						url : '/voting/end_voting/',
+						url : '{% url end_voting %}',
 						type : 'post',
 						data : { 'discussion_id': {{ discussion.id }} },
 						success : function () {
                             has_voting = false;
                             DC.init.call(DC, true);
                             $(that).hide();
+                            $('#vote_progress').hide();
                             $('#voting_progress').hide();
                             $('#start_vote').show();
 						}
 					});
 				});
-			});
-			$( "#progressbar" ).progressbar({
-				value: '{{ voting_data.voting_progress_bar_value }}'
+                $('#vote_progress').toggle(
+                    function () {
+                        $progressbar.progressbar({
+                            value: '{{ voting_data.voting_progress_bar_value }}'
+                        });
+                        $progressbar.show();
+                        $.ajax({
+                            url     : '{% url get_vote_progress discussion.pk %}',
+                            dataType: 'json',
+                            success : function (response) {
+                                if (response) {
+                                    if (response.progress) {
+                                       $progressbar.progressbar('option', 'value', parseInt(response.progress));
+                                    }
+                                    if (response.time_left) {
+                                        var time = response.time_left.split('.');
+                                        $voting_time_left.text(time[0]);
+                                    }
+                                }
+                            }
+                        });
+                        return false;
+                    },
+                    function () {
+                        $progressbar.hide();
+                    }
+                );
 			});
         });
     </script>
@@ -135,11 +162,13 @@
     <form method="post" class="hidden" action="{% url start_voting discussion.pk %}" id="voting_form"><p>{% trans 'Loading form...' %}</p></form>
     <input type="button" class="{% if has_voting %}hidden {% endif %}ui-button ui-state-default ui-corner-all" id="start_vote" value="{% trans 'Start Vote' %}" />
 	<div id="voting_progress" {% if not has_voting %}class="hidden"{% endif %}>
-		{% trans 'Voting progress:' %}
-		<div id="progressbar"></div>
-        {% trans 'Your ballots:' %}<span id="voting_ballots">{{ voting_data.ballots_left }}</span>
+        {% trans 'Your ballots:' %} <span id="voting_ballots">{{ voting_data.ballots_left }}</span>
         {% trans 'Time left:' %} <span id="voting_time_left">{{ voting_data.voting_time_left }}</span>
 	</div>
+    <input type="button" class="{% if not has_voting %}hidden {% endif %}ui-button ui-state-default ui-corner-all" id="vote_progress" value="{% trans 'Vote progress' %}"/>
+    <div id="vote_progress_container">
+        <div id="progressbar" class="hidden"></div>
+    </div>
     <input type="button" class="{% if not has_voting %}hidden {% endif %}ui-button ui-state-default ui-corner-all" id="end_vote" value="{% trans 'End Vote' %}" />
     {% if not user_follows_discussion %}
     	<input type="button" class="ui-button ui-state-default ui-corner-all" id="follow_button" value="{% trans 'Follow' %}" />

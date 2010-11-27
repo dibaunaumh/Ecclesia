@@ -20,5 +20,5 @@ urlpatterns = patterns('',
     #(r'^status/(?P<discussion_slug>.*)$', 'ecclesia.discussions.views.status'),
     (r'^get_stories_json_by_speechact/(?P<discussion_pk>\d+)/(?P<speech_act>.*)/$','ecclesia.discussions.views.get_inline_select_json'),
     (r'^edit_inline_select_field/(?P<relation_id>.*)/(?P<direction>.*)/$', 'ecclesia.discussions.views.get_inline_select_field'),
-    (r'^follow/(?P<discussion_slug>.*)/$', 'ecclesia.discussions.views.follow'),
+    url(r'^follow/(?P<discussion_slug>.*)/$', 'ecclesia.discussions.views.follow', name='discussion_follow'),
 )
