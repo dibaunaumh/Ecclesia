@@ -1,16 +1,15 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 from models import *
 from forms import *
 
-def handle_voting(user, discussion):
+def get_voting_data(user, voting, discussion):
     time_left_for_voting = 0
-    voting = Voting.objects.filter(discussion=discussion, status='Started')[0]
     voting_progress_bar_value = calculate_progress_bar_value(voting)
     if voting.end_time:
         time_left_for_voting = str(voting.end_time - datetime.now()).split(".")[0]
         if time_left_for_voting.startswith("-"):
-            calculate_decision_of_voting(voting)
+            calculate_decision_of_voting(voting, discussion)
             voting.end_time = datetime.now()
             voting.status = "Ended"
             voting.save()
@@ -52,7 +51,7 @@ def save_voting_data(user, discussion, voting_data):
     voting.save()
     return voting
 
-def calculate_decision_of_voting(voting):
+def calculate_decision_of_voting(voting, discussion):
     all_ballots = Ballot.objects.filter(voting=voting, status='Used')
     if all_ballots:
         results = {}
@@ -70,7 +69,7 @@ def calculate_decision_of_voting(voting):
         for item in items:
             if item[0] == best_score:
                 percent_of_ballots = int(items[0][0] / len(all_ballots))
-                decision = Decision(voting = voting, decision_story = item[1], percent_of_ballots=percent_of_ballots)
+                decision = Decision(discussion=discussion, voting=voting, decision_story=item[1], percent_of_ballots=percent_of_ballots)
                 decision.save()
             else:
                 break

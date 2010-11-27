@@ -12,9 +12,9 @@
 	<script src="/static/js/jquery/jquery-tooltip/jquery.tooltip.pack.js"></script>
 
 	<script>
+        var has_voting = '{{ has_voting }}' === 'True';
         $(document).ready(function () {
-            var has_voting = '{{ has_voting }}' === 'True',
-                config = {
+            var config = {
                     canvas_id	        : 'storysvu',
                     data_url	        : '/discussions/get_stories_view_json/{{ discussion.slug }}',
                     meta_url	        : '/discussions/get_visualization_meta_data/',
@@ -114,9 +114,11 @@
 						type : 'post',
 						data : { 'discussion_id': {{ discussion.id }} },
 						success : function () {
-							$(that).hide();
-							$('#voting_progress').hide();
-							$('#start_vote').show();
+                            has_voting = false;
+                            DC.init.call(DC, true);
+                            $(that).hide();
+                            $('#voting_progress').hide();
+                            $('#start_vote').show();
 						}
 					});
 				});

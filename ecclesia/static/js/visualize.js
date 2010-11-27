@@ -391,7 +391,7 @@ Story.prototype = {
         if ( c.type !== 'goal' ) {
             config = $.extend(true, {actions : {add_relation: $.bindFn(that, that.addRelation)}}, config);
         }
-        if ( c.type === 'course_of_action' ) {
+        if ( has_voting && c.type === 'course_of_action' ) {
             config = $.extend(true, {actions : {vote : $.bindFn(that, that.vote)}}, config);
             if ( c.ballots ) {
                 config = $.extend(true, {actions : {remove_vote : $.bindFn(that, that.removeVote)}}, config);
@@ -499,6 +499,8 @@ Story.prototype = {
             success : function (response) {
                 if ( response === 'SUCCESS' ) {
                     that.config.ballots += 1;
+                    var $voting_ballots = $('#voting_ballots');
+                    $voting_ballots.text(parseInt($voting_ballots.text()) - 1);
                     context_controller.init.call(context_controller, true);
                 }
             }
@@ -513,6 +515,8 @@ Story.prototype = {
             success : function (response) {
                 if ( response === 'SUCCESS' ) {
                     that.config.ballots -= 1;
+                    var $voting_ballots = $('#voting_ballots');
+                    $voting_ballots.text(parseInt($voting_ballots.text()) + 1);
                     context_controller.init.call(context_controller, true);
                 }
             }

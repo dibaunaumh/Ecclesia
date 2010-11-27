@@ -18,7 +18,7 @@ from ecclesia.common.utils import is_heb
 from services.search_filter_pagination import search_filter_paginate
 from services.utils import get_user_permissions
 from ecclesia.voting.models import discussion_has_voting
-from ecclesia.voting.services import handle_voting
+from ecclesia.voting.services import get_voting_data
 
 DEFAULT_FORM_ERROR_MSG = 'Your input was invalid. Please correct and try again.'
 UNIQUENESS_ERROR_PATTERN = 'already exists'
@@ -29,11 +29,14 @@ def visualize(request, discussion_slug):
     group = GroupProfile.objects.get(group=Group.objects.get(id=discussion.group.pk))
     stories = Story.objects.filter(discussion=discussion.pk)
     user_in_group = False
-    has_voting = discussion_has_voting(discussion)
-    if has_voting:
-        voting_data = handle_voting(user, discussion)
-        if voting_data is False:
-            has_voting = False
+    voting = discussion_has_voting(discussion)
+    if voting:
+        has_voting = voting.count() > 0
+        if has_voting:
+            voting = voting[0]
+            voting_data = get_voting_data(user, voting, discussion)
+            if voting_data is False:
+                has_voting = False
     try:
         user_in_group = user.groups.filter(id=group.group.id).count() > 0
     except:
@@ -233,23 +236,27 @@ def add_relation(request, discussion, user, title, slug, speech_act):
 
 def get_stories_view_json(request, discussion_slug):
     discussion = Discussion.objects.get(slug=discussion_slug)
+    voting = discussion_has_voting(discussion)
+    vote_in_progress = voting and voting.count() > 0
+    if vote_in_progress:
+        voting = voting[0]
     stories = Story.objects.filter(discussion=discussion)
     conclusions = DiscussionConclusion.objects.filter(discussion=discussion)
     conclusions_map = {}
     for c in conclusions:
         conclusions_map[c.story.id] = True
     decisions_map = {}
-    voting = discussion.votings.filter(status='Ended').order_by('-end_time')
-    if voting:
-        decisions = voting[0].decisions.all()
-        for decision in decisions:
-            decisions_map[decision.decision_story.id] = True
+    decisions = discussion.decisions.all()
+    for decision in decisions:
+        decisions_map[decision.decision_story.id] = True
     json = ','
     for story in stories:
         is_conclusion = "true" if story.id in conclusions_map else "false"
         is_decision = "true" if story.id in decisions_map else "false"
         children = story.get_children_js_array()
-        ballots = 0 if not story.ballots else story.ballots.filter(user=request.user).count()
+        ballots = 0
+        if vote_in_progress:
+            ballots = 0 if not story.ballots else story.ballots.filter(user=request.user,voting=voting).count()
         icon = ''
         if story.speech_act.icon:
             icon = '%s%s' % (settings.MEDIA_URL, story.speech_act.icon)

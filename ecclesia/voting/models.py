@@ -1,8 +1,7 @@
-from datetime import datetime
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import User
-from discussions.models import Discussion, Story
+from ecclesia.discussions.models import Discussion, Story
 from ecclesia.groups.models import GroupProfile
 
 class Voting(models.Model):
@@ -13,6 +12,10 @@ class Voting(models.Model):
     end_time = models.DateTimeField(_('end time'), null=True, blank=True)
     percent_voted = models.PositiveIntegerField(_('percent voted'), default=0)
     created_by = models.ForeignKey(User, verbose_name=_('created by'), help_text=_('The user that started the voting.'))
+    decisions_list = models.TextField(_('decisions_list'), null=True, blank=True, editable=False)
+
+    class Meta:
+        ordering = ['-end_time']
 
     __unicode__ = lambda self: u'Vote on %s' % self.discussion
 
@@ -21,6 +24,7 @@ class Voting(models.Model):
 
 
 class Decision(models.Model):
+    discussion = models.ForeignKey(Discussion, verbose_name=_('discussion'), related_name='decisions', help_text=_("The discussion this decision relates to."), null=True)
     voting = models.ForeignKey(Voting, verbose_name=_('voting'), related_name='decisions', help_text=_('The vote in which this decision has been made in.'), null=True)
     decision_story = models.ForeignKey(Story, verbose_name=_('decision story'), related_name='decisions', help_text=_('The story that has been chosen after voting.'))
     percent_of_ballots = models.PositiveIntegerField(null=True, blank=True)
@@ -63,4 +67,4 @@ class Ballot(models.Model):
 
 
 def discussion_has_voting(discussion):
-    return Voting.objects.filter(discussion=discussion, status='Started').count() > 0
+    return Voting.objects.filter(discussion=discussion, status='Started')

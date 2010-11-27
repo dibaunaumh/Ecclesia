@@ -14,7 +14,7 @@ def end_voting(request):
     if 'discussion_id' in request.POST and request.POST['discussion_id']:
         discussion = Discussion.objects.get(id=request.POST['discussion_id'])
         voting=Voting.objects.filter(discussion=discussion, status='Started')[0]
-        has_decision = calculate_decision_of_voting(voting)
+        has_decision = calculate_decision_of_voting(voting, discussion)
         voting.end_time = datetime.now()
         voting.status = "Ended"
         voting.save()
