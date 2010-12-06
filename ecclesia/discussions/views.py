@@ -1,7 +1,7 @@
 import sys
 
 from django.shortcuts import render_to_response, get_object_or_404
-from django.http import HttpResponse, Http404, HttpResponseRedirect
+from django.http import HttpResponse, Http404, HttpResponseRedirect, HttpResponseServerError
 from django.core import serializers
 from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
 from django.template.defaultfilters import slugify
@@ -17,26 +17,25 @@ from ecclesia.common.views import _follow
 from ecclesia.common.utils import is_heb
 from services.search_filter_pagination import search_filter_paginate
 from services.utils import get_user_permissions
-from ecclesia.voting.models import discussion_has_voting
+from ecclesia.voting.models import Voting
 from ecclesia.voting.services import get_voting_data
+
 
 DEFAULT_FORM_ERROR_MSG = 'Your input was invalid. Please correct and try again.'
 UNIQUENESS_ERROR_PATTERN = 'already exists'
 
 def visualize(request, discussion_slug):
     user = request.user
-    discussion = Discussion.objects.get(slug=discussion_slug)    
-    group = GroupProfile.objects.get(group=Group.objects.get(id=discussion.group.pk))
-    stories = Story.objects.filter(discussion=discussion.pk)
+    discussion = Discussion.objects.select_related(depth=1).get(slug=discussion_slug)
+    group = GroupProfile.objects.get(group=discussion.group)
+    stories = discussion.stories
     user_in_group = False
-    voting = discussion_has_voting(discussion)
+    voting = Voting.objects.get_started(discussion=discussion)
     if voting:
-        has_voting = voting.count() > 0
-        if has_voting:
-            voting = voting[0]
-            voting_data = get_voting_data(user, voting, discussion)
-            if voting_data is False:
-                has_voting = False
+        has_voting = True
+        voting_data = get_voting_data(user, voting, discussion)
+        if voting_data is False:
+            has_voting = False
     try:
         user_in_group = user.groups.filter(id=group.group.id).count() > 0
     except:
@@ -60,21 +59,6 @@ def evaluate(request, discussion_slug):
     conclusions = discussion_actions.evaluate_stories_verbose(discussion)
     json = simplejson.dumps(conclusions)
     return HttpResponse(json)
-
-def get_stories_json(request):
-    """
-    Used by an AJAX call from the story adding GUI.
-    """
-    result = HttpResponse('[]')
-    if request.GET:
-        discussion_slug = request.GET.get('discussion_slug', None)
-        if discussion_slug is None:
-            return result
-        discussion = Discussion.objects.get(slug=discussion_slug)
-        stories = Story.objects.filter(discussion=discussion.pk)
-        json = serializers.serialize('json', stories, ensure_ascii=False)
-        result = HttpResponse(json)
-    return result
 
 def add_discussion(request):
     if request.POST:
@@ -235,13 +219,10 @@ def add_relation(request, discussion, user, title, slug, speech_act):
     return resp
 
 def get_stories_view_json(request, discussion_slug):
-    discussion = Discussion.objects.get(slug=discussion_slug)
-    voting = discussion_has_voting(discussion)
-    vote_in_progress = voting and voting.count() > 0
-    if vote_in_progress:
-        voting = voting[0]
-    stories = Story.objects.filter(discussion=discussion)
-    conclusions = DiscussionConclusion.objects.filter(discussion=discussion)
+    discussion = Discussion.objects.select_related(depth=1).get(slug=discussion_slug)
+    voting = Voting.objects.get_started(discussion=discussion)
+    stories = discussion.stories.all()
+    conclusions = discussion.discussionconclusion_set.all()
     conclusions_map = {}
     for c in conclusions:
         conclusions_map[c.story.id] = True
@@ -255,17 +236,17 @@ def get_stories_view_json(request, discussion_slug):
         is_decision = "true" if story.id in decisions_map else "false"
         children = story.get_children_js_array()
         ballots = 0
-        if vote_in_progress:
+        if voting:
             ballots = 0 if not story.ballots else story.ballots.filter(user=request.user,voting=voting).count()
         icon = ''
         if story.speech_act.icon:
             icon = '%s%s' % (settings.MEDIA_URL, story.speech_act.icon)
         json = '%s{"story":{"id":%s,"url":"%s","name":"%s","type":"%s","content":"%s","ballots":%s,"state":{"indicated":%s,"decided":%s},"dimensions":{"x":%s,"y":%s,"w":%s,"h":%s},"children":%s,"icon":"%s"}},' % (json, story.id, story.get_absolute_url(), story.title, story.speech_act, story.get_json_safe_content(), ballots, is_conclusion, is_decision, story.x, story.y, story.w, story.h, children, icon)
-    relations = StoryRelation.objects.filter(discussion=discussion)
+    relations = discussion.relations.all()
     for relation in relations:
         children = relation.get_children_js_array()
         json = '%s{"relation":{"id":%s,"url":"%s","name":"%s","type":"%s","from_id":"%s","to_id":"%s","children":%s}},' % (json, relation.id, relation.get_absolute_url(), relation.title, relation.speech_act, relation.from_story.unique_id(), relation.to_story.unique_id(), children)
-    opinions = Opinion.objects.filter(discussion=discussion)
+    opinions = discussion.opinions.all()
     for opinion in opinions:
         json = '%s{"opinion":{"id":%s,"url":"%s","name":"%s","type":"%s","parent_id":"%s"}},' % (json, opinion.id, opinion.get_absolute_url(), opinion.title, opinion.speech_act, opinion.parent_story.unique_id())
     #json_serializer = serializers.get_serializer("json")()
@@ -342,7 +323,21 @@ def edit_opinion(request):
         result = "Wrong usage: HTTP POST expected"
     return HttpResponse(result)
 
-def delete_story(request, story_pk):
+def delete_story(request):
+    if request.POST:
+        story_pk = request.POST.get('story', None)
+        if story_pk:
+            try:
+                story = Story.objects.get(pk=story_pk)
+                story.delete()
+                return HttpResponse('OK')
+            except:
+                return HttpResponseServerError(_('Could not find requested story.'))
+        return HttpResponseServerError(_('Could not find story id in request.'))
+    return HttpResponseServerError(_('Bad usage, please use a post request.'))
+
+
+def delete_story_a(request, story_pk):
     story = Story.objects.get(pk=story_pk)
     discussion = story.discussion
     story.delete()

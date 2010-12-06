@@ -44,15 +44,15 @@
 					<td>{{obj.updated_at}}</td>
 					{% ifequal user_permission_type 1 %}
 						<td>
-							<form action="/story-delete/{{obj.pk}}/" method="post">
-						        <input type="image" onclick="if(confirm({% trans 'Are you sure you want to delete story?'%})) {this.form.submit();} else { return false; }" src="/static/img/icons/delete.png">{% trans 'Delete Story' %}</input>
+							<form action="/discussions/delete_story_a/{{obj.pk}}/" method="post">
+						        <input type="image" onclick="if(confirm('{% trans 'Are you sure you want to delete story?'%}')) {this.form.submit();} else { return false; }" src="/static/img/icons/delete.png"/>{% trans 'Delete Story' %}
 						    </form>
 						</td>
 					{% else %}
 						{% ifequal user obj.created_by %}
 							<td>
-								<form action="/story-delete/{{obj.pk}}/" method="post">
-							        <input type="image" onclick="if(confirm({% trans 'Are you sure you want to delete story?' %})) {this.form.submit();} else { return false; }" src="/static/img/icons/delete.png">{% trans 'Delete Story' %}</input>
+								<form action="/discussions/delete_story_a/{{obj.pk}}/" method="post">
+							        <input type="image" onclick="if(confirm('{% trans 'Are you sure you want to delete story?' %}')) {this.form.submit();} else { return false; }" src="/static/img/icons/delete.png"/>{% trans 'Delete Story' %}
 							    </form>
 							</td>
 						{% endifequal %}

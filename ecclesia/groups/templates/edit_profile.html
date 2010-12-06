@@ -12,12 +12,12 @@
 
     {% if form.errors %}
         <p style="color: red;">
-            {% blocktrans %}{% trans 'Please correct the error' %}{{ form.errors|pluralize }} below.{% endblocktrans %}
+            {% blocktrans %}Please correct the error {{ form.errors|pluralize }} below.{% endblocktrans %}
         </p>
     {% endif %}
 	{% if additional_form.errors %}
         <p style="color: red;">
-            {% blocktrans %}{% trans 'Please correct the error' %}{{ additional_form.errors|pluralize }} below.{% endblocktrans %}
+            {% blocktrans %}Please correct the error {{ additional_form.errors|pluralize }} below.{% endblocktrans %}
         </p>
     {% endif %}
 

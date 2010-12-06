@@ -12,6 +12,7 @@
 	<script src="/static/js/jquery/jquery-tooltip/jquery.tooltip.pack.js"></script>
 	<script>
         var has_voting = '{{ has_voting }}' === 'True';
+
         $(document).ready(function () {
             var config = {
                     canvas_id	        : 'storysvu',
@@ -22,12 +23,23 @@
                     discussion_type     : {{ discussion.type.id }},
                     user_permissions    : '{{ user_permissions }}',
                     voting              : {
-                        add_vote_url    : '{% url add_ballot discussion.pk %}',
-                        remove_vote_url : '{% url remove_ballot discussion.pk %}'
+                        add_vote_url        : '{% url add_ballot %}',
+                        remove_vote_url     : '{% url remove_ballot %}',
+                        close_vote_callback : close_vote
                     }
                 },
                 VUC = new VUController({}),
                 DC = new DiscussionController(VUC, config).init(true);
+
+            function close_vote() {
+                has_voting = false;
+                DC.init.call(DC, true);
+                $('#end_vote').hide();
+                $('#vote_progress').hide();
+                $('#voting_progress').hide();
+                $('#start_vote').show();
+            }
+
             $('button').filter('.ekkli-button').hover(
                 function () {
                     $(this).addClass('ui-state-hover');
@@ -102,9 +114,19 @@
 				});
 				$('#start_vote').click(function() {
                     $.ajax({
-                        url     : '{%  url get_voting_form %}',
+                        url     : '{% url get_voting_form discussion.pk %}',
                         success : function (html) {
                             $voting_form.html(html);
+                        },
+                        error   : function (xhr, textStatus, errorThrown) {
+                            var response = $.parseJSON(xhr.responseText);
+                            $.each(response, function(k, v) {
+                                if (k === 'VOTE_STARTED') {
+                                    alert(v);
+                                    closeDialog();
+                                    window.location.reload();
+                                }
+                            });
                         }
                     });
                     $voting_form.dialog('open');
@@ -116,12 +138,7 @@
 						type : 'post',
 						data : { 'discussion_id': {{ discussion.id }} },
 						success : function () {
-                            has_voting = false;
-                            DC.init.call(DC, true);
-                            $(that).hide();
-                            $('#vote_progress').hide();
-                            $('#voting_progress').hide();
-                            $('#start_vote').show();
+                           close_vote();
 						}
 					});
 				});
@@ -144,6 +161,16 @@
                                         $voting_time_left.text(time[0]);
                                     }
                                 }
+                            },
+                            error   : function (xhr, textStatus, errorThrown) {
+                                var response = $.parseJSON(xhr.responseText);
+                                $.each(response, function(k, v) {
+                                    if (k === 'VOTE_ENDED') {
+                                        $progressbar.hide();
+                                        close_vote();
+                                        alert(v);
+                                    }
+                                });
                             }
                         });
                         return false;

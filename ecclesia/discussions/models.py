@@ -3,7 +3,7 @@ from django.contrib.auth.models import User, Group
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import ugettext_lazy as _
-import datetime
+from datetime import datetime
 from discussion_actions import evaluate_stories
 from common.models import Presentable, Subscription
 from common.utils import get_domain
@@ -188,14 +188,24 @@ class DiscussionConclusion(models.Model):
 
 def last_changed_updater(sender, instance, **kwargs):
     container = sender.get_visual_container(instance)
-    container.last_related_update = instance.updated_at if hasattr(instance, 'updated_at') else datetime.datetime.now()
+    container.last_related_update = instance.updated_at if hasattr(instance, 'updated_at') else datetime.now()
     container.save()
     if isinstance(container, Discussion):
         evaluate_stories(instance.discussion)
 
+def last_changed_delete_updater(sender, instance, **kwargs):
+    container = sender.get_visual_container(instance)
+    container.last_related_update = datetime.now()
+    container.save()
+    if isinstance(container, Discussion):
+        evaluate_stories(instance.discussion)
 
 # connecting post_save signal of stories and opinions to update their parent discussion's last_related_update field 
 models.signals.post_save.connect(last_changed_updater, sender=Story)
+models.signals.post_delete.connect(last_changed_delete_updater, sender=Story)
 models.signals.post_save.connect(last_changed_updater, sender=Opinion)
+models.signals.post_delete.connect(last_changed_delete_updater, sender=Opinion)
 models.signals.post_save.connect(last_changed_updater, sender=StoryRelation)
+models.signals.post_delete.connect(last_changed_delete_updater, sender=StoryRelation)
 models.signals.post_save.connect(last_changed_updater, sender=Discussion)
+models.signals.post_delete.connect(last_changed_delete_updater, sender=Discussion)

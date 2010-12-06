@@ -4,9 +4,10 @@ from django.db import models
 from django.contrib.contenttypes import generic
 from django.contrib.auth.models import Group, User
 from django.utils.translation import ugettext_lazy as _
+from django.core.urlresolvers import reverse
+from django.conf import settings
 from common.utils import get_domain
 from common.models import Presentable, Subscription
-from django.conf import settings
 
 class UserProfile(models.Model):
     """
@@ -55,7 +56,7 @@ class GroupProfile(Presentable):
 
 
     def get_absolute_url(self):
-        return "http://%s/group/%s/" % (get_domain(), self.slug)
+        return reverse('groups.views.group_home', args=[self.slug])
 
     def save(self):
         super(GroupProfile, self).save()

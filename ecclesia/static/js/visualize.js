@@ -481,7 +481,7 @@ Story.prototype = {
     deleteStory : function (context_controller) {
         // TODO: allow the confirm title to be translated
         if(confirm('Are you sure you want to delete this story?')) {
-            $.post('/discussions/delete_story/'+this.config.id+'/', {}, function () {
+            $.post('/discussions/delete_story/', {'story':this.config.id}, function () {
                 if(context_controller) {
                     context_controller.init.call(context_controller, true);
                 }
@@ -503,6 +503,15 @@ Story.prototype = {
                     $voting_ballots.text(parseInt($voting_ballots.text()) - 1);
                     context_controller.init.call(context_controller, true);
                 }
+            },
+            error   : function (xhr, textStatus, errorThrown) {
+                var response = $.parseJSON(xhr.responseText);
+                $.each(response, function(k, v) {
+                    if (k === 'VOTE_ENDED') {
+                        context_controller.options.voting.close_vote_callback();
+                        alert(v);
+                    }
+                });
             }
         });
     },
@@ -519,6 +528,15 @@ Story.prototype = {
                     $voting_ballots.text(parseInt($voting_ballots.text()) + 1);
                     context_controller.init.call(context_controller, true);
                 }
+            },
+            error   : function (xhr, textStatus, errorThrown) {
+                var response = $.parseJSON(xhr.responseText);
+                $.each(response, function(k, v) {
+                    if (k === 'VOTE_ENDED') {
+                       context_controller.options.voting.close_vote_callback();
+                        alert(v);
+                    }
+                });
             }
         });
     }

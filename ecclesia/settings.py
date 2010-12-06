@@ -42,6 +42,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.auth.context_processors.auth',
     'django.core.context_processors.debug',
     'django.core.context_processors.i18n',
+    'django.contrib.messages.context_processors.messages',
     #'multilingual.context_processors.multilingual',
 )
 
@@ -84,6 +85,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.csrf.middleware.CsrfMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
 #    'django.middleware.locale.LocaleMiddleware'
 #    'privatebeta.middleware.PrivateBetaMiddleware',
 )
@@ -104,6 +106,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.admin',
+    'django.contrib.messages',
     'south',
     'registration',
     'feedback',
