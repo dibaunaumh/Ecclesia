@@ -92,19 +92,23 @@ def evaluate_discussion_stories(discussion, stories):
     for coa in coa_stories:
         paths = paths_starting_in(graph, coa)
         score = 0
-        path_eval_inv_prob = 1
+        path_eval_prob=1
         
         for p in paths:
             # step 2.2: calculate the aggregated evaluation of the nodes in the path
+            # gets all the values of the nodes in the path
+            for s in p:
+                print "p: ",p, " s: ",s, " evals[s]: ",evals[s], "p[2:3] = ",p[2:3] 
             path_eval_ls = ([evals[s] for s in p])
             path_eval = reduce (multiply, path_eval_ls)
             # step 2.3: check whether it ends in a Goal
             ends_in_goal = types[p[-1]] == GOAL_SPEECH_ACT
             if not ends_in_goal:
                 path_eval = 0
-            path_eval_inv_prob = path_eval_inv_prob*(1-path_eval)
+            path_eval_prob=path_eval_prob*path_eval
                         
-        scores[coa] = 1-path_eval_inv_prob
+        # scores[coa] = 1-path_eval_inv_prob
+        scores[coa] = path_eval_prob
 
     return scores
     
@@ -136,10 +140,10 @@ def evaluate_goodness(story, discussion):
     if good_count == 0 and bad_count == 0: good_count=1
     eval_good = (good_count/(good_count+bad_count))
     
-    if eval_good<=.5:
-        x=0
-    else:
+    if eval_good>=.5:
         x=1
+    else:
+        x=0
     return x
 
 
