@@ -14,6 +14,9 @@ BAD_SPEECH_ACT = "bad"
 
 PENALTY_FOR_NOT_ENDING_IN_GOAL = 0
 
+def get_number_of_group_members(discussion):
+    return discussion.group.get_number_of_group_members()
+
 def evaluate_stories(discussion):
     """
     Implementation of the evaluate stories discussion action
