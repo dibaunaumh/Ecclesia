@@ -176,6 +176,18 @@ def paths_starting_in(g, node, paths=None):
             paths_starting_in(g, child, paths)
     return paths
 
+def has_path_to_nodes(g, node, target_nodes):
+    paths = paths_starting_in(g, node)
+    for t in target_nodes:
+        for p in paths:
+            counter = 1
+            while counter <= len(p):
+                if (t == p[len(p)-counter]):
+                    break;
+                counter+=1
+            if counter > len(p):
+                return False
+    return True
 
 def pick_outstanding_scores(scores):
     """
