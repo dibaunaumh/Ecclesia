@@ -72,6 +72,9 @@ class GroupProfile(Presentable):
         members = [user for user in User.objects.all() if self.group in user.groups.all()]
         return members
 
+    def get_number_of_group_members(self):
+        return len(self.get_group_members())
+
     def __unicode__(self):
         return self.group.name
 
