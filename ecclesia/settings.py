@@ -124,6 +124,7 @@ INSTALLED_APPS = (
     'common',
     'notifications',
     'rosetta',
+    'permissions',
 #   'privatebeta',
 #   'multilingual'
 )
