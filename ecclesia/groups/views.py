@@ -70,6 +70,7 @@ def add_group(request):
                 group_profile.created_by = request.user
                 group_profile.x = request.POST.get('x', None)
                 group_profile.y = request.POST.get('y', None)
+                group_profile.is_private = 'True' if request.POST.get('is_private') == 'on' else 'False'
                 group_profile.save()
                 return HttpResponse('reload')
             except:

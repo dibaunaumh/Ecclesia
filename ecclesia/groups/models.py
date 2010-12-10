@@ -8,6 +8,7 @@ from django.core.urlresolvers import reverse
 from django.conf import settings
 from common.utils import get_domain
 from common.models import Presentable, Subscription
+from common.permissions import create_permission
 
 class UserProfile(models.Model):
     """
@@ -49,7 +50,7 @@ class GroupProfile(Presentable):
     created_at = models.DateTimeField(_('created at'), auto_now_add=True, help_text=_('When was the group created'))
     updated_at = models.DateTimeField(_('updated at'), auto_now=True, help_text=_('When was the group last updated'))
     subscriptions = generic.GenericRelation(Subscription)
-
+    is_private = models.BooleanField(default=False, verbose_name=_('is private')) 
     class Meta:
         verbose_name = _("group profile")
         verbose_name_plural = _("group profiles")
@@ -59,6 +60,12 @@ class GroupProfile(Presentable):
         return reverse('groups.views.group_home', args=[self.slug])
 
     def save(self):
+        if not self.id:
+            super(GroupProfile, self).save()
+            if self.is_private == 'True':
+                create_permission(self, self, 'view')
+            else:
+                create_permission('Everyone', self, 'view')
         super(GroupProfile, self).save()
         if self.created_by:
             if not GroupPermission.objects.filter(group=self.group).filter(user=self.created_by):
