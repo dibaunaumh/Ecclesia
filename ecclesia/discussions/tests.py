@@ -8,6 +8,8 @@ Replace these with more appropriate tests for your application.
 from django.test import TestCase
 import networkx as nx
 from coa_discussion_actions import paths_starting_in, pick_outstanding_scores
+from discussions.coa_discussion_actions import aggregate_dimension_opinions_by_users
+from discussions.models import Discussion
 
 class ActionsTest(TestCase):
 
@@ -49,6 +51,17 @@ class ActionsTest(TestCase):
         actual_outstanding.sort()
         for i, id in enumerate(expected_outstanding):
             self.failUnlessEqual(expected_outstanding[i], actual_outstanding[i])
+
+
+    def test_aggregate_dimension_opinions_by_users(self):
+        print "All discussions: ", Discussion.objects.all()
+        discussion_id = 1
+        story_id = 3
+        # assuming the fixtures have opinions only from 1 user on this story: 4 True & 1 False
+        discussion = Discussion.objects.get(pk=discussion_id)
+        positive_count, negative_count = aggregate_dimension_opinions_by_users(discussion, story_id, "true", "false")
+        self.assertEqual(positive_count, 0.8)
+        self.assertEqual(negative_count, 0)
 
 
 #class DiscussionsTest(TestCase):

@@ -123,9 +123,10 @@ def evaluate_story(story, discussion):
     return 1
 
 def evaluate_truth(story, discussion):
-    Opinion = get_model('discussions', 'Opinion')
-    true_count = float(Opinion.objects.filter(discussion=discussion, object_id=story.id, speech_act__name=TRUE_SPEECH_ACT).count())
-    false_count = float(Opinion.objects.filter(discussion=discussion, object_id=story.id, speech_act__name=FALSE_SPEECH_ACT).count())
+#    Opinion = get_model('discussions', 'Opinion')
+#    true_count = float(Opinion.objects.filter(discussion=discussion, object_id=story.id, speech_act__name=TRUE_SPEECH_ACT).count())
+#    false_count = float(Opinion.objects.filter(discussion=discussion, object_id=story.id, speech_act__name=FALSE_SPEECH_ACT).count())
+    true_count, false_count = aggregate_dimension_opinions_by_users(discussion, story.id, TRUE_SPEECH_ACT, FALSE_SPEECH_ACT)
     # calculation should be 1, if no opinions. if only false amount of belif 0 , if some true and some false true/(true+false)
     if true_count == 0 and false_count==0:
         true_count=1
@@ -133,10 +134,11 @@ def evaluate_truth(story, discussion):
 
 
 def evaluate_goodness(story, discussion):
-    Opinion = get_model('discussions', 'Opinion')
-    good_count = float(Opinion.objects.filter(discussion=discussion, object_id=story.id, speech_act__name=GOOD_SPEECH_ACT).count())
-    bad_count = float(Opinion.objects.filter(discussion=discussion, object_id=story.id, speech_act__name=BAD_SPEECH_ACT).count())
-   
+#    Opinion = get_model('discussions', 'Opinion')
+#    good_count = float(Opinion.objects.filter(discussion=discussion, object_id=story.id, speech_act__name=GOOD_SPEECH_ACT).count())
+#    bad_count = float(Opinion.objects.filter(discussion=discussion, object_id=story.id, speech_act__name=BAD_SPEECH_ACT).count())
+    good_count, bad_count = aggregate_dimension_opinions_by_users(discussion, story.id, GOOD_SPEECH_ACT, BAD_SPEECH_ACT)
+
     if good_count == 0 and bad_count == 0: good_count=1
     eval_good = (good_count/(good_count+bad_count))
     
@@ -146,6 +148,33 @@ def evaluate_goodness(story, discussion):
         x=0
     return x
 
+
+def group_opinions_by_user(opinions):
+    count_by_user = {}
+    for op in opinions:
+        user_id = op.created_by.id
+        if not user_id in count_by_user:
+            count_by_user[user_id] = 1
+        else:
+            count_by_user[user_id] = count_by_user[user_id] + 1
+    return count_by_user
+
+def aggregate_dimension_opinions_by_users(discussion, story_id, positive_speech_act_name, negative_speech_act_name):
+    Opinion = get_model('discussions', 'Opinion')
+    positive_opinions = Opinion.objects.filter(discussion=discussion, object_id=story_id, speech_act__name=positive_speech_act_name)
+    negative_opinions = Opinion.objects.filter(discussion=discussion, object_id=story_id, speech_act__name=negative_speech_act_name)
+    positive_count_by_user = group_opinions_by_user(positive_opinions)
+    negative_count_by_user = group_opinions_by_user(negative_opinions)
+    positive_count = 0
+    for user, positives in positive_count_by_user.items():
+        if user in negative_count_by_user:
+            negatives = negative_count_by_user[user]
+            positive_count = float(positives) / (float(positives) + float(negatives))
+            del negative_count_by_user[user]
+        else:
+            positive_count = positive_count + 1
+    negative_count = len(negative_count_by_user)
+    return (float(positive_count), float(negative_count))
 
 
 #template_factory.register_discussion_action(TEMPLATE_NAME, "evaluate_stories", evaluate_stories)
