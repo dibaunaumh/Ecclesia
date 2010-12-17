@@ -7,6 +7,7 @@ from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
 from django.template.defaultfilters import slugify
 from django.utils import simplejson
 from django.conf import settings
+from django.utils.translation import ugettext as _
 
 from forms import *
 import discussion_actions

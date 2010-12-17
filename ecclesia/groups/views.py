@@ -7,7 +7,7 @@ from discussions.models import *
 from discussions.forms import DiscussionForm
 import sys
 from forms import *
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from services.search_filter_pagination import search_filter_paginate
 from services.utils import get_user_permissions
 from django.template.defaultfilters import slugify

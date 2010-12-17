@@ -138,6 +138,7 @@ Node.prototype = {
 		ctx.stroke();
 		// restore former context options
 		ctx.restore();
+        return this;
     },
 	rescale		: function (scale) {
 		this.config.scale = scale;
@@ -270,24 +271,24 @@ Discussion.prototype = {
 
 Story = function (node_class, config) {
     this.config = {
-		alias	    	        : 'story',
-		model_name  	        : 'Story',
-		type	    	        : 'goal',
-		content					: '',
-        ballots                 : 0,
-        icon                    : '',
-        fill_normal             : '#e3e3e3',
-        fill_normal_indicated   : '#418000',
-        fill_hover              : '#f2f2f2',
-        fill_hover_indicated    : '#5caa80',
-        stroke_normal           : '#444',
-        stroke_hover            : '#000',
-        stroke_normal_indicated : '#444',
-        stroke_hover_indicated  : '#000',
-        children                : {},
-        icon_w                  : 32,
-        icon_h                  : 32,
-        voting                  : {
+        alias                           : 'story',
+        model_name                      : 'Story',
+        type                            : 'goal',
+        content                         : '',
+        ballots                         : 0,
+        icon                            : '',
+        fill_normal                     : '#e3e3e3',
+        fill_normal_indicated           : '#418000',
+        fill_hover                      : '#f2f2f2',
+        fill_hover_indicated            : '#61a020',
+        stroke_normal                   : '#444',
+        stroke_hover                    : '#000',
+        stroke_normal_indicated         : '#444',
+        stroke_hover_indicated          : '#444',
+        children                        : {},
+        icon_w                          : 32,
+        icon_h                          : 32,
+        voting                          : {
             add_vote_url    : '',
             remove_vote_url : ''
         }
@@ -303,16 +304,16 @@ Story = function (node_class, config) {
     this.draggable = false;
 };
 Story.prototype = {
-	serialize	: function () {
+	serialize           : function () {
         var dims = this.config.dimensions;
 		return $.param(this.config.dimensions) + '&model_name=' + this.config.model_name + '&pk=' + this.config.id;
 	},
-	addToDOM	: function () {
+	addToDOM            : function () {
 		var c = this.config;
 		$('#'+c.type+'_container').append('<div class="'+c.alias+'" id="'+this.DOMid+'"><a href="'+c.url+'" class="'+c.alias+'_title">'+c.name+'</a></div>');
         this.$element = $('#'+this.DOMid);
 	},
-	position	: function () {
+	position            : function () {
 		var dims = this.config.dimensions,
 			offset_left = $('#'+this.config.type+'_container').position().left;
         // if the new story is positioned outside the container fit it inside
@@ -322,7 +323,7 @@ Story.prototype = {
 		this.$element.css('left', dims.x+'px')
 					  .css('top', dims.y+'px');
 	},
-    addBallots  : function () {
+    addBallots          : function () {
         var $story_ballots, ballots = this.config.ballots, el = this.$element;
         if (ballots) {
             $story_ballots = $('span.story_ballots', el);
@@ -334,15 +335,25 @@ Story.prototype = {
         }
         return this;
     },
-	draw		: function (ctx) {
+    getIconsContainer   : function () {
+        var $story_icon, el = this.$element;
+        $story_icon = $('span.story_icons', el);
+        if (! $story_icon.length) {
+            el.append('<span class="story_icons"></span>');
+            return $('span.story_icons', el);
+        }
+        return $story_icon;
+    },
+	draw                : function (ctx) {
 		var c = this.config,
             dims = c.dimensions,
 			s = c.scale,
+            cs = c.state,
 			el = this.$element.height(dims.h*s+'px').width(dims.w*s+'px'),
-            state = 'normal';
-        if (c.state.indicated) { state = 'normal_indicated'; }
-        if (c.state.hover) { state = c.state.indicated ? 'hover_indicated' : 'hover'; }
-        if (c.state.click) { state = 'click'; }
+            state = cs.hover ? 'hover' : 'normal',
+            $icons_container;
+        if (cs.indicated) { state += '_indicated'; }
+        if (cs.click) { state = 'click'; }
 		if (! $('a.story_content', el).length && c.content && c.content !== '') {
 			el.append('<a href="#" class="story_content" title="' + c.content + '"></a>');
 			// TODO: replace this tooltip plugin with jQueryUI-1.9's tooltip
@@ -351,6 +362,9 @@ Story.prototype = {
         this.wrapTitle(el)
             .addBallots()
 		    .roundedRect(ctx, dims.x, dims.y, dims.w*s, dims.h*s, 5, c['fill_'+state], c['stroke_'+state]);
+        if ( ! has_voting && cs.decided ) {
+            this.getIconsContainer().addClass('decided');
+        }
         try {
             if (c.icon) {
                 var img = new Image();
@@ -362,20 +376,20 @@ Story.prototype = {
         } catch(e) {}
         return this;
 	},
-    hover       : function (ctx) {
+    hover               : function (ctx) {
         this.config.state.hover = true;
         this.draw(ctx);
         //$('#'+this.DOMid).children('.opinions').show();
     },
-    unhover     : function (ctx) {
+    unhover             : function (ctx) {
         this.config.state.hover = false;
         this.draw(ctx);
         //$('#'+this.DOMid).children('.opinions').hide();
     },
-    clicked     : function (x, y) {
+    clicked             : function (x, y) {
 		return false;
     },
-	click		: function (event) {
+	click               : function (event) {
 		var position = $.clickOffset(event),
             that = this,
             c = this.config,
@@ -399,7 +413,7 @@ Story.prototype = {
         }
 		return config;
 	},
-    addRelation : function (context_controller) {
+    addRelation         : function (context_controller) {
         // TODO: move this form initialization into the view controller - by design
         var that = this;
         var form = context_controller.getCreateRelationForm.apply(context_controller, arguments),
@@ -438,7 +452,7 @@ Story.prototype = {
 //        dialog_config = $.isPlainObject(config) ? $.extend(true, {}, defaults, config) : defaults;
         form.dialog(dialog_config).dialog('open');
     },
-    addOpinion  : function (context_controller) {
+    addOpinion          : function (context_controller) {
         // TODO: move this form initialization into the view controller - by design
         var that = this,
             form = context_controller.getCreateOpinionForm.apply(context_controller, arguments),
@@ -473,12 +487,12 @@ Story.prototype = {
 //        dialog_config = $.isPlainObject(config) ? $.extend(true, {}, defaults, config) : defaults;
         form.dialog(dialog_config).dialog('open');
     },
-    editStory   : function (context_controller) {
+    editStory           : function (context_controller) {
         // TODO: improve this, create a real edit dialog
 //        var ref = $('#'+this.DOMid).children('a').first().attr('href');
         window.location.href = this.config.url;
     },
-    deleteStory : function (context_controller) {
+    deleteStory         : function (context_controller) {
         // TODO: allow the confirm title to be translated
         if(confirm('Are you sure you want to delete this story?')) {
             $.post('/discussions/delete_story/', {'story':this.config.id}, function () {
@@ -490,7 +504,7 @@ Story.prototype = {
             return false;
         }
     },
-    vote        : function (context_controller) {
+    vote                : function (context_controller) {
         var that = this;
         $.ajax({
             type    : 'post',
@@ -515,7 +529,7 @@ Story.prototype = {
             }
         });
     },
-    removeVote  : function (context_controller) {
+    removeVote          : function (context_controller) {
         var that = this;
         $.ajax({
             type    : 'post',
@@ -2055,6 +2069,7 @@ FormController.prototype = {
         if(!this.error) {
             if(o.reset_after_send) {
                 try {
+                    $('button', '.ui-dialog-buttonset').removeAttr('disabled');
                     this.f_jq.dialog('close');
                 } catch (ex) {}
                 this.f_html.reset();

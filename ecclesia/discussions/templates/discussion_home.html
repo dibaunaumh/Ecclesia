@@ -16,8 +16,8 @@
         $(document).ready(function () {
             var config = {
                     canvas_id	        : 'storysvu',
-                    data_url	        : '/discussions/get_stories_view_json/{{ discussion.slug }}',
-                    meta_url	        : '/discussions/get_visualization_meta_data/',
+                    data_url	        : '{% url discussions.views.get_stories_view_json discussion.slug %}',
+                    meta_url	        : '{% url discussions.views.get_visualization_meta_data %}',
                     update_status_url   : '/common/presentation_status/Discussion/{{ discussion.pk }}',
                     last_changed        : '{{ last_related_update }}',
                     discussion_type     : {{ discussion.type.id }},
@@ -38,6 +38,7 @@
                 $('#vote_progress').hide();
                 $('#voting_progress').hide();
                 $('#start_vote').show();
+                $('.story_icons').removeClass('hidden');
             }
 
             $('button').filter('.ekkli-button').hover(
@@ -67,7 +68,7 @@
                 });
             });
 			<!-- Create new dialog -->
-			$(function() {
+			(function() {
 				var $voting_form = $("#voting_form"),
                     closeDialog = function () {
                         $voting_form.dialog('close').html('<p>{% trans 'Loading form...' %}</p>');
@@ -93,7 +94,8 @@
                                     has_voting = true;
 									$('#start_vote').hide();
 									$('#end_vote').show();
-                                    $('#vote_progress').show()
+                                    $('#vote_progress').show();
+                                    $('.story_icons').addClass('hidden');
                                     ballots = response && response.ballots;
                                     time = response && response.time_left;
                                     if (time && (ballots || ballots === 0)) {
@@ -179,7 +181,7 @@
                         $progressbar.hide();
                     }
                 );
-			});
+			})();
         });
     </script>
 {% endblock %}
