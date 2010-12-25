@@ -1,16 +1,19 @@
+import sys
+
 from django.shortcuts import  render_to_response
 from django.http import HttpResponseRedirect, HttpResponse, Http404, HttpResponseBadRequest
-from django.contrib.auth.decorators import login_required
 from django.core import serializers
+from django.contrib import messages
+from django.template import RequestContext
+from django.template.defaultfilters import slugify
+from django.contrib.auth.models import User, Group
+
 from groups.models import *
 from discussions.models import *
 from discussions.forms import DiscussionForm
-import sys
 from forms import *
-from django.contrib.auth.models import User, Group
 from services.search_filter_pagination import search_filter_paginate
 from services.utils import get_user_permissions
-from django.template.defaultfilters import slugify
 from common.utils import is_heb
 
 def home(request):
@@ -107,10 +110,12 @@ def group_home(request, group_slug):
         user_in_group = request.user.groups.filter(id=group.group.id).count() > 0
     except:
         pass
+    if group.is_private and not user_in_group:
+        messages.error(request, "The group is private. You're not allowed to see it." )
     #initializing the forms
     discussion_form = DiscussionForm()
     mission_statement_form = MissionStatementForm()
-    return render_to_response('group_home.html', locals())
+    return render_to_response('group_home.html', locals(), context_instance=RequestContext(request))
 
 def set_mission_statement(request, group_pk):
     result = ''
