@@ -20,11 +20,13 @@ from services.search_filter_pagination import search_filter_paginate
 from services.utils import get_user_permissions
 from ecclesia.voting.models import Voting
 from ecclesia.voting.services import get_voting_data
+from common.decorators import notify_not_logged_in
 
 
 DEFAULT_FORM_ERROR_MSG = 'Your input was invalid. Please correct and try again.'
 UNIQUENESS_ERROR_PATTERN = 'already exists'
 
+#@notify_not_logged_in
 def visualize(request, discussion_slug):
     user = request.user
     discussion = Discussion.objects.select_related(depth=1).get(slug=discussion_slug)
