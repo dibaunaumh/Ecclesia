@@ -9,6 +9,7 @@ from common.models import Presentable, Subscription
 from common.utils import get_domain
 import re
 from ecclesia.groups.models import GroupProfile
+from workflow_manager import update_workflow_status
 
 
 class DiscussionType(models.Model):
@@ -35,6 +36,7 @@ class Discussion(Presentable):
 	#parent = models.ForeignKey('self', verbose_name=_('parent'), related_name='children', null=True, blank=True, help_text=_('The parent discussion containing this discussion.'))
     # keeping it simple...
     #forked_from = models.ForeignKey('self', verbose_name=_('forked from'), related_name='forks', null=True, blank=True, help_text=_('The discussion from which this discussion forked.'))
+    workflow_status = models.IntegerField(_("workflow status"), default=0)
     created_by = models.ForeignKey(User, editable=False, verbose_name=_('created by'), null=True, blank=True, help_text=_('The user that created the discussion.'))
     created_at = models.DateTimeField(_('created at'), auto_now_add=True, help_text=_('When was the discussion created.'))
     updated_at = models.DateTimeField(_('updated at'), auto_now=True, help_text=_('When was the discussion last updated.'))
@@ -43,7 +45,6 @@ class Discussion(Presentable):
     class Meta:
         verbose_name = _('discussion')
         verbose_name_plural = _('discussions')
-
 
     def get_absolute_url(self):
         return "http://%s/discussions/discussion/%s/" % (get_domain(), self.slug)
@@ -192,6 +193,7 @@ def last_changed_updater(sender, instance, **kwargs):
     container.save()
     if isinstance(container, Discussion):
         evaluate_stories(instance.discussion)
+        update_workflow_status(container)
 
 def last_changed_delete_updater(sender, instance, **kwargs):
     container = sender.get_visual_container(instance)
@@ -199,6 +201,7 @@ def last_changed_delete_updater(sender, instance, **kwargs):
     container.save()
     if isinstance(container, Discussion):
         evaluate_stories(instance.discussion)
+        update_workflow_status(container)
 
 # connecting post_save signal of stories and opinions to update their parent discussion's last_related_update field 
 models.signals.post_save.connect(last_changed_updater, sender=Story)

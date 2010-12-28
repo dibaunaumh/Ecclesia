@@ -5,6 +5,7 @@ import sys
 
 TEMPLATE_NAME = "course-of-action"
 COA_SPEECH_ACT = "course_of_action"
+GOAL_CONDITION_SPEECH_ACT = "goal_condition"
 GOAL_SPEECH_ACT = "goal"
 
 TRUE_SPEECH_ACT = "true"
@@ -16,6 +17,8 @@ PENALTY_FOR_NOT_ENDING_IN_GOAL = 0
 
 def get_number_of_group_members(discussion):
     return discussion.group.get_number_of_group_members()
+
+
 
 def evaluate_stories(discussion):
     """
@@ -66,6 +69,7 @@ def evaluate_discussion_stories(discussion, stories):
     evals = {}
     types = {}
     coa_stories = []
+    goal_conditions = []
 
     # step 1: Evaluate each node & add to graph
 
@@ -81,6 +85,8 @@ def evaluate_discussion_stories(discussion, stories):
         types[f.id] = f.speech_act.name
         if f.speech_act.name == COA_SPEECH_ACT and f.id not in coa_stories:
             coa_stories.append(f.id)
+        elif f.speech_act.name == GOAL_CONDITION_SPEECH_ACT and f.id not in goal_conditions:
+            goal_conditions.append(f.id)
         t = rel.to_story
         stories[t.id] = t
         evals[t.id] = evaluate_story(t, discussion)
@@ -96,29 +102,39 @@ def evaluate_discussion_stories(discussion, stories):
         paths = paths_starting_in(graph, coa)
         score = 0
         path_eval_prob=1
-        
+        total_path_eval = 0
+
         for p in paths:
             # step 2.2: calculate the aggregated evaluation of the nodes in the path
             # gets all the values of the nodes in the path
-            for s in p:
-                print "p: ",p, " s: ",s, " evals[s]: ",evals[s], "p[2:3] = ",p[2:3] 
+#            for s in p:
+#                print "p: ",p, " s: ",s, " evals[s]: ",evals[s], "p[2:3] = ",p[2:3]
             path_eval_ls = ([evals[s] for s in p])
             path_eval = reduce (multiply, path_eval_ls)
             # step 2.3: check whether it ends in a Goal
             ends_in_goal = types[p[-1]] == GOAL_SPEECH_ACT
             if not ends_in_goal:
                 path_eval = 0
+            total_path_eval += path_eval
             path_eval_prob=path_eval_prob*path_eval
+
+        average_path_eval = total_path_eval / len(paths)
                         
         # scores[coa] = 1-path_eval_inv_prob
-        scores[coa] = path_eval_prob
+#        scores[coa] = path_eval_prob
+
+        if len(goal_conditions) > 0 and not has_path_to_nodes(graph, coa, goal_conditions):
+            scores[coa] = 0
+        else:
+            scores[coa] = average_path_eval
 
     return scores
     
 
 def evaluate_story(story, discussion):
     try:
-        score = evaluate_truth(story, discussion) * evaluate_goodness(story, discussion)
+#        score = evaluate_truth(story, discussion) * evaluate_goodness(story, discussion)
+        score = group_belief_value(discussion, story)
         return score
     except:
         print sys.exc_info()[1]
@@ -178,6 +194,21 @@ def aggregate_dimension_opinions_by_users(discussion, story_id, positive_speech_
             positive_count = positive_count + 1
     negative_count = len(negative_count_by_user)
     return (float(positive_count), float(negative_count))
+
+
+def get_number_of_opinion_givers_for_story(discussion, story_id, positive_speech_act_name, negative_speech_act_name):
+    Opinion = get_model('discussions', 'Opinion')
+    opinions = Opinion.objects.filter(discussion=discussion,
+                                  object_id=story_id,
+                                  speech_act__name__in=(positive_speech_act_name, negative_speech_act_name)).count()
+    return len(set([opinion.created_by for opinion in opinions]))
+
+
+def group_belief_value(discussion, story_id):
+    number_of_opinion_givers = get_number_of_opinion_givers_for_story(discussion, story_id, TRUE_SPEECH_ACT, FALSE_SPEECH_ACT)
+    true_count, false_count = aggregate_dimension_opinions_by_users(discussion, story_id, TRUE_SPEECH_ACT, FALSE_SPEECH_ACT)
+    gbv = (number_of_opinion_givers / get_number_of_group_members(discussion)) * (true_count / (true_count + false_count))
+    return gbv
 
 
 #template_factory.register_discussion_action(TEMPLATE_NAME, "evaluate_stories", evaluate_stories)
