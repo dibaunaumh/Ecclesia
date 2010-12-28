@@ -57,6 +57,13 @@ def visualize(request, discussion_slug):
         user_permissions = ''
     return render_to_response('discussion_home.html', locals())
 
+def get_update(request, discussion_slug):
+    results = []
+    results.append('"elements":%s' % get_stories_view_json(request, discussion_slug))
+    results.append('"wrokflow_status":%s' % get_wrokflow_status_json(request, discussion_slug))
+    json = '{"discussion":{%s}}' % ','.join(results)
+    return HttpResponse(json)
+
 def evaluate(request, discussion_slug):
     discussion = get_object_or_404(Discussion, slug=discussion_slug)
     conclusions = discussion_actions.evaluate_stories_verbose(discussion)
@@ -255,7 +262,8 @@ def get_stories_view_json(request, discussion_slug):
     #json_serializer = serializers.get_serializer("json")()
     #json_serializer.serialize(groups, ensure_ascii=False, stream=response, fields=('x', 'y', 'w', 'h'))
     json = json.strip(',')
-    return HttpResponse('[%s]' % json)
+#    return HttpResponse('[%s]' % json)
+    return '[%s]' % json
 
 def get_visualization_meta_data(request):
     discussion_type = request.GET.get('discussion_type', 1)

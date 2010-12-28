@@ -16,7 +16,7 @@
         $(document).ready(function () {
             var config = {
                     canvas_id	        : 'storysvu',
-                    data_url	        : '{% url discussions.views.get_stories_view_json discussion.slug %}',
+                    data_url	        : '{% url discussions.views.get_update discussion.slug %}',
                     meta_url	        : '{% url discussions.views.get_visualization_meta_data %}',
                     update_status_url   : '/common/presentation_status/Discussion/{{ discussion.pk }}',
                     last_changed        : '{{ last_related_update }}',

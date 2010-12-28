@@ -25,13 +25,12 @@ ContextMenu = function(config) {
     this.menu = {};
     this.context_controller = {};
     var getDefaults = function () {
-        var o = $.extend(true, {
+        return $.extend(true, {
             container_id: 'vu-context-menu',
             element     : $('#canvasContainer'),
             position    : {left: 0, top: 0},
             actions     : {}
         }, config || {});
-        return o;
     };
     this.initialize = function (_config) {
         this.config = getDefaults();
@@ -885,7 +884,7 @@ Opinion.prototype = {
 
 VUController = function (options) {
 	this.options = $.extend(true, {
-        width		        : 958,
+        width		        : 973,
         height		        : 598,
         bg_pic              : '',
         container_id        : 'canvasContainer',
@@ -898,16 +897,20 @@ VUController = function (options) {
         update_timeout      : 5000,
         user_permissions    : null,
         dialog_title        : '',
-        zoom_slider	        : {
-            change		: $.bindFn(this, this.zoom),
-            orientation	: 'vertical',
-            animate     : 'fast',
-            step		: 0.1,
-            min			: 0.5,
-            max			: 1.1,
-            value		: 0.7
-        },
-        scale		: 0.8
+//        zoom_slider	        : {
+//            change		: $.bindFn(this, this.zoom),
+//            orientation	: 'vertical',
+//            animate     : 'fast',
+//            step		: 0.1,
+//            min			: 0.5,
+//            max			: 1.1,
+//            value		: 0.7
+//        },
+        zoom                : {
+            scale   : 0.8,
+            step    : 0.1,
+            min     : 0.5
+        }
     }, options || {});
 
     this.data = {};
@@ -941,9 +944,9 @@ VUController.prototype = {
 				// set the controls for the heart of the sun
 				this.setVUEvents();
 				// appending a scaling slider
-				if($.isPlainObject(this.options.zoom_slider) && $.isFunction(this.options.zoom_slider.change)) {
-					this.initZoom();
-				}
+//                if($.isPlainObject(this.options.zoom_slider) && $.isFunction(this.options.zoom_slider.change)) {
+//                    this.initZoom();
+//                }
                 // initialize dialog box
                 this.initDialog();
 				// iterate over the elements and create the GUI
@@ -1088,17 +1091,17 @@ VUController.prototype = {
                 })
             });
         }
-	},
-	initZoom			: function () {
-		if($('#vuslider').length == 0) {
-			// add a container element for the slider
-            $('#'+this.options.container_id).after('<div id="vuslider"></div>');
-            // init & bind the onChange callback to this controller
-            this.options.zoom_slider.change = $.bindFn(this, this.zoom);
-            // init slider
-			$('#vuslider').slider(this.options.zoom_slider);
-		}
-	},
+    },
+//    initZoom			: function () {
+//        if($('#vuslider').length == 0) {
+//            // add a container element for the slider
+//            $('#'+this.options.container_id).after('<div id="vuslider"></div>');
+//            // init & bind the onChange callback to this controller
+//            this.options.zoom_slider.change = $.bindFn(this, this.zoom);
+//            // init slider
+//            $('#vuslider').slider(this.options.zoom_slider);
+//        }
+//    },
     initDialog          : function () {
         var _VUC = this;
         if (this.options.user_permissions && this.options.user_permissions === 'allowed') {
@@ -1130,67 +1133,67 @@ VUController.prototype = {
             });
         }
     },
-    createNodes			: function () {
-		var _VUC = this;
+    createNodes         : function () {
+        var _VUC = this;
         $.each(this.data, function (i, item) {
-			$.each(item, function (key, conf) {
-				var node = new Node({});
-				switch(key) {
-					case 'group':
-						node = new Group(node, conf);
-						break;
-					case 'discussion':
-						node = new Discussion(node, conf);
-						break;
-					case 'story':
-						node = new Story(node, conf, _VUC.options);
-						break;
-					case 'relation':
-						node = new Relation(node, conf);
-						break;
-					case 'opinion':
-						node = new Opinion(node, conf);
-						break;
+            $.each(item, function (key, conf) {
+                var node = new Node({});
+                switch(key) {
+                    case 'group':
+                        node = new Group(node, conf);
+                        break;
+                    case 'discussion':
+                        node = new Discussion(node, conf);
+                        break;
+                    case 'story':
+                        node = new Story(node, conf, _VUC.options);
+                        break;
+                    case 'relation':
+                        node = new Relation(node, conf);
+                        break;
+                    case 'opinion':
+                        node = new Opinion(node, conf);
+                        break;
                     default:
                         // data is corrupted, reload
                         return _VUC.init.call(_VUC, true);
-				}
-				var c = node.config;
+                }
+                var c = node.config;
                 var id = c.alias+'_'+c.id;
-				// add the Node instance to the controller's elements
-				_VUC.elems[id] = node;
+                // add the Node instance to the controller's elements
+                _VUC.elems[id] = node;
                 // set a load event listener to the element's background image to initialy draw it
-				if(c.bg_image) {
-					$(c.bg_image).load(function () {
-						node.draw.call(node, _VUC.ctx);
-					});
-				}
-			});
-		});
+                if(c.bg_image) {
+                    $(c.bg_image).load(function () {
+                        node.draw.call(node, _VUC.ctx);
+                    });
+                }
+            });
+        });
         // make sure that the elements fit their containers
         this.checkScale()
         // create references for relations between them
             .setElementsRelations();
         return this;
-	},
-    addElement			: function (el) {
+    },
+    addElement          : function (el) {
         // add an element to the DOM
-		if(el) {
-			el.addToDOM.call(el, this.options.container_id);
-		}
-		// add all elements to the DOM
-		else {
-			var _VUC = this;
+        if (el) {
+            el.addToDOM.call(el, this.options.container_id);
+        }
+        // add all elements to the DOM
+        else {
+            var _VUC = this;
             $.each(this.elems, function (id, el) {
-				_VUC.addElement(el);
-			});
-		}
+                _VUC.addElement(el);
+            });
+        }
         return this;
-	},
+    },
     setElementsRelations: function () {
-		var _VUC = this,children_refs_obj;
-		$.each(this.elems, function (key, el) {
-			var c = _VUC.elems[key].config;
+        var _VUC = this,children_refs_obj;
+        $.each(this.elems, function (key, el) {
+            var c = _VUC.elems[key].config;
             if ( c.children && c.children.length ) {
                 children_refs_obj = {};
                 $.each(c.children, function (i, child_id) {
@@ -1198,48 +1201,48 @@ VUController.prototype = {
                 });
                 c.children = children_refs_obj;
             }
-			if ( el instanceof Relation ) {
-				c.from = _VUC.elems[c.from_id];
-				c.to = _VUC.elems[c.to_id];
-			} else if ( el instanceof Opinion ) {
-				c.parent = _VUC.elems[c.parent_id];
-			}
-		});
-	},
-	setDraggable		: function (el) {
-		var _VUC = this;
+            if ( el instanceof Relation ) {
+                c.from = _VUC.elems[c.from_id];
+                c.to = _VUC.elems[c.to_id];
+            } else if ( el instanceof Opinion ) {
+                c.parent = _VUC.elems[c.parent_id];
+            }
+        });
+    },
+    setDraggable		: function (el) {
+        var _VUC = this;
         // checking for user permissions
         if (! this.options.user_permissions || this.options.user_permissions !== 'allowed') {return this;}
-		// set a specific element as draggable
-		if(el) {
-			if(el.DOMid) {
-				el.$element.draggable({
-					containment : 'parent',
+        // set a specific element as draggable
+        if(el) {
+            if(el.DOMid) {
+                el.$element.draggable({
+                    containment : 'parent',
                     delay       : 50,
-					start: function (e, ui) {
-						el.config.state.drag = true;
-						_VUC.drag = el;
-						_VUC.grip.call(_VUC);
-					},
-					stop : function (e, ui) {
-						var position = $(this).position();
-	                    el.config.state.drag = false;
-	                    el.config.dimensions.x = parseInt(position.left, 10);
-						el.config.dimensions.y = parseInt(position.top, 10);
+                    start: function (e, ui) {
+                        el.config.state.drag = true;
+                        _VUC.drag = el;
+                        _VUC.grip.call(_VUC);
+                    },
+                    stop : function (e, ui) {
+                        var position = $(this).position();
+                        el.config.state.drag = false;
+                        el.config.dimensions.x = parseInt(position.left, 10);
+                        el.config.dimensions.y = parseInt(position.top, 10);
                         _VUC.drop.call(_VUC);
-					}
-				});
+                    }
+                });
                 el.draggable = true;
-			}
-		}
-		// set all elements as draggable
-		else {
-			$.each(this.elems, function (id, el) {
-				_VUC.setDraggable(el);
-			});
-		}
+            }
+        }
+        // set all elements as draggable
+        else {
+            $.each(this.elems, function (id, el) {
+                _VUC.setDraggable(el);
+            });
+        }
         return this;
-	},
+    },
     disableDraggable		: function (el) {
         var _VUC = this;
 		// disable draggable functionality
@@ -1345,7 +1348,7 @@ VUController.prototype = {
 	},
     rescale             : function (el) {
         if (el && el.rescale && $.isFunction(el.rescale)) {
-            el.rescale.call(el, this.options.scale);
+            el.rescale.call(el, this.options.zoom.scale);
         }
         return this;
     },
@@ -1355,7 +1358,7 @@ VUController.prototype = {
             max_height = o.height,
             margin = 10,
             down_scale = false,
-            scale = o.scale,
+            scale = o.zoom.scale,
             new_scale;
         $.each(this.elems, function (id, el) {
             var c = el.config, type;
@@ -1374,17 +1377,17 @@ VUController.prototype = {
             }
         });
         if (down_scale) {
-            new_scale = (o.scale*10) - (o.zoom_slider.step*10);
-            if (new_scale >= o.zoom_slider.min*10) {
-                o.scale = new_scale/10;
+            new_scale = (scale*10) - (o.zoom.step*10);
+            if (new_scale >= o.zoom.min*10) {
+                scale = new_scale/10;
                 // resize GUI text
-                $('#' + o.container_id).css('fontSize', 16*o.scale + 'px');
+                $('#' + o.container_id).css('fontSize', 16*scale + 'px');
             }
-            if (new_scale > this.options.zoom_slider.min*10) { this.checkScale(); }
+            if (new_scale > this.options.zoom.min*10) { this.checkScale(); }
         }
         return this;
     },
-	draw				: function (isGrip) {
+    draw                : function (isGrip) {
         var _VUC = this,
             drawContent = function () {
                 $.each(this.elems, function (id, el) {
@@ -1431,12 +1434,12 @@ VUController.prototype = {
         $('#'+this.drag.config.alias+'_'+this.drag.config.id).removeClass('dragon');
         this.draw().updateDB();
 	},
-	zoom				: function (event, ui) {
-        this.options.scale = ui.value;
-        // resize titles
-		$('#'+this.options.container_id).animate( { fontSize: 16*ui.value+'px' }, 'fast');
-		this.init(true);
-	},
+//	zoom				: function (event, ui) {
+//        this.options.zoom.scale = ui.value;
+//        // resize titles
+//		$('#'+this.options.container_id).animate( { fontSize: 16*ui.value+'px' }, 'fast');
+//		this.init(true);
+//	},
     getCreateGroupForm  : function  (event) {
         var form = $('#create_form'),
             offset = $.clickOffset(event),
@@ -1588,18 +1591,22 @@ DiscussionController = function (VuController, options) {
 	// set the options
 	$.extend(this.options, options || {});
 
-    this.metaData = {};
+    this.metaData;
 };
 DiscussionController.prototype = {
-    getData				    : function () {
-		var _DC = this;
-		// expecting format: [ { element_alias : { element_config_object }, ... ]
-		$.getJSON(this.options.data_url, function (data){
-			_DC.data = data;
-			// get the Visualization's meta data
-			_DC.getVisualizationMetaData.call(_DC);
-		});
-	},
+    getData                 : function () {
+        var _DC = this;
+        // expecting format: [ { element_alias : { element_config_object }, ... ]
+        $.getJSON(this.options.data_url, function (data){
+            _DC.data = data && data.discussion && data.discussion.elements;
+            // get the Visualization's meta data
+            if ( ! _DC.metaData ) {
+                _DC.getVisualizationMetaData.call(_DC);
+            } else {
+                _DC.init.call(_DC);
+            }
+        });
+    },
 	getVisualizationMetaData: function () {
 		var _DC = this;
 		$.getJSON(this.options.meta_url, {discussion_type:this.options.discussion_type}, function (json) {
