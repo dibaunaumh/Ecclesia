@@ -59,8 +59,9 @@ def visualize(request, discussion_slug):
 
 def get_update(request, discussion_slug):
     results = []
-    results.append('"elements":%s' % get_stories_view_json(request, discussion_slug))
-    results.append('"wrokflow_status":%s' % get_wrokflow_status_json(request, discussion_slug))
+    discussion = get_object_or_404(Discussion, slug=discussion_slug)
+    results.append('"elements":%s' % get_stories_view_json(request, discussion))
+    results.append('"wrokflow_status":%s' % discussion.wrokflow_status)
     json = '{"discussion":{%s}}' % ','.join(results)
     return HttpResponse(json)
 
@@ -228,8 +229,7 @@ def add_relation(request, discussion, user, title, slug, speech_act):
 
     return resp
 
-def get_stories_view_json(request, discussion_slug):
-    discussion = Discussion.objects.select_related(depth=1).get(slug=discussion_slug)
+def get_stories_view_json(request, discussion):
     voting = Voting.objects.get_started(discussion=discussion)
     stories = discussion.stories.all()
     conclusions = discussion.discussionconclusion_set.all()
