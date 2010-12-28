@@ -29,8 +29,6 @@ def update_presentation(request):
                             timestamp = last_changed
                         else:
                             update_time = True
-            #object.h = int(request.POST.get('h', object.h))
-            #object.w = int(request.POST.get('w', object.w))
             object.x = int(request.POST.get('x', object.x))
             object.y = int(request.POST.get('y', object.y))
             object.save()

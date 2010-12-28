@@ -192,6 +192,7 @@ def last_changed_updater(sender, instance, **kwargs):
     container.save()
     if isinstance(container, Discussion):
         evaluate_stories(instance.discussion)
+        workflow_helper.update_workflow_status()
 
 def last_changed_delete_updater(sender, instance, **kwargs):
     container = sender.get_visual_container(instance)
@@ -199,6 +200,7 @@ def last_changed_delete_updater(sender, instance, **kwargs):
     container.save()
     if isinstance(container, Discussion):
         evaluate_stories(instance.discussion)
+        workflow_helper.update_workflow_status()
 
 # connecting post_save signal of stories and opinions to update their parent discussion's last_related_update field 
 models.signals.post_save.connect(last_changed_updater, sender=Story)
