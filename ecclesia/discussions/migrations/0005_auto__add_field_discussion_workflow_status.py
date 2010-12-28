@@ -8,32 +8,14 @@ class Migration(SchemaMigration):
 
     def forwards(self, orm):
         
-        # Changing field 'Opinion.content'
-        db.alter_column('discussions_opinion', 'content', self.gf('django.db.models.fields.TextField')(blank=True))
-
         # Adding field 'Discussion.workflow_status'
-        db.add_column('discussions_discussion', 'workflow_status', self.gf('django.db.models.fields.IntegerField')(default=0), keep_default=False)
-
-        # Changing field 'StoryRelation.content'
-        db.alter_column('discussions_storyrelation', 'content', self.gf('django.db.models.fields.TextField')(blank=True))
-
-        # Changing field 'Story.content'
-        db.alter_column('discussions_story', 'content', self.gf('django.db.models.fields.TextField')(blank=True))
+        db.add_column('discussions_discussion', 'workflow_status', self.gf('django.db.models.fields.IntegerField')(default=0, null=True, blank=True), keep_default=False)
 
 
     def backwards(self, orm):
         
-        # Changing field 'Opinion.content'
-        db.alter_column('discussions_opinion', 'content', self.gf('django.db.models.fields.TextField')())
-
         # Deleting field 'Discussion.workflow_status'
         db.delete_column('discussions_discussion', 'workflow_status')
-
-        # Changing field 'StoryRelation.content'
-        db.alter_column('discussions_storyrelation', 'content', self.gf('django.db.models.fields.TextField')())
-
-        # Changing field 'Story.content'
-        db.alter_column('discussions_story', 'content', self.gf('django.db.models.fields.TextField')())
 
 
     models = {
@@ -44,7 +26,7 @@ class Migration(SchemaMigration):
             'permissions': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['auth.Permission']", 'symmetrical': 'False', 'blank': 'True'})
         },
         'auth.permission': {
-            'Meta': {'unique_together': "(('content_type', 'codename'),)", 'object_name': 'Permission'},
+            'Meta': {'ordering': "('content_type__app_label', 'content_type__model', 'codename')", 'unique_together': "(('content_type', 'codename'),)", 'object_name': 'Permission'},
             'codename': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'content_type': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
@@ -57,9 +39,9 @@ class Migration(SchemaMigration):
             'first_name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
             'groups': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['auth.Group']", 'symmetrical': 'False', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'True', 'blank': 'True'}),
-            'is_staff': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'blank': 'True'}),
-            'is_superuser': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'blank': 'True'}),
+            'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'is_staff': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'is_superuser': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'last_login': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'last_name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
             'password': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
@@ -74,7 +56,7 @@ class Migration(SchemaMigration):
             'user': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'subscriptions'", 'to': "orm['auth.User']"})
         },
         'contenttypes.contenttype': {
-            'Meta': {'unique_together': "(('app_label', 'model'),)", 'object_name': 'ContentType', 'db_table': "'django_content_type'"},
+            'Meta': {'ordering': "('name',)", 'unique_together': "(('app_label', 'model'),)", 'object_name': 'ContentType', 'db_table': "'django_content_type'"},
             'app_label': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
@@ -94,7 +76,7 @@ class Migration(SchemaMigration):
             'type': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'discussions'", 'to': "orm['discussions.DiscussionType']"}),
             'updated_at': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
             'w': ('django.db.models.fields.IntegerField', [], {'default': '150'}),
-            'workflow_status': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
+            'workflow_status': ('django.db.models.fields.IntegerField', [], {'default': '0', 'null': 'True', 'blank': 'True'}),
             'x': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
             'y': ('django.db.models.fields.IntegerField', [], {'default': '0'})
         },
@@ -147,7 +129,7 @@ class Migration(SchemaMigration):
             'discussion': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'stories'", 'to': "orm['discussions.Discussion']"}),
             'h': ('django.db.models.fields.IntegerField', [], {'default': '100'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'is_parent': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'blank': 'True'}),
+            'is_parent': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'last_related_update': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'blank': 'True'}),
             'parent': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'related_name': "'parent story'", 'null': 'True', 'blank': 'True', 'to': "orm['discussions.Story']"}),
             'slug': ('django.db.models.fields.SlugField', [], {'max_length': '500', 'db_index': 'True'}),

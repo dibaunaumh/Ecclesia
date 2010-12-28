@@ -404,7 +404,7 @@ Story.prototype = {
         if ( c.type !== 'goal' ) {
             config = $.extend(true, {actions : {add_relation: $.bindFn(that, that.addRelation)}}, config);
         }
-        if ( has_voting && c.type === 'course_of_action' ) {
+        if ( has_voting && c.type === 'option' ) {
             config = $.extend(true, {actions : {vote : $.bindFn(that, that.vote)}}, config);
             if ( c.ballots ) {
                 config = $.extend(true, {actions : {remove_vote : $.bindFn(that, that.removeVote)}}, config);
