@@ -25,37 +25,26 @@ def update_workflow_status(discussion):
     current_status = discussion.workflow_status
     if current_status == INITIAL:
             current_status = ADD_GOALS
-    new_status = {
-        ADD_GOALS:
-            lambda discussion: ADD_CONDITIONS if check_stories_of_type(discussion, "goal") else ADD_GOALS,
 
-        ADD_CONDITIONS:
-            lambda discussion: ADD_RELATIONS_FROM_CONDITIONS_TO_GOALS if check_stories_of_type(discussion, "goal_condition") else ADD_CONDITIONS,
+    conditions = [
+            lambda discussion: True,
+            lambda discussion: check_stories_of_type(discussion, "goal"),
+            lambda discussion: check_stories_of_type(discussion, "condition"),
+            lambda discussion: check_stories_of_type(discussion, "relation"),
+            lambda discussion: True, #check_stories_of_type(discussion, "opinion"),
+            lambda discussion: check_stories_of_type(discussion, "effect"),
+            lambda discussion: True, #check_stories_of_type(discussion, "relation"),
+            lambda discussion: True, #check_stories_of_type(discussion, "opinion"),
+            lambda discussion: check_voting(discussion),
+            lambda discussion : True
+    ]
 
-        ADD_RELATIONS_FROM_CONDITIONS_TO_GOALS:
-            lambda discussion: ADD_OPTIONS if check_stories_of_type(discussion, "relation") else ADD_RELATIONS_FROM_CONDITIONS_TO_GOALS,
-
-        ADD_OPTIONS:
-            lambda discussion: ADD_EFFECTS if check_stories_of_type(discussion, "goal") else ADD_OPTIONS,
-
-        ADD_EFFECTS:
-            lambda discussion: ADD_RELATIONS_FROM_OPTIONS_TO_EFFECTS if check_stories_of_type(discussion, "goal") else ADD_EFFECTS,
-
-        ADD_RELATIONS_FROM_OPTIONS_TO_EFFECTS:
-            lambda discussion: ADD_OPINIONS_ON_STORIES if check_stories_of_type(discussion, "goal") else ADD_RELATIONS_FROM_OPTIONS_TO_EFFECTS,
-
-        ADD_OPINIONS_ON_STORIES:
-            lambda discussion: ADD_OPINIONS_ON_RELATIONS if check_stories_of_type(discussion, "goal") else ADD_OPINIONS_ON_STORIES,
-
-        ADD_OPINIONS_ON_RELATIONS:
-            lambda discussion: START_VOTE if check_stories_of_type(discussion, "goal") else ADD_OPINIONS_ON_RELATIONS,
-
-        START_VOTE:
-            lambda discussion: DONE if check_voting(discussion) else START_VOTE,
-
-        DONE:
-            lambda discussion : DONE,
-    }[current_status](discussion)
+    new_status = 0
+    for i, condition in enumerate(conditions):
+        if not condition(discussion):
+            new_status = i
+            break
+    
     if new_status != current_status:
         discussion.workflow_status = new_status
         discussion.save()

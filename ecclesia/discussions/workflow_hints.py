@@ -14,7 +14,7 @@ ICON = "icon"
 # workflow status hints
 WORKFLOW_HINTS = {
     ADD_GOALS: {
-        TEXT: _(""),
+        TEXT: _("Please add "),
         HELP_LINK: "",
         DOM_ELEMENT: "",
         RELEVANT_POSITION: "",
