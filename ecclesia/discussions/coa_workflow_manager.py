@@ -2,6 +2,7 @@ from django.db.models import get_model
 
 
 # CoA workflow status
+INITIAL = 0
 ADD_GOALS = 1
 ADD_CONDITIONS = 2
 ADD_RELATIONS_FROM_CONDITIONS_TO_GOALS = 3
@@ -22,6 +23,8 @@ def update_workflow_status(discussion):
     that change the status to a different status.
     """
     current_status = discussion.workflow_status
+    if current_status == INITIAL:
+            current_status = ADD_GOALS
     new_status = {
         ADD_GOALS:
             lambda discussion: ADD_CONDITIONS if check_stories_of_type(discussion, "goal") else ADD_GOALS,
