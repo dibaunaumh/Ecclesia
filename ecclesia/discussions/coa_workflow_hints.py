@@ -1,4 +1,10 @@
-from workflow_hints import *
+from django.utils.translation import ugettext as _
+from coa_workflow_manager import *
+
+TEXT = "text"
+HELP_LINK = "help_link"
+POSITION = "position"
+ICON = "icon"
 
 
 

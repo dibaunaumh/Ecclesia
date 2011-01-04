@@ -8,6 +8,8 @@ from django.template.defaultfilters import slugify
 from django.utils import simplejson
 from django.conf import settings
 from django.utils.translation import ugettext as _
+from discussions.models import Discussion
+from discussions.workflow_hints import get_workflow_hints
 
 from forms import *
 import discussion_actions
@@ -61,7 +63,7 @@ def get_update(request, discussion_slug):
     results = []
     discussion = get_object_or_404(Discussion, slug=discussion_slug)
     results.append('"elements":%s' % get_stories_view_json(request, discussion))
-    results.append('"wrokflow_status":%s' % discussion.wrokflow_status)
+    results.append('"workflow_status":%s' % discussion.workflow_status)
     json = '{"discussion":{%s}}' % ','.join(results)
     return HttpResponse(json)
 
@@ -489,3 +491,9 @@ def create_notification(text, entity, acting_user):
         resp = HttpResponse(str(sys.exc_info()[1]))
         resp.status_code = 500
         return resp
+
+
+def get_hints_metadata(request, discussion_slug):
+    discussion = Discussion.objects.get(slug=discussion_slug)
+    metadata = get_workflow_hints(discussion)
+    return HttpResponse(simplejson.dumps(metadata))

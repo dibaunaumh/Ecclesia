@@ -5,16 +5,11 @@ from django.utils.translation import ugettext as _
 import coa_workflow_hints
 from django.template.loader import render_to_string
 
-TEXT = "text"
-HELP_LINK = "help_link"
-POSITION = "position"
-ICON = "icon"
-
 
 def get_workflow_hints(discussion):
     if discussion.type.name == "course-of-action":
         metadata = coa_workflow_hints.WORKFLOW_HINTS
-        for md in metadata:
+        for key, md in metadata.items():
             md["hint_html"] = render_to_string("hint.html", md)
         return metadata
 
