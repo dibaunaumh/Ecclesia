@@ -10,6 +10,13 @@ ICON = "icon"
 
 # CoA workflow status hints
 WORKFLOW_HINTS = {
+    0: {
+        TEXT: _("Please set your Goals: right-click the Goals column and choose 'Add story'"),
+        HELP_LINK: "",
+        POSITION: "goal",
+        ICON: "",
+    },
+
     ADD_GOALS: {
         TEXT: _("Please set your Goals: right-click the Goals column and choose 'Add story'"),
         HELP_LINK: "",

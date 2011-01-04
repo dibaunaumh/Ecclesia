@@ -1,27 +1,27 @@
-(function ($) {
+(function () {
     if ( ! Math.lineToPointDist ) {
         Math.lineToPointDist = function (x, y, x1, y1, x2, y2) {
             return this.round(this.abs((x2-x1)*(y1-y)-(x1-x)*(y2-y1))/this.sqrt(this.pow(x2-x1,2)+this.pow(y2-y1,2)));
         };
     }
-})();
+}());
 $.extend({
-	clickOffset : function (e) {
-		var type = e.type, offset, x, y;
+    clickOffset : function (e) {
+        var type = e.type, offset, x, y;
         if(!e || !type && (type === 'click' || type === 'mousedown' || type === 'mouseup')) {return this;}
         offset = $(e.target).offset(),
         x = parseInt(e.pageX - offset.left, 10),
         y = parseInt(e.pageY - offset.top, 10);
         return {left:x, top:y};
-	},
+    },
     bindFn      : function (scope, fn) {
         return function () {
             fn.apply(scope, arguments);
         };
     }
 });
-ContextMenu = function(config) {
-	this.config = {};
+var ContextMenu = function(config) {
+    this.config = {};
     this.menu = {};
     this.context_controller = {};
     var getDefaults = function () {
@@ -35,19 +35,19 @@ ContextMenu = function(config) {
     this.initialize = function (_config) {
         this.config = getDefaults();
         $.extend(true, this.config, _config || {});
-		return this;
+    return this;
     };
 };
 ContextMenu.prototype = {
-	pop			: function (config, context_controller) {
-		this.context_controller = context_controller;
+    pop         : function (config, context_controller) {
+        this.context_controller = context_controller;
         this.initialize(config)
-			.buildMenu()
+            .buildMenu()
             .menu.css('left', this.config.position.left)
                  .css('top', this.config.position.top)
                  .show();
         return this;
-	},
+    },
 	buildMenu	: function () {
 		var c = this.config,
             that = this,
@@ -74,8 +74,27 @@ ContextMenu.prototype = {
         return this;
     }
 };
+var Hinter = (function(config) {
+    var $container,
+        initialized = false;
+    var self = {
+        init    : function () {
+            if ( ! initialized ) {
+                initialized = true;
+                $container = $('#hintsContainer');
+            }
+            return self;
+        },
+        update  : function (hint_id) {
+            var hint = hints_metadata[hint_id].text;
+            $container.html(hint);
+            return self;
+        }
+    };
+    return self;
+}());
 
-Node = function (config) {
+var Node = function (config) {
 	this.config = {
 		dimensions	: {},
 		id			: -1,
@@ -153,7 +172,7 @@ Node.prototype = {
     }
 };
 
-Group = function (node_class, config) {
+var Group = function (node_class, config) {
 	this.config = {
 		alias		: 'group',
 		model_name	: 'GroupProfile',
@@ -219,7 +238,7 @@ Group.prototype = {
     }
 };
 
-Discussion = function (node_class, config) {
+var Discussion = function (node_class, config) {
 	this.config = {
 		alias		: 'disc',
 		model_name	: 'Discussion',
@@ -268,7 +287,7 @@ Discussion.prototype = {
     }
 };
 
-Story = function (node_class, config) {
+var Story = function (node_class, config) {
     this.config = {
         alias                           : 'story',
         model_name                      : 'Story',
@@ -494,7 +513,11 @@ Story.prototype = {
     deleteStory         : function (context_controller) {
         // TODO: allow the confirm title to be translated
         if(confirm('Are you sure you want to delete this story?')) {
-            $.post('/discussions/delete_story/', {'story':this.config.id}, function () {
+            $.post('/discussions/delete_story/', {
+                story       : this.config.id,
+                discussion  : context_controller.options.discussion,
+                group       : context_controller.options.group
+            }, function () {
                 if(context_controller) {
                     context_controller.init.call(context_controller, true);
                 }
@@ -554,7 +577,7 @@ Story.prototype = {
         });
     }
 };
-Relation = function (node_class, config) {
+var Relation = function (node_class, config) {
 	this.config = {
 		alias		    : 'relation',
 		model_name	    : 'StoryRelation',
@@ -664,7 +687,10 @@ Relation.prototype = {
     },
     deleteRelation  : function (context_controller) {
         if(confirm('Are you sure you want to delete this relation?')) {
-            $.post('/discussions/delete_relation/'+this.config.id+'/', {}, function () {
+            $.post('/discussions/delete_relation/'+this.config.id+'/', {
+                discussion  : context_controller.options.discussion,
+                group       : context_controller.options.group
+            }, function () {
                 if(context_controller) {
                     context_controller.init.call(context_controller, true);
                 }
@@ -749,7 +775,7 @@ Relation.prototype = {
             .clearChildrenViz();
 	}
 };
-Opinion = function (node_class, config) {
+var Opinion = function (node_class, config) {
 	this.config = {
 		alias		: 'opinion',
 		model_name	: 'Opinion',
@@ -882,7 +908,7 @@ Opinion.prototype = {
     }
 };
 
-VUController = function (options) {
+var VUController = function (options) {
 	this.options = $.extend(true, {
         width		        : 973,
         height		        : 598,
@@ -1490,14 +1516,14 @@ VUController.prototype = {
  *	Accepts a VUController object instance and inherits it
  *	using jQuery.extend()
  */
-GroupController = function (VuController, options) {
+var GroupController = function (VuController, options) {
     this.options = {};
 	// inheriting Node class
 	var dummy = $.extend(true, VuController, this);
 	$.extend(true, this, dummy);
 	// set the options
 	$.extend(this.options, options || {});
-}
+};
 GroupController.prototype = {
     setEventHandlers    : function (el) {
         if(el && el.DOMid) {
@@ -1573,14 +1599,14 @@ GroupController.prototype = {
         };
         return config;
     }
-}
+};
 
 /**
  *	A controller class that handles Discussions GUI.
  *	Accepts a VUController object instance and inherits it
  *	using jQuery.extend()
  */
-DiscussionController = function (VuController, options) {
+var DiscussionController = function (VuController, options) {
     this.options = {
         discussion_type         : 1,
         speech_container_class  : 'stories_container'
@@ -1605,6 +1631,7 @@ DiscussionController.prototype = {
             } else {
                 _DC.init.call(_DC);
             }
+            Hinter.init().update(data.discussion.workflow_status);
         });
     },
 	getVisualizationMetaData: function () {
@@ -1800,6 +1827,8 @@ DiscussionController.prototype = {
                 speech_act = $this.attr('pk');
             }
         });
+        form.append('<input type="hidden" name="discussion" value="'+this.options.discussion+'" />');
+        form.append('<input type="hidden" name="group" value="'+this.options.group+'" />');
         if( ! input.length ) {
             form.append('<input type="hidden" name="speech_act" value="'+speech_act+'" />');
         } else {
@@ -1825,6 +1854,8 @@ DiscussionController.prototype = {
                 parent_class = 1;
                 break;
         }
+//        form.append('<input type="hidden" name="discussion" value="'+this.options.discussion+'" />');
+        form.append('<input type="hidden" name="group" value="'+this.options.group+'" />');
         if( ! (class_input.length > 0)) {
             form.append('<input type="hidden" name="parent_class" value="'+parent_class+'" />');
         } else {
@@ -1853,7 +1884,7 @@ DiscussionController.prototype = {
         $.each(this.metaData, function (i, item) {
             if(item.fields.ordinal == ordinal) {
                 allowed_type = item.fields.name;
-                return false;
+                return false; // break
             }
         });
         // create a list of the stories of that type
@@ -1874,6 +1905,8 @@ DiscussionController.prototype = {
             to_input = $('select', form),
             options = [],
             i = 0;
+        form.append('<input type="hidden" name="discussion" value="'+this.options.discussion+'" />');
+        form.append('<input type="hidden" name="group" value="'+this.options.group+'" />');
         if( ! (from_input.length > 0) ) {
             form.append('<input type="hidden" name="from_story" value="'+from_story+'" />');
         } else {
@@ -1928,7 +1961,7 @@ DiscussionController.prototype = {
  * <input type="text" class="is_value" />
  * will be checked that it is not empty.
  */
-FormController = function() {
+var FormController = function() {
 	this.f_html		= null;
 	this.f_jq		= null;
 	this.options	= {};
@@ -2134,7 +2167,7 @@ FormController.prototype = {
 		return this.is_value(el.attr('name')) ? !pat.test(el.val()) : false;
 	}
 };
-CreateRelationFormController = function (BaseFormController, options) {
+var CreateRelationFormController = function (BaseFormController, options) {
     // init the parent
     BaseFormController.init($('form[name="relation_create"]')[0], options);
     // make this the extended of FormController
@@ -2170,7 +2203,7 @@ CreateRelationFormController.prototype = {
         });
     }
 };
-CreateOpinionFormController = function (BaseFormController, options) {
+var CreateOpinionFormController = function (BaseFormController, options) {
     // init the parent
     BaseFormController.init($('form[name="opinion_create"]')[0], options);
      // make this the extended of FormController

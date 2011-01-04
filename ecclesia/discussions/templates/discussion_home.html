@@ -11,7 +11,8 @@
 {% block extrahead %}
 	<script src="/static/js/jquery/jquery-tooltip/jquery.tooltip.pack.js"></script>
 	<script>
-        var has_voting = '{{ has_voting }}' === 'True';
+        var has_voting = '{{ has_voting }}' === 'True',
+            hints_metadata = {% autoescape off %}{{ hints_metadata }}{% endautoescape %};
 
         $(document).ready(function () {
             var config = {
@@ -26,7 +27,9 @@
                         add_vote_url        : '{% url add_ballot %}',
                         remove_vote_url     : '{% url remove_ballot %}',
                         close_vote_callback : close_vote
-                    }
+                    },
+                    discussion          : {{ discussion.id }},
+                    group               : {{ group.id }}
                 },
                 VUC = new VUController({}),
                 DC = new DiscussionController(VUC, config).init(true);
@@ -222,7 +225,7 @@
 <p>
 	{{ discussion.description }}
 </p>
-
+<div id="hintsContainer"></div>
 <div id="canvasContainer"></div>
 
 {% block story_input %}

@@ -57,6 +57,7 @@ def visualize(request, discussion_slug):
         user_permissions = 'allowed'
     else:
         user_permissions = ''
+    hints_metadata = get_hints_metadata(discussion)
     return render_to_response('discussion_home.html', locals())
 
 def get_update(request, discussion_slug):
@@ -189,8 +190,8 @@ def add_opinion(request, discussion, user, title, slug, speech_act):
         create_notification(text="There is a new opinion in %s discussion: %s" % (discussion.slug, title),
                      entity=opinion, acting_user=request.user)
     except:
-       resp = HttpResponse(str(sys.exc_info()[1]))
-       resp.status_code = 500
+        resp = HttpResponse(str(sys.exc_info()[1]))
+        resp.status_code = 500
 
     return resp
 
@@ -493,7 +494,6 @@ def create_notification(text, entity, acting_user):
         return resp
 
 
-def get_hints_metadata(request, discussion_slug):
-    discussion = Discussion.objects.get(slug=discussion_slug)
+def get_hints_metadata(discussion):
     metadata = get_workflow_hints(discussion)
-    return HttpResponse(simplejson.dumps(metadata))
+    return simplejson.dumps(metadata)
