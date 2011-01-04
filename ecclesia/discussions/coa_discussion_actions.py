@@ -35,7 +35,7 @@ def evaluate_stories(discussion):
     # step 3: Pick the outstanding CoA nodes (use simple StdDev calculation)
 
     for coa in pick_outstanding_scores(scores):
-        # #print "Found conclusion: %s" % stories[coa]
+        # print "Found conclusion: %s" % stories[coa]
         conclusions.append( (coa, int(scores[coa])) )
 
     # update the discussion conclusions in the database
@@ -78,7 +78,7 @@ def evaluate_discussion_stories(discussion, stories):
         f = rel.from_story
         stories[f.id] = f
         evals[f.id] = evaluate_story(f, discussion)
-        # #print "evals[%s]:%s" % (f.id, evals[f.id])
+        # print "evals[%s]:%s" % (f.id, evals[f.id])
         types[f.id] = f.speech_act.name
         if f.speech_act.name == COA_SPEECH_ACT and f.id not in coa_stories:
             coa_stories.append(f.id)
@@ -88,7 +88,7 @@ def evaluate_discussion_stories(discussion, stories):
         t = rel.to_story
         stories[t.id] = t
         evals[t.id] = evaluate_story(t, discussion)
-        # #print "evals[%s]:%s" % (t.id, evals[t.id])
+        # print "evals[%s]:%s" % (t.id, evals[t.id])
         types[t.id] = t.speech_act.name
 
         # step 1.3: add the relation & its evaluated stories to a graph structure
@@ -99,10 +99,10 @@ def evaluate_discussion_stories(discussion, stories):
     # step 2.1: go over the list of CoA nodes & create a list paths starting from this CoA
     
 	for coa in coa_stories:
-	    # #print "Coas stories: ", coa_stories 
-	    # #print "coa: ", coa
+	    # print "Coas stories: ", coa_stories 
+	    # print "coa: ", coa
             paths = paths_starting_in(graph, coa)
-            # #print "Paths starting in CoA", coa, "are ", paths
+            # print "Paths starting in CoA", coa, "are ", paths
             score = 0
             path_eval_prob=1
             total_path_eval = 0
@@ -111,26 +111,26 @@ def evaluate_discussion_stories(discussion, stories):
                 # step 2.2: calculate the aggregated evaluation of the nodes in the path
                 # gets all the values of the nodes in the path
 #               for s in p:
-#                # #print "p: ",p, " s: ",s, " evals[s]: ",evals[s], "p[2:3] = ",p[2:3]
+#                # print "p: ",p, " s: ",s, " evals[s]: ",evals[s], "p[2:3] = ",p[2:3]
                 """
                 <<  Calculate path probability by multipling all the stories (OR). >>
                 Evaluating a path in https://sites.google.com/site/ekklidev/development/design/conclusions-indication
                 """
             
                 path_eval_ls = ([evals[s] for s in p])
-                # #print "path_eval_ls: ", path_eval_ls
+                # print "path_eval_ls: ", path_eval_ls
                 # multiply the gBVs of the stories in the path
                 path_eval = reduce (multiply, path_eval_ls)
-                # #print "path_eval for",p, "is ", path_eval
+                # print "path_eval for",p, "is ", path_eval
                 # step 2.3: check whether it ends in a Goal
                 ends_in_goal = types[p[-1]] == GOAL_SPEECH_ACT
                 if not ends_in_goal:
                     path_eval = 0
                 total_path_eval = total_path_eval + path_eval
                 # path_eval_prob=path_eval_prob*path_eval
-                # #print "Total path eval untill ",p, "is: ", total_path_eval
+                # print "Total path eval untill ",p, "is: ", total_path_eval
             average_path_eval = total_path_eval / len(paths)
-            # #print "Average paths for ",coa, "is ",average_path_eval
+            # print "Average paths for ",coa, "is ",average_path_eval
                         
             # scores[coa] = 1-path_eval_inv_prob
 #            scores[coa] = path_eval_prob
@@ -143,13 +143,13 @@ def evaluate_discussion_stories(discussion, stories):
                         
             if len(goal_conditions) > 0 and not has_path_to_nodes(graph, coa, goal_conditions):
                 scores[coa] = 0
-                # #print "CoA ", coa, "do not complay to all goal condtions."
+                # print "CoA ", coa, "do not complay to all goal condtions."
             else:
                 scores[coa] = average_path_eval
             
             scores[coa] = average_path_eval # erase after fixing
             
-            # #print "The score for CoA ",coa, "is ", scores[coa]
+            # print "The score for CoA ",coa, "is ", scores[coa]
     return scores
     
 
@@ -159,7 +159,7 @@ def evaluate_story(story, discussion):
         score = group_belief_value(discussion, story)
         return score
     except:
-        #print sys.exc_info()[1]
+        print sys.exc_info()[1]
         pass
     return 1
 
@@ -213,7 +213,7 @@ def aggregate_dimension_opinions_by_users(discussion, story, positive_speech_act
     negative_count_by_user = group_opinions_by_user(negative_opinions)
     positive_count = 0
 
-    ##print positive_count_by_user
+    #print positive_count_by_user
     #for user, positives in positive_count_by_user.items():
     #    if user in negative_count_by_user:
     #        negatives = negative_count_by_user[user]
@@ -230,15 +230,15 @@ def aggregate_dimension_opinions_by_users(discussion, story, positive_speech_act
     
     opinion_givers = group_opinions_by_user(opinions)
     personal_belief_values = {}
-    # #print "Opinion Givers:", opinion_givers
+    # print "Opinion Givers:", opinion_givers
     for user, opinions_count in opinion_givers.items():
         if user in positive_count_by_user:
             positives = positive_count_by_user[user]
-            # #print "In aggregate, user ", user, "have",  positives, "positive opinions"
+            # print "In aggregate, user ", user, "have",  positives, "positive opinions"
         else:
             positives = 0
         personal_belief_values[user] = float(positives) / float(opinions_count)
-    # #print "pBVs: ",personal_belief_values
+    # print "pBVs: ",personal_belief_values
     return personal_belief_values 
 
 
@@ -255,22 +255,22 @@ def group_belief_value(discussion, story):
     # << The function returns average of pBVs (personal belief values) for a story >>
     #  Verified by Tal, 29/12/2010
     
-    # #print "story: ", story
+    # print "story: ", story
     number_of_opinion_givers = get_number_of_opinion_givers_for_story(discussion, story, TRUE_SPEECH_ACT, FALSE_SPEECH_ACT)
-    # #print "number_of_opinion_givers: ", number_of_opinion_givers
+    # print "number_of_opinion_givers: ", number_of_opinion_givers
     personal_belief_values = aggregate_dimension_opinions_by_users(discussion, story, TRUE_SPEECH_ACT, FALSE_SPEECH_ACT)
-    ## #print "True count",true_count, " and false count:", false_count
+    ## print "True count",true_count, " and false count:", false_count
     # if no opinion, then very low probability
     #AverageTruthOpinion = (true_count / (true_count + false_count)) if (true_count + false_count) >0 else 0.00001
     number_of_group_members = get_number_of_group_members(discussion)
-    #print "number_of_group_members: ", number_of_group_members
+    print "number_of_group_members: ", number_of_group_members
     if number_of_opinion_givers > 0:
         gBV = sum(personal_belief_values.values()) / number_of_group_members
     else:
         gBV = ZERO_OPINION_VALUE
-    ##print "Number of group memebers", get_number_of_group_members(discussion)
+    #print "Number of group memebers", get_number_of_group_members(discussion)
     #gbv = (number_of_opinion_givers / get_number_of_group_members(discussion)) * AverageTruthOpinion
-    #print "In story: ", story, "gBV = ", gBV
+    print "In story: ", story, "gBV = ", gBV
     return gBV
 
 
@@ -300,27 +300,22 @@ def paths_starting_in(g, node, paths=None):
     return paths
 
 def has_path_to_nodes(g, node, target_nodes):
-    #print "checking if goes to all GCs. g:",g,"node: ", node, "target_nodes: ",target_nodes
     paths = paths_starting_in(g, node)
-    #print "paths: ", paths
+    found = False
     for t in target_nodes:
-        #print "t int target nodes: ", t
         for p in paths:
-            #print "p in paths: ", p
             counter = 1
             while counter <= len(p):
-                #print "Counter: ", counter
-                ##print "len(p): ",len(p)
                 if (t == p[len(p)-counter]):
-                    ##print "t equal p[len(p)-counter], then Break!"
+                    found = True
                     break;
                 counter+=1
-            if counter > len(p):
-                ##print "False"
-                return False
-            else:
+            if found:
                 break
-    #print "true"
+        if found:
+            found = False
+        else:
+            return False
     return True
 
 # get number og member in a discussion
