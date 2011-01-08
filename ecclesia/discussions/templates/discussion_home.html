@@ -189,95 +189,97 @@
     </script>
 {% endblock %}
 {% block content %}
-<div id="buttons_container">
-{% if user.is_authenticated %}
-    <form method="post" class="hidden" action="{% url start_voting discussion.pk %}" id="voting_form"><p>{% trans 'Loading form...' %}</p></form>
-    <input type="button" class="{% if has_voting %}hidden {% endif %}ui-button ui-state-default ui-corner-all" id="start_vote" value="{% trans 'Start Vote' %}" />
-	<div id="voting_progress" {% if not has_voting %}class="hidden"{% endif %}>
-        {% trans 'Your ballots:' %} <span id="voting_ballots">{{ voting_data.ballots_left }}</span>
-        {% trans 'Time left:' %} <span id="voting_time_left">{{ voting_data.voting_time_left }}</span>
-	</div>
-    <input type="button" class="{% if not has_voting %}hidden {% endif %}ui-button ui-state-default ui-corner-all" id="vote_progress" value="{% trans 'Vote progress' %}"/>
-    <div id="vote_progress_container">
-        <div id="progressbar" class="hidden"></div>
-    </div>
-    <input type="button" class="{% if not has_voting %}hidden {% endif %}ui-button ui-state-default ui-corner-all" id="end_vote" value="{% trans 'End Vote' %}" />
-    {% if not user_follows_discussion %}
-    	<input type="button" class="ui-button ui-state-default ui-corner-all" id="follow_button" value="{% trans 'Follow' %}" />
+{% if not messages %}
+    <div id="buttons_container">
+    {% if user.is_authenticated %}
+        <form method="post" class="hidden" action="{% url start_voting discussion.pk %}" id="voting_form"><p>{% trans 'Loading form...' %}</p></form>
+        <input type="button" class="{% if has_voting %}hidden {% endif %}ui-button ui-state-default ui-corner-all" id="start_vote" value="{% trans 'Start Vote' %}" />
+        <div id="voting_progress" {% if not has_voting %}class="hidden"{% endif %}>
+            {% trans 'Your ballots:' %} <span id="voting_ballots">{{ voting_data.ballots_left }}</span>
+            {% trans 'Time left:' %} <span id="voting_time_left">{{ voting_data.voting_time_left }}</span>
+        </div>
+        <input type="button" class="{% if not has_voting %}hidden {% endif %}ui-button ui-state-default ui-corner-all" id="vote_progress" value="{% trans 'Vote progress' %}"/>
+        <div id="vote_progress_container">
+            <div id="progressbar" class="hidden"></div>
+        </div>
+        <input type="button" class="{% if not has_voting %}hidden {% endif %}ui-button ui-state-default ui-corner-all" id="end_vote" value="{% trans 'End Vote' %}" />
+        {% if not user_follows_discussion %}
+            <input type="button" class="ui-button ui-state-default ui-corner-all" id="follow_button" value="{% trans 'Follow' %}" />
+        {% endif %}
     {% endif %}
-{% endif %}
-	<input type="button" class="ui-button ui-state-default ui-corner-all" value="{% trans 'Stories List' %}" onclick="document.location.href='/stories_list/{{discussion.slug}}/'" />
-</div>
+        <input type="button" class="ui-button ui-state-default ui-corner-all" value="{% trans 'Stories List' %}" onclick="document.location.href='/stories_list/{{discussion.slug}}/'" />
+    </div>
 
-<h2>
-    <div{% if user_in_group %} class="edit" id="discussion_{{ discussion.pk }}"{% endif %}>
-		{{ discussion.name }}
-	</div>
-	({{ discussion.type.name }})
-</h2>
-{% ifequal user_permission_type 1 %}
-	<form action="/discussion-delete/{{discussion.pk}}/" method="post">
-        <input type="image" onclick="if(confirm('Are you sure you want to delete this discussion?')) {this.form.submit();} else { return false; }" src="/static/img/icons/delete.png">Delete discussion</input>
+    <h2>
+        <div{% if user_in_group %} class="edit" id="discussion_{{ discussion.pk }}"{% endif %}>
+            {{ discussion.name }}
+        </div>
+        ({{ discussion.type.name }})
+    </h2>
+    {% ifequal user_permission_type 1 %}
+        <form action="/discussion-delete/{{discussion.pk}}/" method="post">
+            <input type="image" onclick="if(confirm('Are you sure you want to delete this discussion?')) {this.form.submit();} else { return false; }" src="/static/img/icons/delete.png">Delete discussion</input>
+        </form>
+    {% endifequal %}
+
+
+    <p>
+        {{ discussion.description }}
+    </p>
+    <div id="hintsContainer"></div>
+    <div id="canvasContainer"></div>
+
+    {% block story_input %}
+    {% if user_in_group %}
+    <form name="story_create" class="hidden" method="POST" action="/discussions/add_story/">
+        <input type="hidden" name="discussion" value="{{ discussion.id }}" />
+        <input type="hidden" name="story-class" value="1" />
+        <input type="hidden" name="speech_act" value="1" />
+        <fieldset class="story_input-title">
+            <legend>{% trans 'Title:' %}</legend>
+            <input type="text" name="title" class="is_value"/>
+            <span class="clean_title hidden"></span>
+        </fieldset>
     </form>
-{% endifequal %}
+    <form name="opinion_create" class="hidden" method="POST" action="/discussions/add_story/">
+        <input type="hidden" name="discussion" value="{{ discussion.id }}" />
+        <input type="hidden" name="story-class" value="2" />
+        <input type="hidden" name="parent_story" value="" />
+        <input type="hidden" name="parent_class" value="1" />
+        <div id="story_input-types">
+            <fieldset>
+                <legend>{% trans 'Speech act:' %}</legend>
+                {% for sa in opinion_types %}
+                <input type="radio" name="speech_act" value="{{ sa.pk }}" id="opinion_{{ sa.name }}" user_name="{{ user.username }}" {% if forloop.first %} checked="checked" {% endif %} /><label for="opinion_{{ sa.name }}"> {{ sa.name }}</label><br/>
+                {% endfor %}
+            </fieldset>
+        </div>
+        <fieldset class="story_input-title">
+            <legend>{% trans 'Title:' %}</legend>
+            <input type="text" name="title" class="is_value"/>
+            <span class="clean_title hidden"></span>
+        </fieldset>
+    </form>
+    <form name="relation_create" class="hidden" method="POST" action="/discussions/add_story/">
+        <input type="hidden" name="discussion" value="{{ discussion.id }}" />
+        <input type="hidden" name="story-class" value="3" />
+        <input type="hidden" name="from_story" value="" />
+        <input type="hidden" name="speech_act" value="{% for sa in speech_acts %}{% ifequal sa.story_type 3 %}{{ sa.pk }}{% endifequal %}{% endfor %}" />
+        <div id="story_input-stories">
+            <fieldset>
+                <legend>{% trans 'To story:' %}</legend>
+                <select name="to_story">
 
-
-<p>
-	{{ discussion.description }}
-</p>
-<div id="hintsContainer"></div>
-<div id="canvasContainer"></div>
-
-{% block story_input %}
-{% if user_in_group %}
-<form name="story_create" class="hidden" method="POST" action="/discussions/add_story/">
-    <input type="hidden" name="discussion" value="{{ discussion.id }}" />
-	<input type="hidden" name="story-class" value="1" />
-	<input type="hidden" name="speech_act" value="1" />
-	<fieldset class="story_input-title">
-		<legend>{% trans 'Title:' %}</legend>
-		<input type="text" name="title" class="is_value"/>
-		<span class="clean_title hidden"></span>
-	</fieldset>
-</form>
-<form name="opinion_create" class="hidden" method="POST" action="/discussions/add_story/">
-    <input type="hidden" name="discussion" value="{{ discussion.id }}" />
-    <input type="hidden" name="story-class" value="2" />
-	<input type="hidden" name="parent_story" value="" />
-	<input type="hidden" name="parent_class" value="1" />
-	<div id="story_input-types">
-		<fieldset>
-			<legend>{% trans 'Speech act:' %}</legend>
-			{% for sa in opinion_types %}
-			<input type="radio" name="speech_act" value="{{ sa.pk }}" id="opinion_{{ sa.name }}" user_name="{{ user.username }}" {% if forloop.first %} checked="checked" {% endif %} /><label for="opinion_{{ sa.name }}"> {{ sa.name }}</label><br/>
-            {% endfor %}
-		</fieldset>
-	</div>
-    <fieldset class="story_input-title">
-		<legend>{% trans 'Title:' %}</legend>
-		<input type="text" name="title" class="is_value"/>
-		<span class="clean_title hidden"></span>
-	</fieldset>
-</form>
-<form name="relation_create" class="hidden" method="POST" action="/discussions/add_story/">
-    <input type="hidden" name="discussion" value="{{ discussion.id }}" />
-    <input type="hidden" name="story-class" value="3" />
-    <input type="hidden" name="from_story" value="" />
-    <input type="hidden" name="speech_act" value="{% for sa in speech_acts %}{% ifequal sa.story_type 3 %}{{ sa.pk }}{% endifequal %}{% endfor %}" />
-	<div id="story_input-stories">
-		<fieldset>
-			<legend>{% trans 'To story:' %}</legend>
-			<select name="to_story">
-
-			</select>
-		</fieldset>
-	</div>
-	<fieldset class="story_input-title">
-		<legend>{% trans 'Title:' %}</legend>
-		<input type="text" name="title" class="is_value"/>
-		<span class="clean_title hidden"></span>
-	</fieldset>
-</form>
+                </select>
+            </fieldset>
+        </div>
+        <fieldset class="story_input-title">
+            <legend>{% trans 'Title:' %}</legend>
+            <input type="text" name="title" class="is_value"/>
+            <span class="clean_title hidden"></span>
+        </fieldset>
+    </form>
+    {% endif %}
+    {% endblock %}
 {% endif %}
-{% endblock %}
 {% endblock content %}
