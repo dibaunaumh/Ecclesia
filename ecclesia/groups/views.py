@@ -105,11 +105,7 @@ def group_home(request, group_slug):
         mission_statement = ""
     discussions = group.group.discussions.all()
     members = group.get_group_members()
-    user_in_group = False
-    try:
-        user_in_group = request.user.groups.filter(id=group.group.id).count() > 0
-    except:
-        pass
+    user_in_group = group.is_user_in_group(request.user)
     if group.is_private and not user_in_group:
         messages.error(request, "The group is private. You're not allowed to see it." )
     #initializing the forms

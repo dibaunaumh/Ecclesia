@@ -53,13 +53,16 @@ def update_workflow_status(discussion):
 def check_stories_of_type(discussion, speech_act):
     SpeechAct = get_model("discussions", "SpeechAct")
     speech_act_obj = SpeechAct.objects.get(name=speech_act)
-    model = get_model("discussions", "BaseStory")
-    return model.objects.filter(discussion=discussion, speech_act=speech_act_obj).count()
+    model = get_model('discussions', {
+        'relation': 'StoryRelation'
+    }.get(speech_act_obj, 'Story'))
+    elements_query = {
+        'relation': lambda : model.objects.filter
+    }.get(speech_act_obj, model.objects.filter)(discussion=discussion, speech_act=speech_act_obj)
+    return elements_query.count()
 
 
 
 def check_voting(discussion):
     Voting = get_model("voting", "Voting")
     return Voting.objects.filter(discussion=discussion).count()
-
-

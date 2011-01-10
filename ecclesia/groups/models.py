@@ -82,6 +82,9 @@ class GroupProfile(Presentable):
     def get_number_of_group_members(self):
         return len(self.get_group_members())
 
+    def is_user_in_group(self, user):
+        return user.groups.filter(id=self.group.id).count() > 0
+
     def __unicode__(self):
         return self.group.name
 

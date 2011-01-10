@@ -21,4 +21,5 @@ urlpatterns = patterns('discussions.views',
     (r'^get_stories_json_by_speechact/(?P<discussion_pk>\d+)/(?P<speech_act>.*)/$','get_inline_select_json'),
     (r'^edit_inline_select_field/(?P<relation_id>.*)/(?P<direction>.*)/$', 'get_inline_select_field'),
     url(r'^follow/(?P<discussion_slug>.*)/$', 'follow', name='discussion_follow'),
+    url(r'^unfollow/(?P<discussion_slug>.*)/$', 'unfollow', name='discussion_unfollow'),
 )

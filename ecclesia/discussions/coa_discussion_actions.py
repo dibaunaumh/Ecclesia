@@ -4,8 +4,8 @@ from django.db.models import get_model
 import sys
 
 TEMPLATE_NAME = "course-of-action"
-COA_SPEECH_ACT = "course_of_action"
-GOAL_CONDITION_SPEECH_ACT = "goal_condition"
+COA_SPEECH_ACT = "option"
+CONDITION_SPEECH_ACT = "condition"
 GOAL_SPEECH_ACT = "goal"
 
 TRUE_SPEECH_ACT = "true"
@@ -23,7 +23,7 @@ def evaluate_stories(discussion):
     Implementation of the evaluate stories discussion action
     for Course-of-Action discussions. Returns the story/stories
     having the best score.
-    Stories evaluated are of Speech Act: Course-of-Action
+    Stories evaluated are of Speech Act: Option
     Evaluation formula is can be seen at: https://sites.google.com/site/ekklidev/development/design/conclusions-indication
        
     """
@@ -64,7 +64,7 @@ def evaluate_discussion_stories(discussion, stories):
     evals = {}
     types = {}
     coa_stories = []
-    goal_conditions = []
+    conditions = []
 
     # step 1: Evaluate each node & add to graph
 
@@ -82,8 +82,8 @@ def evaluate_discussion_stories(discussion, stories):
         types[f.id] = f.speech_act.name
         if f.speech_act.name == COA_SPEECH_ACT and f.id not in coa_stories:
             coa_stories.append(f.id)
-        elif f.speech_act.name == GOAL_CONDITION_SPEECH_ACT and f.id not in goal_conditions:
-            goal_conditions.append(f.id)
+        elif f.speech_act.name == CONDITION_SPEECH_ACT and f.id not in conditions:
+            conditions.append(f.id)
         # relations that go from the story
         t = rel.to_story
         stories[t.id] = t
@@ -141,7 +141,7 @@ def evaluate_discussion_stories(discussion, stories):
 
             
                         
-            if len(goal_conditions) > 0 and not has_path_to_nodes(graph, coa, goal_conditions):
+            if len(conditions) > 0 and not has_path_to_nodes(graph, coa, conditions):
                 scores[coa] = 0
                 # print "CoA ", coa, "do not complay to all goal condtions."
             else:
@@ -159,7 +159,7 @@ def evaluate_story(story, discussion):
         score = group_belief_value(discussion, story)
         return score
     except:
-        print sys.exc_info()[1]
+        #print sys.exc_info()[1]
         pass
     return 1
 
@@ -263,14 +263,14 @@ def group_belief_value(discussion, story):
     # if no opinion, then very low probability
     #AverageTruthOpinion = (true_count / (true_count + false_count)) if (true_count + false_count) >0 else 0.00001
     number_of_group_members = get_number_of_group_members(discussion)
-    print "number_of_group_members: ", number_of_group_members
+    #print "number_of_group_members: ", number_of_group_members
     if number_of_opinion_givers > 0:
         gBV = sum(personal_belief_values.values()) / number_of_group_members
     else:
         gBV = ZERO_OPINION_VALUE
     #print "Number of group memebers", get_number_of_group_members(discussion)
     #gbv = (number_of_opinion_givers / get_number_of_group_members(discussion)) * AverageTruthOpinion
-    print "In story: ", story, "gBV = ", gBV
+    #print "In story: ", story, "gBV = ", gBV
     return gBV
 
 

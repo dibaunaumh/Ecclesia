@@ -4,6 +4,8 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponse, Http404, HttpResponseRedirect, HttpResponseServerError
 from django.core import serializers
 from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
+from django.contrib import messages
+from django.template import RequestContext
 from django.template.defaultfilters import slugify
 from django.utils import simplejson
 from django.conf import settings
@@ -16,7 +18,7 @@ import discussion_actions
 from ecclesia.groups.models import GroupPermission, MissionStatement
 from ecclesia.discussions.models import *
 from ecclesia.notifications.models import Notification
-from ecclesia.common.views import _follow
+from ecclesia.common.views import _follow, _unfollow
 from ecclesia.common.utils import is_heb
 from services.search_filter_pagination import search_filter_paginate
 from services.utils import get_user_permissions
@@ -34,17 +36,15 @@ def visualize(request, discussion_slug):
     discussion = Discussion.objects.select_related(depth=1).get(slug=discussion_slug)
     group = GroupProfile.objects.get(group=discussion.group)
     stories = discussion.stories
-    user_in_group = False
+    user_in_group = group.is_user_in_group(request.user)
     voting = Voting.objects.get_started(discussion=discussion)
     if voting:
         has_voting = True
         voting_data = get_voting_data(user, voting, discussion)
         if voting_data is False:
             has_voting = False
-    try:
-        user_in_group = user.groups.filter(id=group.group.id).count() > 0
-    except:
-        pass
+    if discussion.is_private and not group.is_user_in_group(user):
+        messages.error(request, "The discussion is private. You're not allowed to see it." )
     if str(user) != 'AnonymousUser':
         user_follows_discussion = True if user.subscriptions.filter(discussion=discussion) else False
     else:
@@ -57,7 +57,8 @@ def visualize(request, discussion_slug):
         user_permissions = 'allowed'
     else:
         user_permissions = ''
-    return render_to_response('discussion_home.html', locals())
+    hints_metadata = get_hints_metadata(discussion)
+    return render_to_response('discussion_home.html', locals(), context_instance=RequestContext(request))
 
 def get_update(request, discussion_slug):
     results = []
@@ -74,11 +75,15 @@ def evaluate(request, discussion_slug):
     return HttpResponse(json)
 
 def add_discussion(request):
+    group = Group.objects.get(id=request.POST.get('group'))
+    group_profile = GroupProfile.objects.filter(group=group)[0]
+    if group_profile.is_private and not group_profile.is_user_in_group(request.user):
+        return HttpResponse("The group is private. You're not allowed to create discussion.")
     if request.POST:
         discussion_form = DiscussionForm(request.POST)
         if discussion_form.is_valid():
             discussion = Discussion()
-            discussion.group = Group.objects.get(id=request.POST.get('group'))
+            discussion.group = group
             discussion.type = DiscussionType.objects.get(id=request.POST.get('type'))
             discussion.name = discussion_form.cleaned_data['name']
             if is_heb(discussion.name):
@@ -90,6 +95,7 @@ def add_discussion(request):
             discussion.created_by = request.user
             discussion.x = request.POST.get('x', None)
             discussion.y = request.POST.get('y', None)
+            discussion.is_private = 'is_private' in request.POST
             discussion.save()
             return HttpResponse('reload')
         else:
@@ -122,6 +128,9 @@ def add_base_story(request):
 def add_story(request, discussion, user, title, slug, speech_act):
 #    x = request.POST.get('x', None)
     y = request.POST.get('y', None)
+    group_profile = GroupProfile.objects.filter(group=discussion.group)[0]
+    if discussion.is_private and not group_profile.is_user_in_group(request.user):
+        return HttpResponse("The discussion is private. You're not allowed to create story.")
     try:
         story = Story()
         story.discussion = discussion
@@ -189,8 +198,8 @@ def add_opinion(request, discussion, user, title, slug, speech_act):
         create_notification(text="There is a new opinion in %s discussion: %s" % (discussion.slug, title),
                      entity=opinion, acting_user=request.user)
     except:
-       resp = HttpResponse(str(sys.exc_info()[1]))
-       resp.status_code = 500
+        resp = HttpResponse(str(sys.exc_info()[1]))
+        resp.status_code = 500
 
     return resp
 
@@ -482,6 +491,13 @@ def follow(request, discussion_slug):
     else:
         return HttpResponse('error')
 
+def unfollow(request, discussion_slug):
+    if request.user.is_authenticated():
+        discussion = Discussion.objects.get(slug=discussion_slug)
+        return _unfollow(request.user, discussion)
+    else:
+        return HttpResponse('error')
+
 def create_notification(text, entity, acting_user):
     try:
         notification = Notification(text, entity, acting_user)
@@ -493,7 +509,6 @@ def create_notification(text, entity, acting_user):
         return resp
 
 
-def get_hints_metadata(request, discussion_slug):
-    discussion = Discussion.objects.get(slug=discussion_slug)
+def get_hints_metadata(discussion):
     metadata = get_workflow_hints(discussion)
-    return HttpResponse(simplejson.dumps(metadata))
+    return simplejson.dumps(metadata)

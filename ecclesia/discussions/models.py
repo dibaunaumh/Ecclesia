@@ -41,6 +41,7 @@ class Discussion(Presentable):
     created_at = models.DateTimeField(_('created at'), auto_now_add=True, help_text=_('When was the discussion created.'))
     updated_at = models.DateTimeField(_('updated at'), auto_now=True, help_text=_('When was the discussion last updated.'))
     subscriptions = generic.GenericRelation(Subscription)
+    is_private = models.BooleanField(default=False, verbose_name=_('is private'))
 
     class Meta:
         verbose_name = _('discussion')
