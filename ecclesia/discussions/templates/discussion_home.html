@@ -215,16 +215,18 @@
     <div id="buttons_container">
     {% if user.is_authenticated %}
         <form method="post" class="hidden" action="{% url start_voting discussion.pk %}" id="voting_form"><p>{% trans 'Loading form...' %}</p></form>
-        <input type="button" class="{% if has_voting %}hidden {% endif %}ui-button ui-state-default ui-corner-all" id="start_vote" value="{% trans 'Start Vote' %}" />
-        <div id="voting_progress" {% if not has_voting %}class="hidden"{% endif %}>
-            {% trans 'Your ballots:' %} <span id="voting_ballots">{{ voting_data.ballots_left }}</span>
-            {% trans 'Time left:' %} <span id="voting_time_left">{{ voting_data.voting_time_left }}</span>
-        </div>
-        <input type="button" class="{% if not has_voting %}hidden {% endif %}ui-button ui-state-default ui-corner-all" id="vote_progress" value="{% trans 'Vote progress' %}"/>
-        <div id="vote_progress_container">
-            <div id="progressbar" class="hidden"></div>
-        </div>
-        <input type="button" class="{% if not has_voting %}hidden {% endif %}ui-button ui-state-default ui-corner-all" id="end_vote" value="{% trans 'End Vote' %}" />
+        {% if user_in_group %}
+            <input type="button" class="{% if has_voting %}hidden {% endif %}ui-button ui-state-default ui-corner-all" id="start_vote" value="{% trans 'Start Vote' %}" />
+            <div id="voting_progress" {% if not has_voting %}class="hidden"{% endif %}>
+                {% trans 'Your ballots:' %} <span id="voting_ballots">{{ voting_data.ballots_left }}</span>
+                {% trans 'Time left:' %} <span id="voting_time_left">{{ voting_data.voting_time_left }}</span>
+            </div>
+            <input type="button" class="{% if not has_voting %}hidden {% endif %}ui-button ui-state-default ui-corner-all" id="vote_progress" value="{% trans 'Vote progress' %}"/>
+            <div id="vote_progress_container">
+                <div id="progressbar" class="hidden"></div>
+            </div>
+            <input type="button" class="{% if not has_voting %}hidden {% endif %}ui-button ui-state-default ui-corner-all" id="end_vote" value="{% trans 'End Vote' %}" />
+        {% endif %}
         <input type="button" {% if user_follows_discussion %}style="display:none"{% endif %} class="ui-button ui-state-default ui-corner-all" id="follow_button" name="follow" value="{% trans 'Follow' %}" />
         <input type="button" {% if not user_follows_discussion %}style="display:none"{% endif %} class="ui-button ui-state-default ui-corner-all" id="unfollow_button" name="unfollow" value="{% trans 'Unfollow' %}" />
     {% endif %}
