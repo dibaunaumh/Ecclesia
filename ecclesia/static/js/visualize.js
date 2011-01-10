@@ -433,8 +433,8 @@ Story.prototype = {
 	},
     addRelation         : function (context_controller) {
         // TODO: move this form initialization into the view controller - by design
-        var that = this;
-        var form = context_controller.getCreateRelationForm.apply(context_controller, arguments),
+        var that = this,
+            $form = context_controller.getCreateRelationForm.apply(context_controller, arguments),
             dialog_config,
             config = {
                 callback                    : $.bindFn(context_controller, context_controller.init),
@@ -446,8 +446,12 @@ Story.prototype = {
                 clean_title_container_class : 'clean_title'
             },
             FC = new FormController(),
-            CRFC = new CreateRelationFormController(FC, config);
-        if ( ! form ) {
+            CRFC = new CreateRelationFormController(FC, config),
+            submit_f = function () {
+                $('button', '.ui-dialog-buttonset').attr('disabled', 'disabled');
+                return CRFC.submit.call(CRFC, this, config);
+            };
+        if ( ! $form ) {
             return false;
         }
         dialog_config= {
@@ -459,8 +463,7 @@ Story.prototype = {
             title: 'Add Relation',
             buttons: {
                 'Create': function() {
-                    $('button', '.ui-dialog-buttonset').attr('disabled', 'disabled');
-                    return CRFC.submit.call(CRFC, this, config);
+                    return submit_f.call(this);
                 },
                 'Cancel': function() {
                     $(this).dialog('close');
@@ -468,12 +471,18 @@ Story.prototype = {
             }
         };
 //        dialog_config = $.isPlainObject(config) ? $.extend(true, {}, defaults, config) : defaults;
-        form.dialog(dialog_config).dialog('open');
+        $form.dialog(dialog_config).dialog('open');
+        $(window).unbind('keypress').keypress(function (e) {
+            if ( e.which === 13 ) {
+                e.preventDefault();
+                return submit_f.call($form[0]);
+            }
+        });
     },
     addOpinion          : function (context_controller) {
         // TODO: move this form initialization into the view controller - by design
         var that = this,
-            form = context_controller.getCreateOpinionForm.apply(context_controller, arguments),
+            $form = context_controller.getCreateOpinionForm.apply(context_controller, arguments),
             config = {
                 callback                    : $.bindFn(context_controller, context_controller.init),
                 error_callback              : function (response) {
@@ -485,6 +494,10 @@ Story.prototype = {
             },
             FC = new FormController(),
             COFC = new CreateOpinionFormController(FC, config),
+            submit_f = function () {
+                $('button', '.ui-dialog-buttonset').attr('disabled', 'disabled');
+                return COFC.submit.call(COFC, this, config);
+            },
             dialog_config ={
                 bgiframe: true,
                 autoOpen: false,
@@ -494,8 +507,7 @@ Story.prototype = {
                 title: 'Add Opinion',
                 buttons: {
                     'Create': function() {
-                        $('button', '.ui-dialog-buttonset').attr('disabled', 'disabled');
-                        return COFC.submit.call(COFC, this, config);
+
                     },
                     'Cancel': function() {
                         $(this).dialog('close');
@@ -503,7 +515,13 @@ Story.prototype = {
                 }
             };
 //        dialog_config = $.isPlainObject(config) ? $.extend(true, {}, defaults, config) : defaults;
-        form.dialog(dialog_config).dialog('open');
+        $form.dialog(dialog_config).dialog('open');
+        $(window).unbind('keypress').keypress(function (e) {
+            if ( e.which === 13 ) {
+                e.preventDefault();
+                return submit_f.call($form[0]);
+            }
+        });
     },
     editStory           : function (context_controller) {
         // TODO: improve this, create a real edit dialog
@@ -650,7 +668,7 @@ Relation.prototype = {
     addOpinion      : function (context_controller) {
         // TODO: move this form initialization into the view controller - by design
         var that = this,
-            form = context_controller.getCreateOpinionForm.apply(context_controller, arguments),
+            $form = context_controller.getCreateOpinionForm.apply(context_controller, arguments),
             config = {
                 callback                    : $.bindFn(context_controller, context_controller.init),
                 error_callback              : function (response) {
@@ -662,6 +680,10 @@ Relation.prototype = {
             },
             FC = new FormController(),
             COFC = new CreateOpinionFormController(FC, config),
+            submit_f = function () {
+                $('button', '.ui-dialog-buttonset').attr('disabled', 'disabled');
+                return COFC.submit.call(COFC, this, config);
+            },
             dialog_config ={
                 bgiframe: true,
                 autoOpen: false,
@@ -671,8 +693,7 @@ Relation.prototype = {
                 title: 'Add Opinion',
                 buttons: {
                     'Create': function() {
-                        $('button', '.ui-dialog-buttonset').attr('disabled', 'disabled');
-                        return COFC.submit.call(COFC, this, config);
+                        return submit_f.call($form[0]);
                     },
                     'Cancel': function() {
                         $(this).dialog('close');
@@ -680,7 +701,13 @@ Relation.prototype = {
                 }
             };
 //            dialog_config = $.isPlainObject(config) ? $.extend(true, {}, defaults, config) : defaults;
-        form.dialog(dialog_config).dialog('open');
+        $form.dialog(dialog_config).dialog('open');
+        $(window).unbind('keypress').keypress(function (e) {
+            if ( e.which === 13 ) {
+                e.preventDefault();
+                return submit_f.call($form[0]);
+            }
+        });
     },
     editRelation    : function () {
         window.location.href = this.config.url;
@@ -1129,9 +1156,22 @@ VUController.prototype = {
 //        }
 //    },
     initDialog          : function () {
-        var _VUC = this;
+        var _VUC = this,
+            $dialog = $('#create_form'),
+            submit_f = function() {
+                $('button', '.ui-dialog-buttonset').attr('disabled', 'disabled');
+                var _config = {
+                    callback        : $.bindFn(_VUC, _VUC.init),
+                    error_callback  : function (response) {
+                        $('button', '.ui-dialog-buttonset').removeAttr('disabled');
+                        alert(response);
+                    }
+                },
+                FC = new FormController();
+                return FC.submit.call(FC, $dialog[0], _config);
+            };
         if (this.options.user_permissions && this.options.user_permissions === 'allowed') {
-            $('#create_form').dialog({
+            $dialog.dialog({
                 bgiframe: true,
                 autoOpen: false,
                 height: 402,
@@ -1139,22 +1179,18 @@ VUController.prototype = {
                 modal: true,
                 title: _VUC.options.dialog_title,
                 buttons: {
-                    'Create': function() {
-                        $('button', '.ui-dialog-buttonset').attr('disabled', 'disabled');
-                        var _config = {
-                            callback        : $.bindFn(_VUC, _VUC.init),
-                            error_callback  : function (response) {
-                                $('button', '.ui-dialog-buttonset').removeAttr('disabled');
-                                alert(response);
-                            }
-                        },
-                        FC = new FormController();
-                        //$(this).dialog('close');
-                        return FC.submit.call(FC, this, _config);
+                    'Create': function () {
+                        return submit_f();
                     },
                     'Cancel': function() {
-                        $(this).dialog('close');
+                        $dialog.dialog('close');
                     }
+                }
+            });
+            $(window).unbind('keypress').keypress(function (e) {
+                if ( e.which === 13 ) {
+                    e.preventDefault();
+                    submit_f();
                 }
             });
         }
@@ -1589,7 +1625,7 @@ GroupController.prototype = {
         var _VUC = this,
             position = $.clickOffset(event),
             config = {
-                actions	: {
+                actions : {
                     add_discussion : function () {
                         _VUC.click = null;
                         _VUC.getCreateDiscussionForm(event).dialog('open');
@@ -1700,7 +1736,19 @@ DiscussionController.prototype = {
 	},
     initDialog              : function (config) {
         var _DC = this,
-            defaults ={
+            submit_f = function () {
+                $('button', '.ui-dialog-buttonset').attr('disabled', 'disabled');
+                var _config = {
+                    callback        : $.bindFn(_DC, _DC.init),
+                    error_callback  : function (response) {
+                        $('button', '.ui-dialog-buttonset').removeAttr('disabled');
+                        alert(response);
+                    }
+                },
+                FC = new FormController();
+                return FC.submit.call(FC, $('form[name=story_create]')[0], _config);
+            },
+            defaults = {
                 bgiframe: true,
                 autoOpen: false,
                 height: 250,
@@ -1709,17 +1757,7 @@ DiscussionController.prototype = {
                 title: 'Add Story',
                 buttons: {
                     'Create': function() {
-                        $('button', '.ui-dialog-buttonset').attr('disabled', 'disabled');
-                        var _config = {
-                            callback        : $.bindFn(_DC, _DC.init),
-                            error_callback  : function (response) {
-                                $('button', '.ui-dialog-buttonset').removeAttr('disabled');
-                                alert(response);
-                            }
-                        },
-                        FC = new FormController();
-                        //$(this).dialog('close');
-                        return FC.submit.call(FC, this, _config);
+                        return submit_f();
                     },
                     'Cancel': function() {
                         $(this).dialog('close');
@@ -1728,6 +1766,12 @@ DiscussionController.prototype = {
             },
             dialog_config = $.isPlainObject(config) ? $.extend(true, {}, defaults, config) : defaults;
         $('form[name=story_create]').dialog(dialog_config);
+        $(window).unbind('keypress').keypress(function (e) {
+            if ( e.which === 13 ) {
+                e.preventDefault();
+                return submit_f();
+            }
+        });
     },
 	addElement			    : function (el) {
         // add an element to the DOM
