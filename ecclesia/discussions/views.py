@@ -20,12 +20,12 @@ from ecclesia.discussions.models import *
 from ecclesia.notifications.models import Notification
 from ecclesia.common.views import _follow, _unfollow
 from ecclesia.common.utils import is_heb
+from groups.models import GroupProfile
 from services.search_filter_pagination import search_filter_paginate
 from services.utils import get_user_permissions
 from ecclesia.voting.models import Voting
 from ecclesia.voting.services import get_voting_data
-from common.decorators import notify_not_logged_in
-
+from coa_workflow_manager import *
 
 DEFAULT_FORM_ERROR_MSG = 'Your input was invalid. Please correct and try again.'
 UNIQUENESS_ERROR_PATTERN = 'already exists'
@@ -61,10 +61,19 @@ def visualize(request, discussion_slug):
     return render_to_response('discussion_home.html', locals(), context_instance=RequestContext(request))
 
 def get_update(request, discussion_slug):
+    discussion = get_object_or_404(Discussion, slug=discussion_slug)
+    group = GroupProfile.objects.get(group=discussion.group)
+    user_in_group = group.is_user_in_group(request.user)
+
+    if user_in_group:
+        workflow_status = discussion.workflow_status
+    else:
+        workflow_status = NOT_ALLOWED_TO_EDIT
+
     results = []
     discussion = get_object_or_404(Discussion, slug=discussion_slug)
     results.append('"elements":%s' % get_stories_view_json(request, discussion))
-    results.append('"workflow_status":%s' % discussion.workflow_status)
+    results.append('"workflow_status":%s' % workflow_status)
     json = '{"discussion":{%s}}' % ','.join(results)
     return HttpResponse(json)
 
