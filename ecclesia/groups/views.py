@@ -20,11 +20,20 @@ def home(request):
     """
     Renders the application home page
     """
+    user = request.user
+    user_permissions = 'allowed' if user.is_authenticated() else ''
+    if not user_permissions:
+        return render_to_response('intro.html', locals())
+    return HttpResponseRedirect("/groups/")
+
+def groups(request):
+    """
+    Renders the groups home
+    """
     groups = GroupProfile.objects.all()
     user = request.user
     show_errors_in_form = False
     group_form = GroupProfileForm()
-    user_permissions = 'allowed' if user.is_authenticated() else ''
     return render_to_response('home.html', locals())
 
 def get_groups_view_json(request):
