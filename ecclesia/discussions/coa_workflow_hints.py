@@ -10,6 +10,13 @@ ICON = "icon"
 
 # CoA workflow status hints
 WORKFLOW_HINTS = {
+    -1: {
+        TEXT: _("You need to login and join this group in order to make any changes"),
+        HELP_LINK: "",
+        POSITION: "top",
+        ICON: "",
+    },
+
     0: {
         TEXT: _("Please set your Goals: right-click the Goals column and choose 'Add story'"),
         HELP_LINK: "",

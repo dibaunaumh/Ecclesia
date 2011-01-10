@@ -2,6 +2,7 @@ from django.db.models import get_model
 
 
 # CoA workflow status
+NOT_ALLOWED_TO_EDIT = -1
 INITIAL = 0
 ADD_GOALS = 1
 ADD_CONDITIONS = 2
