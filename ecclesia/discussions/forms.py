@@ -8,7 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 class DiscussionForm(forms.ModelForm):
     class Meta:
         model = Discussion
-        exclude = ('x_pos', 'y_pos', 'width', 'height', 'last_related_update', 'slug')
+        exclude = ('x_pos', 'y_pos', 'width', 'height', 'last_related_update', 'slug', 'workflow_status')
 
 class StoryForm(forms.ModelForm):
     class Meta:
