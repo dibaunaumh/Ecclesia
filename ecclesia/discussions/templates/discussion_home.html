@@ -52,15 +52,27 @@
                     $(this).removeClass('ui-state-hover');
                 }
             );
-            $('#follow_button').click(function () {
-                var $this = $(this).attr('disabled', 'disabled');
+
+            function follow($this) {
+                var action = $this.attr('name');
+                if (action == "follow") {
+                    var url = '{% url discussion_follow discussion.slug %}';
+                }
+                else {
+                    var url = '{% url discussion_unfollow discussion.slug %}';
+                }
                 $.ajax({
-                    url : '{% url discussion_follow discussion.slug %}',
+                    url : url,
                     type: 'post',
                     data: {},
                     success: function (response) {
                         if (response && response === 'success') {
-                            $this.val('{% trans 'Following!' %}').fadeOut('slow');
+                            if (action == "follow") {
+                                $this.hide();
+                            }
+                            else {
+                                $this.hide();
+                            }
                         } else {
                             alert("{% trans "Didn't work" %}");
                         }
@@ -69,6 +81,16 @@
                         $this.removeAttr('disabled');
                     }
                 });
+            }
+            $('#unfollow_button').click(function () {
+                var $this = $(this);
+                follow($this);
+                $('#follow_button').show();
+            });
+            $('#follow_button').click(function () {
+                var $this = $(this);
+                follow($this);
+                $('#unfollow_button').show();
             });
 			<!-- Create new dialog -->
 			(function() {
@@ -203,9 +225,8 @@
             <div id="progressbar" class="hidden"></div>
         </div>
         <input type="button" class="{% if not has_voting %}hidden {% endif %}ui-button ui-state-default ui-corner-all" id="end_vote" value="{% trans 'End Vote' %}" />
-        {% if not user_follows_discussion %}
-            <input type="button" class="ui-button ui-state-default ui-corner-all" id="follow_button" value="{% trans 'Follow' %}" />
-        {% endif %}
+        <input type="button" {% if user_follows_discussion %}style="display:none"{% endif %} class="ui-button ui-state-default ui-corner-all" id="follow_button" name="follow" value="{% trans 'Follow' %}" />
+        <input type="button" {% if not user_follows_discussion %}style="display:none"{% endif %} class="ui-button ui-state-default ui-corner-all" id="unfollow_button" name="unfollow" value="{% trans 'Unfollow' %}" />
     {% endif %}
         <input type="button" class="ui-button ui-state-default ui-corner-all" value="{% trans 'Stories List' %}" onclick="document.location.href='/stories_list/{{discussion.slug}}/'" />
     </div>

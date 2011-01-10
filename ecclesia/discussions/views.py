@@ -18,7 +18,7 @@ import discussion_actions
 from ecclesia.groups.models import GroupPermission, MissionStatement
 from ecclesia.discussions.models import *
 from ecclesia.notifications.models import Notification
-from ecclesia.common.views import _follow
+from ecclesia.common.views import _follow, _unfollow
 from ecclesia.common.utils import is_heb
 from services.search_filter_pagination import search_filter_paginate
 from services.utils import get_user_permissions
@@ -488,6 +488,13 @@ def follow(request, discussion_slug):
     if request.user.is_authenticated():
         discussion = Discussion.objects.get(slug=discussion_slug)
         return _follow(request.user, discussion)
+    else:
+        return HttpResponse('error')
+
+def unfollow(request, discussion_slug):
+    if request.user.is_authenticated():
+        discussion = Discussion.objects.get(slug=discussion_slug)
+        return _unfollow(request.user, discussion)
     else:
         return HttpResponse('error')
 

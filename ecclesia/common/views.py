@@ -73,3 +73,13 @@ def _follow(user, followed_object):
         return HttpResponse('success')
     else:
         return HttpResponse('error')
+
+def _unfollow(user, followed_object):
+    if user and followed_object:
+        followed_object_type = ContentType.objects.get_for_model(followed_object)
+        subscription = Subscription.objects.filter(user=user, \
+            content_type__pk=followed_object_type.id, object_id=followed_object.id)[0]
+        subscription.delete()
+        return HttpResponse('success')
+    else:
+        return HttpResponse('error')
