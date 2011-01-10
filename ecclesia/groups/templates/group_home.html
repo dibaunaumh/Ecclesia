@@ -102,7 +102,9 @@
     {% for member in members %}
         <a href="{{ member.get_absolute_url }}" class="member" title="{{ member.username }}" alt=""><img src="{{ member.get_profile.get_picture_abs_url }}" alt=""/></a>
     {% endfor %}
-    <input type="button" value="{% trans 'Members List' %}" onclick="document.location.href='/members_list/{{group.slug}}/'"/>
+    {% if user_in_group %}
+        <input type="button" value="{% trans 'Members List' %}" onclick="document.location.href='/members_list/{{group.slug}}/'"/>
+    {% endif %}
     </div>
 
     <hr/>
