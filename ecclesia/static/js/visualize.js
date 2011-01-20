@@ -1233,9 +1233,9 @@ VUController.prototype = {
             });
         });
         // make sure that the elements fit their containers
-        this.checkScale()
+        this.checkScale();
         // create references for relations between them
-            .setElementsRelations();
+        this.setElementsRelations();
         return this;
     },
     addElement          : function (el) {
@@ -1441,11 +1441,11 @@ VUController.prototype = {
         if (down_scale) {
             new_scale = (scale*10) - (o.zoom.step*10);
             if (new_scale >= o.zoom.min*10) {
-                scale = new_scale/10;
+                this.options.zoom.scale = new_scale/10;
                 // resize GUI text
                 $('#' + o.container_id).css('fontSize', 16*scale + 'px');
             }
-            if (new_scale > this.options.zoom.min*10) { this.checkScale(); }
+            if (new_scale > o.zoom.min*10) { return this.checkScale(); }
         }
         return this;
     },
