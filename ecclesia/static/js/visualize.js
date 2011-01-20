@@ -507,7 +507,7 @@ Story.prototype = {
                 title: 'Add Opinion',
                 buttons: {
                     'Create': function() {
-
+                        return submit_f.call(this);
                     },
                     'Cancel': function() {
                         $(this).dialog('close');
