@@ -32,6 +32,7 @@ def groups(request):
     """
     groups = GroupProfile.objects.all()
     user = request.user
+    user_permissions = 'allowed' if user.is_authenticated() else ''
     show_errors_in_form = False
     group_form = GroupProfileForm()
     return render_to_response('home.html', locals())
