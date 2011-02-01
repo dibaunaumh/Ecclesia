@@ -90,9 +90,6 @@
 				opacity: 0.5
 			},
 			buttons: {
-				Cancel: function() {
-					$(this).dialog('close');
-				},
 				OK : function() {
 					$.post("/group/leave_group/", {group_slug: URL.split("/").reverse()[1]});
 					$(this).dialog('close');
@@ -101,6 +98,9 @@
 					document.getElementById('mission_statement_button').style.display='none';
 					document.getElementById('mission_statement_edit').style.display='none';
 					document.getElementById('mission_statement').style.display='block';
+				},
+                Cancel: function() {
+					$(this).dialog('close');
 				}
 			}
 		});
