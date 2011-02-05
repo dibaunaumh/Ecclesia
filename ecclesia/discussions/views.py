@@ -20,6 +20,7 @@ from ecclesia.discussions.models import *
 from ecclesia.notifications.models import Notification
 from ecclesia.common.views import _follow, _unfollow
 from ecclesia.common.utils import is_heb
+from ecclesia.common.decorators import *
 from groups.models import GroupProfile
 from services.search_filter_pagination import search_filter_paginate
 from services.utils import get_user_permissions
@@ -302,7 +303,7 @@ def discussions_list(request, group_slug):
             if GroupPermission.objects.filter(group=group).filter(user=user):
                 permission = GroupPermission.objects.filter(group=group).filter(user=user)[0]
                 user_permission_type = permission.permission_type
-    discussions = Discussion.objects.filter(group=group)
+    discussions = Discussion.objects.filter(group=group.group)
     (my_items, get_parameters, f) = search_filter_paginate('discussion', discussions, request)
     return render_to_response('discussions_list.html', locals())
 
