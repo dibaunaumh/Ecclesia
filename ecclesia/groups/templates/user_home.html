@@ -18,7 +18,7 @@
 
 <hr/>
 
-<h4>{% trans Current groups %}</h4>
+<h4>{% trans "Current groups" %}</h4>
 <ul>
 {% for group in groups %}
     <li><a href="{{ group.get_absolute_url }}">{{ group.group.name }}</a>
