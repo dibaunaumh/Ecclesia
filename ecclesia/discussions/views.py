@@ -98,9 +98,10 @@ def add_discussion(request):
             discussion.name = discussion_form.cleaned_data['name']
             if is_heb(discussion.name):
                 encoded_discussion_name = discussion.name.__repr__().encode("ascii")[2:-1]
-                discussion.slug = slugify(encoded_discussion_name)
+                encoded_group_name = group.name.__repr__().encode("ascii")[2:-1]
+                discussion.slug = slugify("%s_%s" % (encoded_group_name,encoded_discussion_name))
             else:
-                discussion.slug = slugify(discussion.name)
+                discussion.slug = slugify("%s_%s" % (group.name,discussion.name))
             discussion.description = discussion_form.cleaned_data['description']
             discussion.created_by = request.user
             discussion.x = request.POST.get('x', None)
