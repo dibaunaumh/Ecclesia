@@ -17,7 +17,7 @@ from forms import *
 import discussion_actions
 from ecclesia.groups.models import GroupPermission, MissionStatement
 from ecclesia.discussions.models import *
-from ecclesia.notifications.models import Notification
+from notifications.services import create_notification
 from ecclesia.common.views import _follow, _unfollow
 from ecclesia.common.utils import is_heb
 from ecclesia.common.decorators import *
@@ -507,17 +507,6 @@ def unfollow(request, discussion_slug):
         return _unfollow(request.user, discussion)
     else:
         return HttpResponse('error')
-
-def create_notification(text, entity, acting_user):
-    try:
-        notification = Notification(text, entity, acting_user)
-        notification.save()
-        return HttpResponse(_('Notification create successfully'))
-    except:
-        resp = HttpResponse(str(sys.exc_info()[1]))
-        resp.status_code = 500
-        return resp
-
 
 def get_hints_metadata(discussion):
     metadata = get_workflow_hints(discussion)
