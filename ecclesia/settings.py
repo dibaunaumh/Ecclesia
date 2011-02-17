@@ -1,6 +1,6 @@
 # Django settings for ecclesia project.
 
-DEBUG = True
+DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
@@ -132,6 +132,6 @@ INSTALLED_APPS = (
 AUTH_PROFILE_MODULE = 'groups.UserProfile'
 ACCOUNT_ACTIVATION_DAYS = 7 # One-week activation window
 EMAIL_HOST = 'localhost'
-DEFAULT_FROM_EMAIL = 'dibaunaumh@gmail.com'
+DEFAULT_FROM_EMAIL = 'ekkliproject@gmail.com'
 LOGIN_REDIRECT_URL = '/'
 PRIVATEBETA_REDIRECT_URL = '/invites'
