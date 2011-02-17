@@ -273,14 +273,14 @@ def get_stories_view_json(request, discussion):
         icon = ''
         if story.speech_act.icon:
             icon = '%s%s' % (settings.MEDIA_URL, story.speech_act.icon)
-        json = '%s{"story":{"id":%s,"url":"%s","name":"%s","type":"%s","content":"%s","ballots":%s,"state":{"indicated":%s,"decided":%s},"dimensions":{"x":%s,"y":%s,"w":%s,"h":%s},"children":%s,"icon":"%s"}},' % (json, story.id, story.get_absolute_url(), story.title, story.speech_act, story.get_json_safe_content(), ballots, is_conclusion, is_decision, story.x, story.y, story.w, story.h, children, icon)
+        json = '%s{"story":{"id":%s,"url":"%s","name":"%s","type":"%s","content":"%s","ballots":%s,"state":{"indicated":%s,"decided":%s},"dimensions":{"x":%s,"y":%s,"w":%s,"h":%s},"children":%s,"icon":"%s"}},' % (json, story.id, story.get_absolute_url(), story.get_json_safe_title(), story.speech_act, story.get_json_safe_content(), ballots, is_conclusion, is_decision, story.x, story.y, story.w, story.h, children, icon)
     relations = discussion.relations.all()
     for relation in relations:
         children = relation.get_children_js_array()
-        json = '%s{"relation":{"id":%s,"url":"%s","name":"%s","type":"%s","from_id":"%s","to_id":"%s","children":%s}},' % (json, relation.id, relation.get_absolute_url(), relation.title, relation.speech_act, relation.from_story.unique_id(), relation.to_story.unique_id(), children)
+        json = '%s{"relation":{"id":%s,"url":"%s","name":"%s","type":"%s","from_id":"%s","to_id":"%s","children":%s}},' % (json, relation.id, relation.get_absolute_url(), relation.get_json_safe_title(), relation.speech_act, relation.from_story.unique_id(), relation.to_story.unique_id(), children)
     opinions = discussion.opinions.all()
     for opinion in opinions:
-        json = '%s{"opinion":{"id":%s,"url":"%s","name":"%s","type":"%s","parent_id":"%s"}},' % (json, opinion.id, opinion.get_absolute_url(), opinion.title, opinion.speech_act, opinion.parent_story.unique_id())
+        json = '%s{"opinion":{"id":%s,"url":"%s","name":"%s","type":"%s","parent_id":"%s"}},' % (json, opinion.id, opinion.get_absolute_url(), opinion.get_json_safe_title(), opinion.speech_act, opinion.parent_story.unique_id())
     #json_serializer = serializers.get_serializer("json")()
     #json_serializer.serialize(groups, ensure_ascii=False, stream=response, fields=('x', 'y', 'w', 'h'))
     json = json.strip(',')
@@ -351,7 +351,7 @@ def edit_opinion(request):
                 opinion.speech_act = speech_act
             opinion.save()
 #            result = serializers.serialize('json', (opinion,), ensure_ascii=False)
-            result = '[{"pk":%d, "fields":{"speech_act":"%s","title":"%s","content":"%s"}}]' % (opinion.pk, opinion.speech_act, opinion.title, opinion.content)
+            result = '[{"pk":%d, "fields":{"speech_act":"%s","title":"%s","content":"%s"}}]' % (opinion.pk, opinion.speech_act, opinion.get_json_safe_title(), opinion.get_json_safe_content())
     else:
         result = "Wrong usage: HTTP POST expected"
     return HttpResponse(result)
@@ -433,7 +433,7 @@ def get_inline_select_json(request, discussion_pk, speech_act):
     result = []
     try:
         stories = Story.objects.filter(discussion = discussion_pk, speech_act__name = speech_act )
-        result =  "{%s}" % ','.join(['"%s":"%s"' % (story.id,story.title) for story in stories])
+        result =  "{%s}" % ','.join(['"%s":"%s"' % (story.id,story.get_json_safe_title()) for story in stories])
 
     except:
         print sys.exc_info()
