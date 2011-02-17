@@ -154,7 +154,7 @@
 			<div id="leave_group" style="display:none"> <input type="button" value="Leave Group" onclick="leave_group();" /></div>
 		{% else %}
 				<div align="right" id="user-tools">
-	        		<form action="/login/" method="post">
+	        		<form action="/login/">
 			        	<input id="path" type="hidden" name="path"/>
 	                	<input type="submit" value="{% trans 'Login' %}" onmouseover="document.getElementById('path').value=document.URL;"/>
 						<input type="button" value="{% trans 'Sign-up' %}" onclick="document.location='/accounts/register'"/>
