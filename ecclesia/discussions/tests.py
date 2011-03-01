@@ -7,7 +7,7 @@ Replace these with more appropriate tests for your application.
 
 from django.test import TestCase
 import networkx as nx
-from coa_discussion_actions import paths_starting_in, pick_outstanding_scores, has_path_to_nodes
+from coa_discussion_actions import paths_starting_in, paths_between, pick_outstanding_scores, has_path_to_nodes
 from discussions.coa_discussion_actions import aggregate_dimension_opinions_by_users
 from discussions.models import Discussion
 
@@ -41,6 +41,29 @@ class ActionsTest(TestCase):
 
         self.failUnlessEqual(len(expected_results_for_1), len(paths_starting_in(g, 1)))
         self.failUnlessEqual(len(expected_results_for_2), len(paths_starting_in(g, 2)))
+
+
+    def test_get_paths_between(self):
+        g = nx.DiGraph()
+        g.add_edge(1, 2)
+        g.add_edge(2, 3)
+        g.add_edge(3, 4)
+        g.add_edge(4, 5)
+        g.add_edge(3, 9)
+        g.add_edge(2, 6)
+        g.add_edge(6, 7)
+        g.add_edge(7, 8)
+        g.add_edge(8, 5)
+        g.add_edge(1, 10)
+
+        expected_results_for_2_and_5 = [
+            [2, 3, 4, 5],
+            [2, 6, 7, 8, 5],
+        ]
+
+        print "Result for 1:\n", paths_between(g, 2, 5)
+        self.failUnlessEqual(len(expected_results_for_2_and_5), len(paths_between(g, 2, 5)))
+
 
 
     def test_has_path_to_nodes(self):
@@ -85,6 +108,9 @@ class ActionsTest(TestCase):
         positive_count, negative_count = aggregate_dimension_opinions_by_users(discussion, story_id, "true", "false")
         self.assertEqual(positive_count, 0.8)
         self.assertEqual(negative_count, 0)
+
+
+
 
 
 #class DiscussionsTest(TestCase):
