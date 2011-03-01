@@ -78,7 +78,7 @@ class BaseStory(Presentable):
     created_at = models.DateTimeField(_('created at'), auto_now_add=True, help_text=_('When the speech act was made.'))
     updated_at = models.DateTimeField(_('updated at'), auto_now=True, help_text=_('When the speech act was last updated.'))
     created_by = models.ForeignKey(User, verbose_name=_('created by'), null=False, blank=False, help_text=_('The user that made the speech act.'))
-	
+
     class Meta:
         abstract = True
 
@@ -95,6 +95,10 @@ class BaseStory(Presentable):
     def get_json_safe_content(self):
         p = re.compile('(\n)')
         return p.sub(' ', self.content)
+
+    def get_json_safe_title(self):
+        p = re.compile('(")')
+        return p.sub('\\"', self.title)
 
     def get_visual_container(self):
         return self.discussion

@@ -989,7 +989,7 @@ VUController.prototype = {
             } else {
                 return this.init(); // time is the same
             }
-        }else {
+        } else {
 			// create the elements
 			this.createNodes();
 			// initialize the canvas
@@ -1659,7 +1659,7 @@ DiscussionController.prototype = {
     getData                 : function () {
         var _DC = this;
         // expecting format: [ { element_alias : { element_config_object }, ... ]
-        $.getJSON(this.options.data_url, function (data){
+        $.getJSON(this.options.data_url, {}, function (data) {
             _DC.data = data && data.discussion && data.discussion.elements;
             // get the Visualization's meta data
             if ( ! _DC.metaData ) {
