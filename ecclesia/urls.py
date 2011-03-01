@@ -17,7 +17,7 @@ urlpatterns = patterns('',
     #(r'^admin/', include(admin.site.urls)),
     (r'^admin/(.*)', admin.site.root),
 
-    #(r'^static/(?P<path>.*)$', 'django.views.static.serve', {'document_root': 'static'}), # serve static content. only for development.
+    (r'^static/(?P<path>.*)$', 'django.views.static.serve', {'document_root': 'static'}), # serve static content. only for development.
 
     (r'^invites/', include('privatebeta.urls')),
 
