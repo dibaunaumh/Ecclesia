@@ -827,8 +827,8 @@ msgid "password (again)"
 msgstr "סיסמא (שוב)"
 
 #: registration/forms.py:46
-msgid "I agree with the terms of use"
-msgstr "אני מסכים עם תנאי השימוש"
+msgid "I agree with the"
+msgstr "אני מסכים עם"
 
 #: registration/forms.py:58
 msgid "This username is already taken. Please choose another."
