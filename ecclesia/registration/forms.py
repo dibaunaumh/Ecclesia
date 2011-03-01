@@ -43,7 +43,7 @@ class RegistrationForm(forms.Form):
                                 label=_(u'password'))
     password2 = forms.CharField(widget=forms.PasswordInput(attrs=attrs_dict, render_value=False),
                                 label=_(u'password (again)'))
-    agreement = forms.BooleanField(required=True, label=_(u'I agree with the terms of use'))
+    agreement = forms.BooleanField(required=True, label=_(u'I agree with the'))
 
     def clean_username(self):
         """
