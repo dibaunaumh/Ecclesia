@@ -4,8 +4,8 @@ from django.db.models import get_model
 import sys
 
 TEMPLATE_NAME = "course-of-action"
-COA_SPEECH_ACT = "course_of_action"
-GOAL_CONDITION_SPEECH_ACT = "goal_condition"
+COA_SPEECH_ACT = "option"
+GOAL_CONDITION_SPEECH_ACT = "condition"
 GOAL_SPEECH_ACT = "goal"
 
 TRUE_SPEECH_ACT = "true"
