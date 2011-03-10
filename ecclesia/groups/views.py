@@ -1,12 +1,13 @@
 import sys
 
-from django.shortcuts import  render_to_response
+from django.shortcuts import  render_to_response, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse, Http404, HttpResponseBadRequest
 from django.core import serializers
 from django.contrib import messages
 from django.template import RequestContext
 from django.template.defaultfilters import slugify
 from django.contrib.auth.models import User, Group
+from django.utils import simplejson
 
 from groups.models import *
 from discussions.models import *
@@ -211,6 +212,12 @@ def is_in_group(request):
         if request.user.groups.filter(id=group.group.id):
             return HttpResponse("True")
     return HttpResponse("False")
+
+def get_user_groups(request, user_im_address):
+    user = get_object_or_404(User, im_address=user_im_address)
+    groups = [g.name for g in user.groups]
+    return simplejson.dumps(groups)
+    
 
 def join_group(request):
     if 'group_slug' in request.POST:

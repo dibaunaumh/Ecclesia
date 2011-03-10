@@ -25,4 +25,7 @@ urlpatterns = patterns('',
     (r'^login/$', 'django.contrib.auth.views.login', {'template_name': 'admin/login.html'}),
     (r'^groups/$', 'groups.views.groups'),
     (r'^$', 'groups.views.home'),
+
+    (r'^im_api/get_user_groups/(?P<user_im_address>.*)/$', 'groups.views.get_user_groups'),
+
 )

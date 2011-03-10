@@ -17,8 +17,9 @@ class UserProfile(models.Model):
     user = models.ForeignKey(User, unique=True, verbose_name=_('user'), related_name='profile', help_text=_("The internal User entity. Add this entity before you create a profile and set a User for it."))
     picture = models.ImageField(max_length=100, default='img/user_pics/default_photo.gif', upload_to='img/user_pics', help_text=_('The name of the image file.'))
     gravatar = models.EmailField(max_length=100, help_text=_('The email of your gravatar.'), null=True, blank=True)
-    #im_address = models.CharField(_('im_address'), max_length=500, null=True, blank=True, help_text=_('IM address of the user'))
-    #im_type = models.CharField(_('im type'), max_length=30, null=True, blank=True, choices = (("gtalk", "gtalk"),), help_text=_('IM type of the user'))
+    im_address = models.CharField(_('IM address'), unique=True, max_length=500, null=True, blank=True, help_text=_('Instant messaging address of the user'))
+    im_type = models.IntegerField(_('IM type'), null=True, blank=True, choices=((1, "gtalk"),), help_text=_('Instant messaging type of the user'))
+    receive_im_notification = models.BooleanField(_('receive IM notifications'), default=True, help_text=_('Whether the user should receive IM notifications'))
 
     def __unicode__(self):
         return "%s's profile" % (self.user.username,)
