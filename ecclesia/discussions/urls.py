@@ -22,4 +22,6 @@ urlpatterns = patterns('discussions.views',
     (r'^edit_inline_select_field/(?P<relation_id>.*)/(?P<direction>.*)/$', 'get_inline_select_field'),
     url(r'^follow/(?P<discussion_slug>.*)/$', 'follow', name='discussion_follow'),
     url(r'^unfollow/(?P<discussion_slug>.*)/$', 'unfollow', name='discussion_unfollow'),
+
+    (r'^im_api/create_discussion/', 'create_discussion_via_im'),
 )

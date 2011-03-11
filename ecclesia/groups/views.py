@@ -216,7 +216,7 @@ def is_in_group(request):
 def get_user_groups(request, user_im_address):
     profile = get_object_or_404(UserProfile, im_address=user_im_address)
     user = profile.user
-    groups = [g.name for g in user.groups.all()]
+    groups = [(g.id, g.name) for g in user.groups.all()]
     return HttpResponse(simplejson.dumps(groups))
 
 def get_group_members(request, group_pk):

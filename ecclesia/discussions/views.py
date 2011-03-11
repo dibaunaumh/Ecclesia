@@ -1,4 +1,5 @@
 import sys
+from django.contrib.auth.models import Group
 
 from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponse, Http404, HttpResponseRedirect, HttpResponseServerError
@@ -10,7 +11,8 @@ from django.template.defaultfilters import slugify
 from django.utils import simplejson
 from django.conf import settings
 from django.utils.translation import ugettext as _
-from discussions.models import Discussion
+from django.views.decorators.csrf import csrf_exempt
+from discussions.models import Discussion, DiscussionType, DiscussionType
 from discussions.workflow_hints import get_workflow_hints
 
 from forms import *
@@ -21,7 +23,7 @@ from notifications.services import create_notification
 from ecclesia.common.views import _follow, _unfollow
 from ecclesia.common.utils import is_heb
 from ecclesia.common.decorators import *
-from groups.models import GroupProfile
+from groups.models import GroupProfile, UserProfile
 from services.search_filter_pagination import search_filter_paginate
 from services.utils import get_user_permissions
 from ecclesia.voting.models import Voting
@@ -113,6 +115,34 @@ def add_discussion(request):
             return HttpResponse(discussion_form.errors.as_text(), status=400)
     else:
         return HttpResponse('Wrong usage: HTTP POST expected')
+
+@csrf_exempt
+def create_discussion_via_im(request):
+    im_address = request.POST.get("im_address", "")
+    name = request.POST.get("name", _("Untitled"))
+    description = request.POST.get("description", "")
+    group = int(request.POST.get("group", 0))
+    user_profile = get_object_or_404(UserProfile, im_address=im_address)
+    user = user_profile.user
+    group = get_object_or_404(Group, pk=group)
+    discussion = Discussion()
+    discussion.group = group
+    discussion.type = DiscussionType.objects.get(name=settings.DEFAULT_DISCUSSION_TYPE)
+    discussion.name = name
+    if is_heb(discussion.name):
+        encoded_discussion_name = discussion.name.__repr__().encode("ascii")[2:-1]
+        encoded_group_name = group.name.__repr__().encode("ascii")[2:-1]
+        discussion.slug = slugify("%s_%s" % (encoded_group_name,encoded_discussion_name))
+    else:
+        discussion.slug = slugify("%s_%s" % (group.name,discussion.name))
+    discussion.description = description
+    discussion.created_by = user
+    discussion.x = 0
+    discussion.y = 0
+    discussion.is_private = 'is_private' in request.POST
+    discussion.save()
+    discussion_details = {"id": discussion.id, "link": discussion.get_absolute_url(), "name": discussion.name}
+    return HttpResponse(simplejson.dumps(discussion_details))
 
 def add_base_story(request):
     #saving new story
