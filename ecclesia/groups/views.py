@@ -214,10 +214,23 @@ def is_in_group(request):
     return HttpResponse("False")
 
 def get_user_groups(request, user_im_address):
-    user = get_object_or_404(User, im_address=user_im_address)
-    groups = [g.name for g in user.groups]
-    return simplejson.dumps(groups)
-    
+    profile = get_object_or_404(UserProfile, im_address=user_im_address)
+    user = profile.user
+    groups = [g.name for g in user.groups.all()]
+    return HttpResponse(simplejson.dumps(groups))
+
+def get_group_members(request, group_pk):
+    group = get_object_or_404(Group, pk=group_pk)
+    only_IM_receivers = request.GET.get("only_IM_receivers", "True") == "True"
+    only_not_connected = request.GET.get("only_not_connected", "True") == "True"
+    users = User.objects.filter(groups=group)
+    profiles = [user.profile.get() for user in users]
+    if only_IM_receivers:
+        members = [profile.im_address for profile in profiles if profile.im_address and profile.receive_im_notification]   # TODO check whether connected to Ekkli
+    else:
+        members = [profile.im_address for profile in profiles if profile.im_address]
+    return HttpResponse(simplejson.dumps(members))
+
 
 def join_group(request):
     if 'group_slug' in request.POST:
