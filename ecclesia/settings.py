@@ -135,3 +135,5 @@ EMAIL_HOST = 'localhost'
 DEFAULT_FROM_EMAIL = 'ekkliproject@gmail.com'
 LOGIN_REDIRECT_URL = '/'
 PRIVATEBETA_REDIRECT_URL = '/invites'
+
+DEFAULT_DISCUSSION_TYPE = 'course-of-action'
