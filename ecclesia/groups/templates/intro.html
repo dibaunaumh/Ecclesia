@@ -2,6 +2,9 @@
 {% load i18n %}
 {% block content %}
 
+
+<table width="100%">
+<tr><td align="left" valign="top">
 <ul>
 
     <li>
@@ -26,17 +29,17 @@
 
     <br/>
 
-    <li>
-        <h2 style="color:#8080FF">{% trans 'Watch the intro (6 min)' %}:</h2>
-        <iframe src="http://player.vimeo.com/video/21291857" width="400" height="300" frameborder="0"></iframe>
-        
-    </li>
-
-    <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+    <br/><br/>
 
 
     <p><input type="button" onclick="window.location.href='/groups'" style="font-size: 24px; color:purple; background-color:#8080FF" value="{% trans 'Start using Ekkli now' %}"/></p>
 
 </ul>
-
+</td>
+<td align="right" valign="top">
+    <iframe src="http://player.vimeo.com/video/21291857" width="832" height="468" frameborder="0"></iframe>
+</td>
+<td width="5%">&nbsp;</td>
+</tr>
+</table>
 {% endblock content %}
