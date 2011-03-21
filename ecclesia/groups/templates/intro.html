@@ -1,23 +1,23 @@
 {% extends 'admin/base_site.html' %}
-
+{% load i18n %}
 {% block content %}
 
 <ul>
 
     <li>
-        <h2 style="color:#8080FF">Ekkli enables large groups to <strong>think together</strong></h2>
+        <h2 style="color:#8080FF">{% trans 'Ekkli enables large groups to think together' %}</h2>
     </li>
 
     <li>
-        <h2 style="color:#8080FF">Without the need to meet in person</h2>
+        <h2 style="color:#8080FF">{% trans 'Without the need to meet in person' %}</h2>
     </li>
 
     <li>
-        <h2 style="color:#8080FF">Using a new theory of how the brain works</h2>
+        <h2 style="color:#8080FF">{% trans 'Using a new theory of how the brain works' %}</h2>
     </li>
 
     <li>
-        <h2 style="color:#8080FF">Extended to apply to organizations.</h2>
+        <h2 style="color:#8080FF">{% trans 'Extended to apply to organizations.' %}</h2>
     </li>
 
     <br/><br/>
@@ -26,14 +26,16 @@
 
     <br/>
 
-    <!--li>
-        <h2 style="color:#8080FF">Watch the intro:</h2>
-    </li-->
+    <li>
+        <h2 style="color:#8080FF">{% trans 'Watch the intro (6 min)' %}:</h2>
+        <iframe src="http://player.vimeo.com/video/21291857" width="400" height="300" frameborder="0"></iframe>
+        
+    </li>
 
     <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
 
 
-    <p><input type="button" onclick="window.location.href='/groups'" style="font-size: 24px; color:purple; background-color:#8080FF" value="Start using Ekkli now"/></p>
+    <p><input type="button" onclick="window.location.href='/groups'" style="font-size: 24px; color:purple; background-color:#8080FF" value="{% trans 'Start using Ekkli now' %}"/></p>
 
 </ul>
 
