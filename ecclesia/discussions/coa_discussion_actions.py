@@ -68,6 +68,12 @@ def evaluate_discussion_stories(discussion, stories):
     coa_stories = []
     goal_conditions = []
 
+    aggregations = {}
+    for story in stories:
+        true_false = aggregate_dimension_opinions_by_users(discussion, story.id, TRUE_SPEECH_ACT, FALSE_SPEECH_ACT)
+        good_bad = aggregate_dimension_opinions_by_users(discussion, story.id, GOOD_SPEECH_ACT, BAD_SPEECH_ACT)
+        aggregations[story] = (true_false, good_bad)
+        
     # step 1: Evaluate each node & add to graph
 
     graph = nx.DiGraph()
@@ -85,8 +91,8 @@ def evaluate_discussion_stories(discussion, stories):
 
         # gets the gBV and gGV of each story
         
-        evals_t[f.id] = evaluate_story_truth(f, discussion)
-        evals_g[f.id] = evaluate_story_goodness (f, discussion)
+        evals_t[f.id] = evaluate_story_truth(f, discussion, aggregations)
+        evals_g[f.id] = evaluate_story_goodness (f, discussion, aggregations)
                 
         types[f.id] = f.speech_act.name
 
@@ -101,9 +107,9 @@ def evaluate_discussion_stories(discussion, stories):
         stories[t.id] = t
 
         
-        evals_t[t.id] = evaluate_story_truth(t, discussion)
+        evals_t[t.id] = evaluate_story_truth(t, discussion, aggregations)
         
-        evals_g[t.id] = evaluate_story_goodness(t, discussion)
+        evals_g[t.id] = evaluate_story_goodness(t, discussion, aggregations)
         
         
         types[t.id] = t.speech_act.name
@@ -189,18 +195,18 @@ def evaluate_discussion_stories(discussion, stories):
     return scores
     
 
-def evaluate_story_truth(story, discussion):
+def evaluate_story_truth(story, discussion, aggregations):
     try:
-        score = group_belief_value(discussion, story)
+        score = group_belief_value(discussion, story, aggregations)
         return score
     except:
         print sys.exc_info()[1]
         pass
     return 1
 
-def evaluate_story_goodness(story, discussion):
+def evaluate_story_goodness(story, discussion, aggregations):
     try:
-        score = group_goodness_value(discussion, story)
+        score = group_goodness_value(discussion, story, aggregations)
         return score
     except:
         print sys.exc_info()[1]
@@ -281,7 +287,7 @@ def get_number_of_opinion_givers_for_story(discussion, story, positive_speech_ac
     return len(set([opinion.created_by for opinion in opinions]))
 
 
-def group_belief_value(discussion, story):
+def group_belief_value(discussion, story, aggregations):
 
     # << The function returns average of pBVs (personal belief values) for a story >>
     #  Verified by Tal, 29/12/2010
@@ -290,7 +296,7 @@ def group_belief_value(discussion, story):
     
     number_of_opinion_givers = get_number_of_opinion_givers_for_story(discussion, story, TRUE_SPEECH_ACT, FALSE_SPEECH_ACT)
 
-    personal_belief_values = aggregate_dimension_opinions_by_users(discussion, story, TRUE_SPEECH_ACT, FALSE_SPEECH_ACT)
+    personal_belief_values = aggregations[story][0]
 
     number_of_group_members = get_number_of_group_members(discussion)
     
@@ -310,11 +316,11 @@ def group_belief_value(discussion, story):
 # << The function returns average of pBVs (personal belief values) for a story >>
     #  Verified by Tal, 29/12/2010
     
-def group_goodness_value(discussion, story):        
+def group_goodness_value(discussion, story, aggregations):
 
     number_of_opinion_givers = get_number_of_opinion_givers_for_story(discussion, story, GOOD_SPEECH_ACT, BAD_SPEECH_ACT)
     
-    personal_belief_values = aggregate_dimension_opinions_by_users(discussion, story, GOOD_SPEECH_ACT, BAD_SPEECH_ACT)
+    personal_belief_values = aggregations[story][1]
     number_of_group_members = get_number_of_group_members(discussion)
     
     
