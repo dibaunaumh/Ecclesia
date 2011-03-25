@@ -60,6 +60,13 @@
             })
         });
     });
+
+    function create_discussion(event) {
+        new VUController({
+                dialog_title    : '{% trans 'Create Group' %}',
+                user_permissions: '{{ user_permissions }}'
+            }).getCreateGroupForm(event).dialog('open');
+    }
 </script>
 
 {% if show_errors_in_mission_statement_form %}
@@ -74,6 +81,7 @@
 {% if not messages %}
     <div id="buttons_container">
     <input type="button" class="ui-button ui-state-default ui-corner-all" value="{% trans 'Discussions List' %}" onclick="document.location.href='/discussions_list/{{group.slug}}/'"/>
+    <input type="button" class="ui-button ui-state-default ui-corner-all" value="{% trans 'Create Discussion' %}" onclick="create_discussion()"/>
     </div>
 
     <h2>

@@ -1503,10 +1503,15 @@ VUController.prototype = {
 //		this.init(true);
 //	},
     getCreateGroupForm  : function  (event) {
-        var form = $('#create_form'),
+        var form = $('#create_form');
+        if (event) {
             offset = $.clickOffset(event),
             y = offset.top,
             x = offset.left;
+        } else {
+            var x = 300,
+                y = 400;
+        }
         // add initial position
         form.append('<input type="hidden" name="x" value="'+x+'" />' +
                     '<input type="hidden" name="y" value="'+y+'" />');
@@ -1686,7 +1691,7 @@ DiscussionController.prototype = {
             switch(item.fields.story_type) {
                 case 1: { // story
                     $('#'+_DC.options.container_id).append('<div id="'+item.fields.name+'_container" pk="'+item.pk+'" class="'+_DC.options.speech_container_class+'"></div>');
-                    $('#'+item.fields.name+'_container').append('<h2>'+item.fields.name+'</h2>');
+                    //$('#'+item.fields.name+'_container').append('<h2>'+item.fields.name+'</h2>');
                 } break;
                 case 2: { // opinion
                 } break;

@@ -12,6 +12,13 @@
             },
             VUC = new VUController(config).init(true);
     });
+
+    function create_group(event) {
+        new VUController({
+                dialog_title    : '{% trans 'Create Group' %}',
+                user_permissions: '{{ user_permissions }}'
+            }).getCreateGroupForm(event).dialog('open');
+    }
 </script>
 {% endblock %}
 {% block content %}
@@ -28,6 +35,7 @@
 
 <div id="buttons_container">
 	<input type="button" class="ui-button ui-state-default ui-corner-all" value="{% trans 'Groups List' %}" onclick="document.location.href='/groups_list/'"/>
+	<input type="button" class="ui-button ui-state-default ui-corner-all" value="{% trans 'Create Group' %}" onclick="create_group()"/>
 </div>
 
 <hr/>
