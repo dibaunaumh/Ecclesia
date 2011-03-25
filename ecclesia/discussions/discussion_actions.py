@@ -3,7 +3,7 @@ import sys
 import coa_discussion_actions
 
 
-def evaluate_stories(discussion):
+def evaluate_stories(discussion, graph):
     """
     Intended to evaluate discussion stories based on their
     support, in order to enable decision recommendation.
@@ -18,7 +18,7 @@ def evaluate_stories(discussion):
             print "Failed to evaluate stories for discussion '%s' " % discussion.name, sys.exc_info()
     """
     if discussion.type.name == "course-of-action":
-        return coa_discussion_actions.evaluate_stories(discussion)
+        return coa_discussion_actions.evaluate_stories(discussion, graph)
     return None
 
 

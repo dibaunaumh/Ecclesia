@@ -18,7 +18,7 @@ ZERO_OPINION_VALUE = 1
 
 # NUMBER_OF_GROUP_MEMBERS = get_number_of_group_members(discussion)
 
-def evaluate_stories(discussion):
+def evaluate_stories(discussion, graph):
     """
     Implementation of the evaluate stories discussion action
     for Course-of-Action discussions. Returns the story/stories
@@ -30,7 +30,7 @@ def evaluate_stories(discussion):
     conclusions = []    # list of (story_id, score) tuples
     stories = {}        
 
-    scores = evaluate_discussion_stories(discussion, stories)
+    scores = evaluate_discussion_stories(discussion, stories, graph)
 
     # step 3: Pick the outstanding CoA nodes (use simple StdDev calculation)
 
@@ -60,7 +60,7 @@ def evaluate_stories(discussion):
 def multiply (x,y): return x*y
 def addition (x,y): return x+y
 
-def evaluate_discussion_stories(discussion, stories):
+def evaluate_discussion_stories(discussion, stories, graph):
     scores = {}
     evals_t = {}
     evals_g = {}
@@ -76,7 +76,7 @@ def evaluate_discussion_stories(discussion, stories):
         
     # step 1: Evaluate each node & add to graph
 
-    graph = nx.DiGraph()
+    #graph = generate_graph(discussion)
 
     # step 1.1: loop over the relation of the discussion
     StoryRelation = get_model('discussions', 'StoryRelation')
@@ -115,7 +115,7 @@ def evaluate_discussion_stories(discussion, stories):
         types[t.id] = t.speech_act.name
 
         # step 1.3: add the relation & its evaluated stories to a graph structure
-        graph.add_edge(f.id, t.id)
+        #graph.add_edge(f.id, t.id)
         
         
 
@@ -453,4 +453,36 @@ def pick_outstanding_scores(scores):
     #stddev = int((sum(squares) / len(squares)) ** 0.5)
     #return [id for id in scores.keys() if (scores[id]-avg_score) >= stddev]
     return [id for id in scores.keys() if scores[id] == max_score]
+
+def add_node_to_graph(story, graph):
+    graph.add_node(story.id, {"story": story, "type": story.speech_act.name})
     
+def generate_graph(discussion):
+    already_in_graph = {}
+    graph = nx.DiGraph()
+
+    # loop over the relation of the discussion
+    StoryRelation = get_model('discussions', 'StoryRelation')
+    for rel in StoryRelation.objects.filter(discussion=discussion):
+        # call eval_story for every node in a relation
+        # relations that go to the story
+        f = rel.from_story
+        if f.id not in already_in_graph:
+            add_node_to_graph(f, graph)
+            already_in_graph[f.id] = True
+
+        # relations that go from the story
+        t = rel.to_story
+        if t.id not in already_in_graph:
+            add_node_to_graph(t, graph)
+            already_in_graph[t.id] = True
+
+        # add the relation & its evaluated stories to a graph structure
+        graph.add_edge(f.id, t.id)
+
+    Story = get_model('discussions', 'Story')
+    for story in Story.objects.filter(discussion=discussion):
+        if story not in already_in_graph:
+            add_node_to_graph(story, graph)
+
+    return graph
