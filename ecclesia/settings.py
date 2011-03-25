@@ -125,6 +125,7 @@ INSTALLED_APPS = (
     'notifications',
     'rosetta',
     'permissions',
+    'djcelery',
 #   'privatebeta',
 #   'multilingual'
 )
@@ -137,3 +138,12 @@ LOGIN_REDIRECT_URL = '/'
 PRIVATEBETA_REDIRECT_URL = '/invites'
 
 DEFAULT_DISCUSSION_TYPE = 'course-of-action'
+
+AMQP_SERVER = "localhost"
+AMQP_PORT = 5672
+AMQP_USER = "guest"
+AMQP_PASSWORD = "guest"
+AMQP_VHOST = "/"
+
+import djcelery
+djcelery.setup_loader()

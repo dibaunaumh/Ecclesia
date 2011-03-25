@@ -19,7 +19,6 @@ from forms import *
 import discussion_actions
 from ecclesia.groups.models import GroupPermission, MissionStatement
 from ecclesia.discussions.models import *
-from notifications.services import create_notification
 from ecclesia.common.views import _follow, _unfollow
 from ecclesia.common.utils import is_heb
 from ecclesia.common.decorators import *
@@ -29,6 +28,7 @@ from services.utils import get_user_permissions
 from ecclesia.voting.models import Voting
 from ecclesia.voting.services import get_voting_data
 from coa_workflow_manager import *
+from tasks import create_notification_task
 
 DEFAULT_FORM_ERROR_MSG = 'Your input was invalid. Please correct and try again.'
 UNIQUENESS_ERROR_PATTERN = 'already exists'
@@ -196,8 +196,8 @@ def add_story(request, discussion, user, title, slug, speech_act):
         story.save()
         resp = HttpResponse("%s" % discussion.last_related_update)
 
-        create_notification(text="There is a new story in %s discussion: %s" % (discussion.slug, title),
-                                        entity=story, acting_user=request.user)
+        create_notification_task.delay("There is a new story in %s discussion: %s" % (discussion.slug, title),
+                                        story, request.user)
     except:
         resp = HttpResponse(str(sys.exc_info()[1]))
         resp.status_code = 500
@@ -236,8 +236,8 @@ def add_opinion(request, discussion, user, title, slug, speech_act):
         opinion.save()
         resp = HttpResponse("%s" % discussion.last_related_update)
 
-        create_notification(text="There is a new opinion in %s discussion: %s" % (discussion.slug, title),
-                     entity=opinion, acting_user=request.user)
+        create_notification_task.delay("There is a new opinion in %s discussion: %s" % (discussion.slug, title),
+                     opinion, request.user)
     except:
         resp = HttpResponse(str(sys.exc_info()[1]))
         resp.status_code = 500
