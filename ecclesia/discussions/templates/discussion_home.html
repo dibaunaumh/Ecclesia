@@ -208,6 +208,18 @@
                 );
 			})();
         });
+
+        function add_story(speech_act_id, speech_act_name) {
+            var VUC = new VUController({
+                    dialog_title    : '{% trans 'Create' %} ' + speech_act_name,
+                    user_permissions: '{{ user_permissions }}'
+                });
+            new DiscussionController(VUC, {
+                discussion_type         : 1,
+                speech_container_class  : 'stories_container'
+            }).getCreateStoryForm(null, speech_act_id).dialog('open');
+        }
+
     </script>
 {% endblock %}
 {% block content %}
@@ -250,6 +262,13 @@
         {{ discussion.description }}
     </p>
     <div id="hintsContainer"></div>
+    <table width="100%">
+    <tr>
+    {% for sa in speech_acts %}
+        {% ifequal sa.story_type 1 %}<td align="center"><h2>{{ sa }} <input type="button" value="add" onclick="add_story({{ sa.id }}, '{{ sa.name }}')"></h2> </td>{% endifequal %}
+    {% endfor %}
+    </tr>
+    </table>
     <div id="canvasContainer"></div>
 
     {% block story_input %}

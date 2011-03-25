@@ -1862,30 +1862,39 @@ DiscussionController.prototype = {
         };
         return config;
     },
-    getCreateStoryForm      : function (event) {
-        var form = $('form[name=story_create]'),
-            offset = $.clickOffset(event),
+    getCreateStoryForm      : function (event, speech_act) {
+        var form = $('form[name=story_create]');
+        var input = $('input[name=speech_act]', form);
+        if (event) {
+            var offset = $.clickOffset(event),
             y = offset.top,
-            x = offset.left,
-            input = $('input[name=speech_act]', form),
-            speech_act;
-        $('.'+this.options.speech_container_class).each( function () {
-            var $this = $(this),
-                this_left = $this.position().left;
-            if(x > this_left && x <= this_left+$this.outerWidth() ) {
-                speech_act = $this.attr('pk');
-            }
-        });
-        form.append('<input type="hidden" name="discussion" value="'+this.options.discussion+'" />');
-        form.append('<input type="hidden" name="group" value="'+this.options.group+'" />');
+            x = offset.left;
+            $('.'+this.options.speech_container_class).each( function () {
+                var $this = $(this),
+                    this_left = $this.position().left;
+                if(x > this_left && x <= this_left+$this.outerWidth() ) {
+                    speech_act = $this.attr('pk');
+                }
+            });
+        }
+        if (this.options.discussion) {
+            form.append('<input type="hidden" name="discussion" value="'+this.options.discussion+'" />');
+            form.append('<input type="hidden" name="group" value="'+this.options.group+'" />');
+        }
         if( ! input.length ) {
             form.append('<input type="hidden" name="speech_act" value="'+speech_act+'" />');
         } else {
             input.val(speech_act);
         }
-        // add initial position
-        form.append('<input type="hidden" name="x" value="'+x+'" />' +
-                    '<input type="hidden" name="y" value="'+y+'" />');
+        if (x) {
+            // add initial position
+            form.append('<input type="hidden" name="x" value="'+x+'" />' +
+                        '<input type="hidden" name="y" value="'+y+'" />');
+        } else {
+            // add initial position
+            form.append('<input type="hidden" name="x" value="0" />' +
+                        '<input type="hidden" name="y" value="0" />');
+        }
         return form;
     },
     getCreateOpinionForm    : function () {
@@ -2158,8 +2167,7 @@ FormController.prototype = {
         if(!this.error) {
             if(o.reset_after_send) {
                 try {
-                    $('button', '.ui-dialog-buttonset').removeAttr('disabled');
-                    this.f_jq.dialog('close');
+                    $('button', '.ui-dialog-buttonset').removeAttr('disabled'); this.f_jq.dialog('close');
                 } catch (ex) {}
                 this.f_html.reset();
             }
