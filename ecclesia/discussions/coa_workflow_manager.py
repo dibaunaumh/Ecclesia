@@ -18,7 +18,7 @@ DONE = 10
 DEFAULT_STATUS = ADD_GOALS
 
 
-def update_workflow_status(discussion):
+def update_workflow_status(discussion, graph):
     """
     Check the current status & accordingly the conditions
     that change the status to a different status.
@@ -29,11 +29,11 @@ def update_workflow_status(discussion):
 
     conditions = [
             lambda discussion: True,
-            lambda discussion: check_stories_of_type(discussion, "goal"),
-            lambda discussion: check_stories_of_type(discussion, "condition"),
-            lambda discussion: check_stories_of_type(discussion, "relation"),
+            lambda discussion: check_stories_of_type(graph, "goal"),
+            lambda discussion: check_stories_of_type(graph, "condition"),
+            lambda discussion: check_stories_of_type(graph, "relation"),
             lambda discussion: True, #check_stories_of_type(discussion, "opinion"),
-            lambda discussion: check_stories_of_type(discussion, "effect"),
+            lambda discussion: check_stories_of_type(graph, "effect"),
             lambda discussion: True, #check_stories_of_type(discussion, "relation"),
             lambda discussion: True, #check_stories_of_type(discussion, "opinion"),
             lambda discussion: check_voting(discussion),
@@ -51,17 +51,12 @@ def update_workflow_status(discussion):
         discussion.save()
     
     
-def check_stories_of_type(discussion, speech_act):
-    SpeechAct = get_model("discussions", "SpeechAct")
-    speech_act_obj = SpeechAct.objects.get(name=speech_act)
-    model = get_model('discussions', {
-        'relation': 'StoryRelation'
-    }.get(speech_act_obj, 'Story'))
-    elements_query = {
-        'relation': lambda : model.objects.filter
-    }.get(speech_act_obj, model.objects.filter)(discussion=discussion, speech_act=speech_act_obj)
-    return elements_query.count()
-
+def check_stories_of_type(graph, speech_act):
+    import logging
+    logging.info(speech_act)
+    speech_act_objects = [node for node in graph.nodes() if graph.node[node]['type'] == speech_act]
+    logging.info(speech_act_objects)
+    return len(speech_act_objects)
 
 
 def check_voting(discussion):
