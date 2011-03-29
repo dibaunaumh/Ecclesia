@@ -3,7 +3,7 @@
 #content{width:975px;margin:10px auto}
 
 #buttons_container {float: right; padding-left: 15px}
-#canvasContainer {position: relative; float:left; margin: 0; padding: 0;font-size: 12.6px}
+#canvasContainer {position: relative; float:left; margin: 30px 0 0; padding: 0;font-size: 12.6px}
 #hintsContainer {margin:10px 0;padding:5px;border:2px solid #89a;background-color: #fffcd0;border-radius:8px;-moz-border-radius:8px;-webkit-border-radius:8px;}
 #storysvu {position: absolute; left: 0; top: 0; margin: 0; padding: 0; border: thin solid #5B80B2}
 #option_container{border-right: 1px solid #5B80B2}
@@ -15,8 +15,9 @@
 div.relation {display:none}
 div.opinion {display:none}
 
+.add_story_button {margin: -5px 5px 0;}
 .stories_container{float: left; text-align: center}
-.stories_container h2{font-size: 16px}
+.stories_container h2{position: absolute;top: -22px;margin: 0;font-size: 16px;text-transform:capitalize;}
 div.story {position: absolute; margin: 0; padding: 0; font-weight: bold; cursor: move}
 /* Enforce wait cursor for AJAX loading *//*body.wait div.story {cursor: wait;}*/
 /* Enforce wait cursor for AJAX loading *//*body.wait div.story a.story_title {cursor: wait;}*/

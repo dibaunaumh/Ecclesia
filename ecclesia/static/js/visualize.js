@@ -1685,13 +1685,26 @@ DiscussionController.prototype = {
 		});
 	},
     initVisualization       : function () {
-        var _DC = this;
+        var _DC = this,
+            $container = $('#'+_DC.options.container_id);
         // setting the speech act containers
         $.each(this.metaData, function (i, item) {
+            var name = item.fields.name;
             switch(item.fields.story_type) {
                 case 1: { // story
-                    $('#'+_DC.options.container_id).append('<div id="'+item.fields.name+'_container" pk="'+item.pk+'" class="'+_DC.options.speech_container_class+'"></div>');
-                    //$('#'+item.fields.name+'_container').append('<h2>'+item.fields.name+'</h2>');
+                    $('<div/>', {
+                        id          : name + '_container',
+                        pk          : item.pk,
+                        className   : _DC.options.speech_container_class
+                    }).appendTo($container).append(
+                        '<h2>'+
+                        name+
+                        '<input class="add_story_button ui-button ui-state-default ui-corner-all" value="+" name="'+item.pk+
+                        '" type="button"/></h2>'
+                    ).find('input').click(function () {
+                        _DC.getCreateStoryForm(null, $(this).attr('name')).dialog('open');
+                        return false;
+                    });
                 } break;
                 case 2: { // opinion
                 } break;

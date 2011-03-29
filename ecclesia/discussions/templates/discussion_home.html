@@ -262,6 +262,7 @@
         {{ discussion.description }}
     </p>
     <div id="hintsContainer"></div>
+    {% comment %}
     <table width="100%">
     <tr>
     {% for sa in speech_acts %}
@@ -269,6 +270,7 @@
     {% endfor %}
     </tr>
     </table>
+    {% endcomment %}
     <div id="canvasContainer"></div>
 
     {% block story_input %}
