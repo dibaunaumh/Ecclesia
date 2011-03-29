@@ -1,9 +1,11 @@
 from django.http import HttpResponseRedirect, HttpResponse, Http404
+from django.views.decorators.csrf import csrf_exempt
 from models import *
 from ecclesia.discussions.models import Story, Discussion
 from ecclesia.groups.models import GroupProfile
 import datetime
 
+@csrf_exempt
 def update_presentation(request):
     """
     Update the presentation feilds of elements on the featured view
