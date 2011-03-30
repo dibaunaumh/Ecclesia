@@ -213,11 +213,14 @@ def is_in_group(request):
             return HttpResponse("True")
     return HttpResponse("False")
 
-def get_user_groups(request, user_im_address):
+def get_user_groups_by_im(request, user_im_address=None):
     profile = get_object_or_404(UserProfile, im_address=user_im_address)
     user = profile.user
     groups = [(g.id, g.name) for g in user.groups.all()]
     return HttpResponse(simplejson.dumps(groups))
+
+def get_user_groups(user):
+    return [group.profile.get() for group in user.groups.all()]
 
 def get_group_members(request, group_pk):
     group = get_object_or_404(Group, pk=group_pk)

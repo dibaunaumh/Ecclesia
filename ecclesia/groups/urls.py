@@ -26,7 +26,7 @@ urlpatterns = patterns('',
     (r'^groups/$', 'groups.views.groups'),
     (r'^$', 'groups.views.home'),
 
-    (r'^im_api/get_user_groups/(?P<user_im_address>.*)/$', 'groups.views.get_user_groups'),
+    (r'^im_api/get_user_groups/(?P<user_im_address>.*)/$', 'groups.views.get_user_groups_by_im'),
     (r'^im_api/get_group_members/(?P<group_pk>.*)/', 'groups.views.get_group_members'),
 
 )
