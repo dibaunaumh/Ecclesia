@@ -1,7 +1,7 @@
 from celery.decorators import task
 from discussion_actions import evaluate_stories
 from coa_discussion_actions import generate_graph
-from notifications.services import create_notification
+from ecclesia.notifications.services import create_notification
 from workflow_manager import update_workflow_status
 
 @task()
