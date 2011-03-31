@@ -23,6 +23,7 @@ from ecclesia.common.views import _follow, _unfollow
 from ecclesia.common.utils import is_heb
 from ecclesia.common.decorators import *
 from groups.models import GroupProfile, UserProfile
+from notifications.services import create_notification
 from services.search_filter_pagination import search_filter_paginate
 from services.utils import get_user_permissions
 from ecclesia.voting.models import Voting
