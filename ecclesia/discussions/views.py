@@ -358,7 +358,7 @@ def stories_list(request, discussion_slug):
             if GroupPermission.objects.filter(group=discussion.group).filter(user=user):
                 permission = GroupPermission.objects.filter(group=discussion.group).filter(user=user)[0]
                 user_permission_type = permission.permission_type
-        user_in_group = check_if_user_in_group(user, discussion)
+        user_in_group = group.profile.is_user_in_group(user)
     stories = Story.objects.filter(discussion=discussion)
     (my_items, get_parameters, f) = search_filter_paginate('story', stories, request)
     return render_to_response('stories_list.html', locals())
@@ -473,14 +473,6 @@ def get_inline_select_json(request, discussion_pk, speech_act):
 
    # json = simplejson.dumps(['{"%s":"%s"}' % (story.id, story.title) for story in stories])
 
-def check_if_user_in_group(user, discussion):
-    user_in_group = False
-    try:
-        user_in_group = user.groups.filter(id=discussion.group.id).count() > 0
-    except:
-        pass
-    return user_in_group
-
 def story_home(request, discussion_slug, ctype, slug):
     discussion = Discussion.objects.get(slug=discussion_slug)
     object = {
@@ -492,7 +484,7 @@ def story_home(request, discussion_slug, ctype, slug):
     user = request.user
     opinions = object.opinions.all().order_by('speech_act')
     opinion_types = SpeechAct.objects.filter(discussion_type=discussion.type, story_type=2)
-    user_in_group = check_if_user_in_group(user, discussion)
+    user_in_group = group.is_user_in_group(user)
     return render_to_response('story_home.html', locals())
 
 def merge_stories(story1_slug, story2_slug):
