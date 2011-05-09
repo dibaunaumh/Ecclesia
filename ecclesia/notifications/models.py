@@ -34,7 +34,7 @@ class Notification(models.Model):
     def deliver(self, instance):
         if instance.recipient and instance.recipient.email:
             try:
-                send_mail('alexarsh5@gmail.com', instance.recipient.email, 
+                send_mail('ekkliproject@gmail.com', instance.recipient.email,
                           'Email from ekkli', instance.text)
                 instance.delivered_at = datetime.now()
                 instance.save()
@@ -58,7 +58,8 @@ class Notification(models.Model):
 
 def send_notification(sender, instance, **kwargs):
     if instance.delivered_at is None:
-        if instance.entity and instance.entity.discussion and \
+        from discussions.models import Discussion
+        if instance.entity and type(instance.entity) == Discussion and \
             instance.text.find("To go to discussion click on the following link") == -1: 
             instance.text = "%s\nTo go to discussion click on the following link: %s" % \
             (instance.text, instance.entity.discussion.get_absolute_url())

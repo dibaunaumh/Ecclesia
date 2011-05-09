@@ -1,4 +1,5 @@
 import sys
+import base64
 
 from django.shortcuts import  render_to_response, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse, Http404, HttpResponseBadRequest
@@ -6,16 +7,17 @@ from django.core import serializers
 from django.contrib import messages
 from django.template import RequestContext
 from django.template.defaultfilters import slugify
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User
 from django.utils import simplejson
 
 from groups.models import *
 from discussions.models import *
 from discussions.forms import DiscussionForm
+from notifications.models import Notification
 from forms import *
 from services.search_filter_pagination import search_filter_paginate
 from services.utils import get_user_permissions
-from common.utils import is_heb
+from common.utils import is_heb, get_domain
 
 def home(request):
     """
@@ -24,7 +26,7 @@ def home(request):
     user = request.user
     user_permissions = 'allowed' if user.is_authenticated() else ''
     if not user_permissions:
-        return render_to_response('intro.html', locals())
+        return render_to_response('intro.html', locals(), context_instance=RequestContext(request))
     return HttpResponseRedirect("/groups/")
 
 def groups(request):
@@ -238,8 +240,20 @@ def get_group_members(request, group_pk):
 def join_group(request):
     if 'group_slug' in request.POST:
         group = GroupProfile.objects.get(slug=request.POST['group_slug'])
+        if group.is_private:
+            try:
+                manager = GroupPermission.objects.filter(group=group.group, permission_type=1)[0].user
+                key = base64.b64encode("%s_%s" % (request.user.pk, group.pk))
+                notification = Notification(text = "User %s is asking your permission to join the group %s.\n \
+                    Please click the following link if you approve:\n \
+                    http://%s/approve/%s" % (request.user.username, group.group.name, get_domain(), key), entity=group, recipient = manager)
+                notification.save()
+                return HttpResponse("")
+            except:
+                pass
         request.user.groups.add(group.group)
         GroupPermission(group=group.group, user=request.user, permission_type=2).save()
+        return HttpResponse("Joined")
     return HttpResponse("")
 
 def leave_group(request):
@@ -286,3 +300,22 @@ def demote_member(request, group_pk, member_pk):
             permission.permission_type = permission.permission_type + 1
             permission.save()
     return HttpResponseRedirect('/members_list/%s/' % group.name)
+
+def approve_user(request, approve_key):
+    key = str(base64.b64decode(approve_key))
+    user = get_object_or_404(User, pk = int(key.split("_")[0]))
+    group = get_object_or_404(GroupProfile, pk = int(key.split("_")[1]))
+    try:
+        user.groups.add(group.group)
+        GroupPermission(group=group.group, user=user, permission_type=2).save()
+        messages.add_message(request, messages.INFO, "Your approval is successful!")
+        notification = Notification(text = \
+            "Manager of the group %s has just approved you to join.\n Click on the following link to go to that group: http://%s/group/%s/ \n \
+            Have fun!" % (group.group.name, get_domain(), group.slug), entity=group, recipient = user)
+        notification.save()
+    except:
+        pass
+    return HttpResponseRedirect('/')
+
+
+

@@ -90,16 +90,21 @@
 	function join_group(){
 		$.post("/group/join_group/", {group_slug: URL.split("/").reverse()[1]},
 		function(data){
-		    document.getElementById('join_group').style.display='none';
-			document.getElementById('leave_group').style.display='block';
-			document.getElementById('mission_statement').style.display='none';
-			{% ifequal mission_statement "" %}
-				document.getElementById('mission_statement_button').style.display='block';
-				document.getElementById('mission_statement_edit').style.display='none';
-			{% else %}
-				document.getElementById('mission_statement_edit').style.display='block';
-				document.getElementById('mission_statement_button').style.display='none';
-			{% endifequal %}
+            if (data == "Joined") {
+                document.getElementById('join_group').style.display='none';
+                document.getElementById('leave_group').style.display='block';
+                document.getElementById('mission_statement').style.display='none';
+                {% ifequal mission_statement "" %}
+                    document.getElementById('mission_statement_button').style.display='block';
+                    document.getElementById('mission_statement_edit').style.display='none';
+                {% else %}
+                    document.getElementById('mission_statement_edit').style.display='block';
+                    document.getElementById('mission_statement_button').style.display='none';
+                {% endifequal %}
+            }
+            else {
+                alert("Your join request has been sent to the manager of the group. You will be notified when he approves it. Thanks you.");
+            }
 		});
 	}
 	function leave_group(){
