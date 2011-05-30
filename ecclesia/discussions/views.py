@@ -83,7 +83,8 @@ def get_update(request, discussion_slug):
 
 def evaluate(request, discussion_slug):
     discussion = get_object_or_404(Discussion, slug=discussion_slug)
-    conclusions = discussion_actions.evaluate_stories_verbose(discussion)
+    graph = generate_graph_task(discussion)
+    conclusions = discussion_actions.evaluate_stories_verbose(discussion, graph)
     json = simplejson.dumps(conclusions)
     return HttpResponse(json)
 
