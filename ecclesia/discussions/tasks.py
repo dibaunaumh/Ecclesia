@@ -17,16 +17,9 @@ def create_notification_task(text, entity, acting_user):
     logger.info("Creating notification %s..." % text)
 
 @task()
-def generate_graph_task(discussion):
-    graph = generate_graph(discussion)
-    logger = generate_graph_task.get_logger()
-    logger.info("Generating graph for %s..." % discussion.name)
-    return graph
-
-@task()
 def analyze(container, discussion):
     logger = analyze.get_logger()
     logger.info("Analyzing discussion %s..." % discussion.name)
-    graph = generate_graph_task(discussion)
+    graph = generate_graph(discussion)
     evaluate_stories_task(discussion, graph)
     update_workflow_status(container, graph)

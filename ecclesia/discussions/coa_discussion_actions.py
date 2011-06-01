@@ -28,9 +28,8 @@ def evaluate_stories(discussion, graph):
        
     """
     conclusions = []    # list of (story_id, score) tuples
-    stories = {}        
 
-    scores = evaluate_discussion_stories(discussion, stories, graph)
+    scores = evaluate_discussion_stories(discussion, graph)
 
     # step 3: Pick the outstanding CoA nodes (use simple StdDev calculation)
 
@@ -51,82 +50,51 @@ def evaluate_stories(discussion, graph):
         if not (story, score) in not_changed:
             new_conclusion = DiscussionConclusion()
             new_conclusion.discussion = discussion
-            new_conclusion.story = stories[story]
+            new_conclusion.story = graph.node[story]["story"]
             new_conclusion.score = score
             new_conclusion.save()
     return conclusions
 
 # A function that multiply x*y
-def multiply (x,y): return x*y
-def addition (x,y): return x+y
+multiply = lambda x, y: x*y
+addition = lambda x, y: x+y
 
-def evaluate_discussion_stories(discussion, stories, graph):
+def evaluate_discussion_stories(discussion, graph):
     scores = {}
     evals_t = {}
     evals_g = {}
-    types = {}
     coa_stories = []
     goal_conditions = []
 
     aggregations = {}
-    for story in stories:
-        true_false = aggregate_dimension_opinions_by_users(discussion, story.id, TRUE_SPEECH_ACT, FALSE_SPEECH_ACT)
-        good_bad = aggregate_dimension_opinions_by_users(discussion, story.id, GOOD_SPEECH_ACT, BAD_SPEECH_ACT)
-        aggregations[story] = (true_false, good_bad)
+    for node in graph.nodes():
+        story = graph.node[node]["story"]
+        true_false = aggregate_dimension_opinions_by_users(discussion, story, TRUE_SPEECH_ACT, FALSE_SPEECH_ACT)
+        good_bad = aggregate_dimension_opinions_by_users(discussion, story, GOOD_SPEECH_ACT, BAD_SPEECH_ACT)
+        aggregations[story.id] = (true_false, good_bad)
         
-    # step 1: Evaluate each node & add to graph
-
-    #graph = generate_graph(discussion)
-
-    # step 1.1: loop over the relation of the discussion
-    StoryRelation = get_model('discussions', 'StoryRelation')
-    
-    for rel in StoryRelation.objects.filter(discussion=discussion):
-        # step 1.2: call eval_story for every node in a relation
-        # relations that go to the story
-        
-        f = rel.from_story
-        stories[f.id] = f
-        
-
+    # step 1: Evaluate each node & mark the Course-Of-Actions & Goal-Conditions
+    for f, t in graph.edges():
         # gets the gBV and gGV of each story
-        
-        evals_t[f.id] = evaluate_story_truth(f, discussion, aggregations)
-        evals_g[f.id] = evaluate_story_goodness (f, discussion, aggregations)
-                
-        types[f.id] = f.speech_act.name
+        evals_t[f] = evaluate_story_truth(graph.node[f]["story"], discussion, aggregations)
+        evals_g[f] = evaluate_story_goodness(graph.node[f]["story"], discussion, aggregations)
 
         # Add speach acts CoA and GC
-        if f.speech_act.name == COA_SPEECH_ACT and f.id not in coa_stories:
-            coa_stories.append(f.id)            
-        elif f.speech_act.name == GOAL_CONDITION_SPEECH_ACT and f.id not in goal_conditions:
-            goal_conditions.append(f.id)            
-            
-        # relations that go from the story
-        t = rel.to_story
-        stories[t.id] = t
+        if graph.node[f]["speech_act"] == COA_SPEECH_ACT and f not in coa_stories:
+            coa_stories.append(f)
+        elif graph.node[f]["speech_act"] == GOAL_CONDITION_SPEECH_ACT and f not in goal_conditions:
+            goal_conditions.append(f)
 
-        
-        evals_t[t.id] = evaluate_story_truth(t, discussion, aggregations)
-        
-        evals_g[t.id] = evaluate_story_goodness(t, discussion, aggregations)
-        
-        
-        types[t.id] = t.speech_act.name
+        evals_t[t] = evaluate_story_truth(graph.node[t]["story"], discussion, aggregations)
+        evals_g[t] = evaluate_story_goodness(graph.node[t]["story"], discussion, aggregations)
 
-        # step 1.3: add the relation & its evaluated stories to a graph structure
-        #graph.add_edge(f.id, t.id)
-        
-        
 
     # step 2: Evaluate the graph
 
     # step 2.1: go over the list of CoA nodes & create a list paths starting from this CoA
-    
     for coa in coa_stories:
-
         
-        ########################################################################
+    ########################################################################
 	# Finds all the paths starting from a CoA and calculate their scores ###
 	########################################################################
 
@@ -166,7 +134,7 @@ def evaluate_discussion_stories(discussion, stories, graph):
             
                         
             # step 2.3: check whether it ends in a Goal
-            ends_in_goal = types[p[-1]] == GOAL_SPEECH_ACT
+            ends_in_goal =  graph.node[p[-1]]["speech_act"] == GOAL_SPEECH_ACT
             if not ends_in_goal:
                 path_eval = 0
                 
@@ -455,7 +423,7 @@ def pick_outstanding_scores(scores):
     return [id for id in scores.keys() if scores[id] == max_score]
 
 def add_node_to_graph(story, graph):
-    graph.add_node(story.id, {"story": story, "type": story.speech_act.name})
+    graph.add_node(story.id, story=story, speech_act=story.speech_act.name)
     
 def generate_graph(discussion):
     already_in_graph = {}

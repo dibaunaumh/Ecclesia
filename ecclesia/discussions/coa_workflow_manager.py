@@ -54,7 +54,7 @@ def update_workflow_status(discussion, graph):
 def check_stories_of_type(graph, speech_act):
     import logging
     logging.info(speech_act)
-    speech_act_objects = [node for node in graph.nodes() if graph.node[node]['type'] == speech_act]
+    speech_act_objects = [node for node in graph.nodes() if graph.node[node]['speech_act'] == speech_act]
     logging.info(speech_act_objects)
     return len(speech_act_objects)
 

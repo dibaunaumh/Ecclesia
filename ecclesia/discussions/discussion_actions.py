@@ -37,5 +37,5 @@ def evaluate_stories_verbose(discussion, graph):
             print "Failed to evaluate stories for discussion '%s' " % discussion.name, sys.exc_info()
     """
     if discussion.type.name == "course-of-action":
-        return coa_discussion_actions.evaluate_discussion_stories(discussion, {}, graph)
+        return coa_discussion_actions.evaluate_discussion_stories(discussion, graph)
     return None

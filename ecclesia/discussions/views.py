@@ -12,7 +12,7 @@ from django.utils import simplejson
 from django.conf import settings
 from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt
-from discussions.models import Discussion, DiscussionType, DiscussionType
+from discussions.coa_discussion_actions import generate_graph
 from discussions.workflow_hints import get_workflow_hints
 
 from forms import *
@@ -83,7 +83,7 @@ def get_update(request, discussion_slug):
 
 def evaluate(request, discussion_slug):
     discussion = get_object_or_404(Discussion, slug=discussion_slug)
-    graph = generate_graph_task(discussion)
+    graph = generate_graph(discussion)
     conclusions = discussion_actions.evaluate_stories_verbose(discussion, graph)
     json = simplejson.dumps(conclusions)
     return HttpResponse(json)
@@ -359,7 +359,7 @@ def stories_list(request, discussion_slug):
             if GroupPermission.objects.filter(group=discussion.group).filter(user=user):
                 permission = GroupPermission.objects.filter(group=discussion.group).filter(user=user)[0]
                 user_permission_type = permission.permission_type
-        user_in_group = group.profile.is_user_in_group(user)
+        user_in_group = group.profile.get().is_user_in_group(user)
     stories = Story.objects.filter(discussion=discussion)
     (my_items, get_parameters, f) = search_filter_paginate('story', stories, request)
     return render_to_response('stories_list.html', locals())
