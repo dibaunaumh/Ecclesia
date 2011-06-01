@@ -221,19 +221,18 @@ def aggregate_dimension_opinions_by_users(discussion, story, positive_speech_act
 
     # << The function returns a list of pBV (personal belief value) for all users. >>
     # <<The function works good, Tal 29/12/2010>>
+
+    # Change suggested by Vlad: negative opinions result in negative score
     
     Opinion = get_model('discussions', 'Opinion')
     positive_opinions = Opinion.objects.filter(discussion=discussion, object_id=story.id, speech_act__name=positive_speech_act_name)
     negative_opinions = Opinion.objects.filter(discussion=discussion, object_id=story.id, speech_act__name=negative_speech_act_name)
     positive_count_by_user = group_opinions_by_user(positive_opinions)
     negative_count_by_user = group_opinions_by_user(negative_opinions)
-    positive_count = 0
 
-    positive_opinions = list(positive_opinions)
-    positive_opinions.extend(list(negative_opinions))
-    opinions = positive_opinions
+    total_opinions = (list(positive_opinions) + list(negative_opinions)) or []
     
-    opinion_givers = group_opinions_by_user(opinions)
+    opinion_givers = group_opinions_by_user(total_opinions)
 
     personal_belief_values = {}
     for user, opinions_count in opinion_givers.items():
@@ -242,7 +241,14 @@ def aggregate_dimension_opinions_by_users(discussion, story, positive_speech_act
             # print "In aggregate, user ", user, "have",  positives, "positive opinions"
         else:
             positives = 0
-        personal_belief_values[user] = float(positives) / float(opinions_count)
+        if user in negative_count_by_user:
+            negatives = negative_count_by_user[user]
+            # print "In aggregate, user ", user, "have",  negatives, "negative opinions"
+        else:
+            negatives = 0
+
+#        personal_belief_values[user] = float(positives) / float(opinions_count)
+        personal_belief_values[user] = float(positives)-float(negatives) / float(opinions_count)
     
     return personal_belief_values 
 
@@ -264,7 +270,7 @@ def group_belief_value(discussion, story, aggregations):
     
     number_of_opinion_givers = get_number_of_opinion_givers_for_story(discussion, story, TRUE_SPEECH_ACT, FALSE_SPEECH_ACT)
 
-    personal_belief_values = aggregations[story][0]
+    personal_belief_values = aggregations[story.id][0]
 
     number_of_group_members = get_number_of_group_members(discussion)
     
@@ -288,7 +294,7 @@ def group_goodness_value(discussion, story, aggregations):
 
     number_of_opinion_givers = get_number_of_opinion_givers_for_story(discussion, story, GOOD_SPEECH_ACT, BAD_SPEECH_ACT)
     
-    personal_belief_values = aggregations[story][1]
+    personal_belief_values = aggregations[story.id][1]
     number_of_group_members = get_number_of_group_members(discussion)
     
     

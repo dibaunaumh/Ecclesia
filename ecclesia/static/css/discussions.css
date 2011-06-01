@@ -25,6 +25,7 @@ div.story {position: absolute; margin: 0; padding: 0; font-weight: bold; cursor:
 div.story a.story_title {display: block; float: left; padding: 2px; color: #000; overflow: hidden}
 div.story a.story_title:hover {color: #033; text-decoration: underline}
 div.story a.story_content {position: absolute; left: 0; bottom: 0; height: 32px; width: 32px; background:url('../img/icons/tool_tip_icon.gif') center center no-repeat;}
+div.story a.add_opinion_button {position: absolute; left: 0; top: -40; height: 25px; width: 23px; background:url('../img/icons/add_opinion_bubble.png') center center no-repeat;}
 div.story span.story_ballots {position: absolute; left: -30px; top: 10px; height: 16px; width: 24px; padding: 10px 6px; background:url('../img/icons/ballot.png') left top no-repeat; font-size: 12px;}
 div.story span.story_icons.decided {position: absolute; left: -40px; top: 25px; height: 36px; width: 36px; background:url('../img/icons/pointing_hand.png') left top no-repeat;}
 .dragon { border: thin solid #033;opacity:.6; -moz-opacity:.6}

@@ -364,6 +364,7 @@ Story.prototype = {
     },
 	draw                : function (ctx) {
 		var c = this.config,
+            that = this,
             dims = c.dimensions,
 			s = c.scale,
             cs = c.state,
@@ -377,6 +378,14 @@ Story.prototype = {
 			// TODO: replace this tooltip plugin with jQueryUI-1.9's tooltip
 			$('a.story_content', el).tooltip({showURL: false});
 		}
+        var $add_opinion_button = $('<a/>', {
+            href        : '#',
+            className   : 'add_opinion_button',
+            title       : 'Add opinion'
+        }).appendTo(el).bind('click', function () {
+            that.addOpinion();
+            return false;
+        });
         this.wrapTitle(el)
             .addBallots()
 		    .roundedRect(ctx, dims.x, dims.y, dims.w*s, dims.h*s, 5, c['fill_'+state], c['stroke_'+state]);
