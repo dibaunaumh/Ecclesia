@@ -55,6 +55,8 @@ def get_discussions_view_json(request, group_slug):
     group_profile = GroupProfile.objects.get(slug=group_slug)
     group = group_profile.group
     discussions = Discussion.objects.filter(group=group)
+    if request.user.username == "Anonymous" or not request.user in group_profile.get_group_members():
+        discussions = discussions.filter(is_private=False)
     json = ','
     for discussion in discussions:
         json = '%s{"discussion":{"id":%s,"url":"%s","name":"%s","dimensions":{"x":%s,"y":%s,"w":%s,"h":%s}}},' % (
@@ -118,13 +120,23 @@ def group_home(request, group_slug):
         mission_statement = ""
     discussions = group.group.discussions.all()
     members = group.get_group_members()
-    user_in_group = group.is_user_in_group(request.user)
+    user_in_group = group.is_user_in_group(user)
     if group.is_private and not user_in_group:
         messages.error(request, "The group is private. You're not allowed to see it." )
     #initializing the forms
     discussion_form = DiscussionForm()
     mission_statement_form = MissionStatementForm()
     return render_to_response('group_home.html', locals(), context_instance=RequestContext(request))
+
+def group_settings(request, group_slug):
+    group = GroupProfile.objects.get(slug=group_slug)
+    user_in_group = group.is_user_in_group(request.user)
+    members = group.get_group_members()
+    if not group:
+        raise Http404("Can't find a group with the slug: %s" % group_slug)
+    else:
+        user_permission_type = get_user_permissions(request.user, group)
+    return render_to_response('group_settings.html', locals(), context_instance=RequestContext(request))
 
 def set_mission_statement(request, group_pk):
     result = ''
@@ -317,5 +329,17 @@ def approve_user(request, approve_key):
         pass
     return HttpResponseRedirect('/')
 
-
+def set_new_group_manager(request, group_slug, member_pk):
+    group = GroupProfile.objects.get(slug=group_slug)
+    member = User.objects.get(pk=member_pk)
+    try:
+        old_manager_permissions = GroupPermission.objects.filter(group=group.group, permission_type=1)[0]
+        old_manager_permissions.permission_type = 2
+        old_manager_permissions.save()
+    except:
+        pass
+    new_manager_permissions = GroupPermission.objects.filter(group=group.group, user=member)[0]
+    new_manager_permissions.permission_type = 1
+    new_manager_permissions.save()
+    return HttpResponse("SUCCESS")
 
