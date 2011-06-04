@@ -11,8 +11,8 @@ def evaluate_stories_task(discussion, graph):
     logger.info("Calculating evaluation for %s..." % discussion.name)
 
 @task()
-def create_notification_task(text, entity, acting_user):
-    create_notification(text=text, entity=entity, acting_user=acting_user)
+def create_notification_task(text, entity, acting_user=None, recipient=None):
+    create_notification(text=text, entity=entity, acting_user=acting_user, recipient=recipient)
     logger = create_notification_task.get_logger()
     logger.info("Creating notification %s..." % text)
 

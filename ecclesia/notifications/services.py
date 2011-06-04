@@ -1,11 +1,13 @@
 import sys
 
-from models import Notification
 from django.http import HttpResponse
+from django.utils.translation import ugettext_lazy as _
 
-def create_notification(text, entity, acting_user):
+from models import Notification
+
+def create_notification(text, entity, acting_user=None, recipient = None):
     try:
-        notification = Notification(text = text, entity = entity, acting_user = acting_user)
+        notification = Notification(text = text, entity = entity, acting_user = acting_user, recipient=recipient)
         notification.save()
         return HttpResponse(_('Notification create successfully'))
     except:
