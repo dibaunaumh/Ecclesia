@@ -257,10 +257,9 @@ def join_group(request):
             try:
                 manager = GroupPermission.objects.filter(group=group.group, permission_type=1)[0].user
                 key = base64.b64encode("%s_%s" % (request.user.pk, group.pk))
-                notification = create_notification_task(text = "User %s is asking your permission to join the group %s.\n \
+                create_notification_task(text = "User %s is asking your permission to join the group %s.\n \
                     Please click the following link if you approve:\n \
                     http://%s/approve/%s" % (request.user.username, group.group.name, get_domain(), key), entity=group, recipient = manager)
-                notification.save()
                 return HttpResponse("")
             except:
                 pass
