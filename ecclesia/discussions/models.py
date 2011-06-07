@@ -18,7 +18,7 @@ class DiscussionType(models.Model):
         verbose_name_plural = _('discussion types')
 
     def __unicode__(self):
-        return self.name
+        return u'%s' % self.name
 
 
 class Discussion(Presentable):
@@ -55,7 +55,7 @@ class Discussion(Presentable):
         return self.workflow_status or 0
 
     def __unicode__(self):
-        return self.name
+        return u'%s' % self.name
 
 
 class SpeechAct(models.Model):
@@ -66,7 +66,7 @@ class SpeechAct(models.Model):
     icon = models.ImageField(_('icon'), max_length=100, upload_to='img/speech_act_icons', null=True, blank=True, help_text=_('The name of the image file.'))
 
     def __unicode__(self):
-        return self.name
+        return u'%s' % self.name
 
 
 class BaseStory(Presentable):
@@ -125,7 +125,7 @@ class Opinion(BaseStory):
         return "http://%s/discussions/%s/opinion/%s/" % (get_domain(), self.discussion.slug, self.slug)
 
     def __unicode__(self):
-        return self.title
+        return u'%s' % self.title
 
 
 class Story(BaseStory):
@@ -144,7 +144,7 @@ class Story(BaseStory):
         unique_together = (('discussion', 'slug'),)
 
     def unique_id(self):
-        return "%s_%d" % ('story', self.id)
+        return u'%s_%d' % ('story', self.id)
 		
     def get_absolute_url(self):
         return "http://%s/discussions/%s/story/%s/" % (get_domain(), self.discussion.slug, self.slug)
@@ -176,7 +176,7 @@ class StoryRelation(BaseStory):
         return "http://%s/discussions/%s/relation/%s/" % (get_domain(), self.discussion.slug, self.slug)
 
     def __unicode__(self):
-        return self.title
+        return u'%s' % self.title
 
 
 class DiscussionConclusion(models.Model):
@@ -190,7 +190,7 @@ class DiscussionConclusion(models.Model):
         verbose_name_plural = _("discussion conclusions")
 
     def __unicode__(self):
-        return "Discussion conclusion of %s" % self.discussion
+        return u'Discussion conclusion of %s' % self.discussion
 
 
 def last_changed_updater(sender, instance, **kwargs):
