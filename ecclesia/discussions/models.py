@@ -197,16 +197,16 @@ def last_changed_updater(sender, instance, **kwargs):
     container = sender.get_visual_container(instance)
     container.last_related_update = instance.updated_at if hasattr(instance, 'updated_at') else datetime.now()
     if isinstance(container, Discussion):
-#        analyze.delay(container, instance.discussion)
-        analyze(container, instance.discussion)
+        analyze.delay(container, instance.discussion)
+#        analyze(container, instance.discussion)
     container.save()
 
 def last_changed_delete_updater(sender, instance, **kwargs):
     container = sender.get_visual_container(instance)
     container.last_related_update = datetime.now()
     if isinstance(container, Discussion):
-#        analyze.delay(container, instance.discussion)
-        analyze (container, instance.discussion)
+        analyze.delay(container, instance.discussion)
+#        analyze (container, instance.discussion)
     container.save()
 
 # connecting post_save signal of stories and opinions to update their parent discussion's last_related_update field 
