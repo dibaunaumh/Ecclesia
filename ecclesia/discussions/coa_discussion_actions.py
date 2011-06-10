@@ -32,10 +32,16 @@ def evaluate_stories(discussion, graph):
     conclusions = []    # list of (story_id, score) tuples
 
     scores = evaluate_discussion_stories(discussion, graph)
+    print "$" * 80
+    print scores
 
     # step 3: Pick the outstanding CoA nodes (use simple StdDev calculation)
 
-    for coa in pick_outstanding_scores(scores):
+    outstanding_scores = pick_outstanding_scores(scores)
+    print "!" * 80
+    print outstanding_scores
+
+    for coa in outstanding_scores:
         # print "Found conclusion: %s" % stories[coa]
         conclusions.append( (coa, int(scores[coa])) )
 
@@ -431,12 +437,12 @@ def pick_outstanding_scores(scores):
     if len(scores) == 0:
         return []
     values = scores.values()
-    max_score = max(values)
-    #avg_score = sum(values) / len(values)
-    #squares = [(s - avg_score) ** 2 for s in values]
-    #stddev = int((sum(squares) / len(squares)) ** 0.5)
-    #return [id for id in scores.keys() if (scores[id]-avg_score) >= stddev]
-    return [id for id in scores.keys() if scores[id] == max_score]
+#    max_score = max(values)
+    avg_score = sum(values) / len(values)
+    squares = [(s - avg_score) ** 2 for s in values]
+    stddev = int((sum(squares) / len(squares)) ** 0.5)
+    return [id for id in scores.keys() if (scores[id]-avg_score) > stddev]
+#    return [id for id in scores.keys() if scores[id] == max_score]
 
 def add_node_to_graph(story, graph):
     graph.add_node(story.id, story=story, speech_act=story.speech_act.name)
