@@ -2,6 +2,8 @@ import template_factory
 import networkx as nx
 from django.db.models import get_model
 import sys
+from datetime import datetime
+
 
 TEMPLATE_NAME = "course-of-action"
 COA_SPEECH_ACT = "option"
@@ -41,11 +43,13 @@ def evaluate_stories(discussion, graph):
     DiscussionConclusion = get_model('discussions', 'DiscussionConclusion')
     current = DiscussionConclusion.objects.filter(discussion=discussion.id)
     not_changed = []
+    changes_done = False
     for conclusion in current:
         if (conclusion.story.id, conclusion.score) in conclusions:
             not_changed.append((conclusion.story.id, conclusion.score))
         else:
             conclusion.delete()
+            changes_done = True
     for story, score in conclusions:
         if not (story, score) in not_changed:
             new_conclusion = DiscussionConclusion()
@@ -53,6 +57,12 @@ def evaluate_stories(discussion, graph):
             new_conclusion.story = graph.node[story]["story"]
             new_conclusion.score = score
             new_conclusion.save()
+            changes_done = True
+    if changes_done:
+        discussion.last_related_update = datetime.now()
+        discussion.save()
+        print "#" * 80
+        print "Changed discussion %d last_related time to %s" % (discussion.id, discussion.last_related_update)
     return conclusions
 
 # A function that multiply x*y
