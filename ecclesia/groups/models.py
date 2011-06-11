@@ -83,6 +83,12 @@ class GroupProfile(Presentable):
     def get_number_of_group_members(self):
         return len(self.get_group_members())
 
+    def get_group_manager(self):
+        for member in self.get_group_members():
+            if GroupPermission.objects.filter(user=member, group=self.group, permission_type=1):
+                return member
+        return None
+
     def is_user_in_group(self, user):
         return user.groups.filter(id=self.group.id).count() > 0
 
