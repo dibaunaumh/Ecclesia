@@ -46,7 +46,7 @@
 					<td>{{obj.is_staff}}</td>
 					<td>{{obj.is_superuser}}</td>
 					<td>{{obj.last_login|date:"d/m/Y"}}</td>
-					{% ifequal user_permission_type 1 %}
+					{% if user_permission_type == 1 and obj != user %}
 						<td>
 							<form action="/member-delete/{{group.pk}}/{{obj.pk}}/" method="post">
 						        <input type="image" onclick="if(confirm('Are you sure you want to kick this member?')) {this.form.submit();} else { return false; }" src="/static/img/icons/delete.png">Kick member</input>
@@ -58,7 +58,7 @@
 						        <input type="image" onclick="if(confirm('Are you sure you want to demote this member?')) {this.form.submit();} else { return false; }" src="/static/img/icons/minus.gif">Demote member</input>
 						    </form>
 						</td>
-					{% endifequal %}
+					{% endif %}
 				</tr>
 				{% endfor %}
 				</tbody>
