@@ -263,15 +263,29 @@ def join_group(request):
                 return HttpResponse("")
             except:
                 pass
+        if not group.get_group_members():
+            GroupPermission(group=group.group, user=request.user, permission_type=1).save()
+        else:
+            GroupPermission(group=group.group, user=request.user, permission_type=2).save()
         request.user.groups.add(group.group)
-        GroupPermission(group=group.group, user=request.user, permission_type=2).save()
         return HttpResponse("Joined")
     return HttpResponse("")
 
 def leave_group(request):
     if 'group_slug' in request.POST:
         group = GroupProfile.objects.get(slug=request.POST['group_slug'])
-        GroupPermission.objects.filter(group=group.group).filter(user=request.user).delete()
+        permission = GroupPermission.objects.filter(group=group.group).filter(user=request.user)[0]
+        if permission.permission_type == 1:
+            new_manager_permission = GroupPermission.objects.filter(group=group.group).exclude(pk=permission.pk).order_by('pk')
+            if new_manager_permission:
+                new_manager_permission = new_manager_permission[0]
+                new_manager_permission.permission_type = 1
+                new_manager_permission.save()
+                new_manager = new_manager_permission.user
+                create_notification_task(text = "You have been choosed to be the manager of the group %s!\n \
+                        You can give this honor to someone else by going to group's settings page. \n \
+                        The link to the group: http://%s/group/%s/" % (group.group.name, get_domain(), group.slug), entity=group, recipient=new_manager)
+        permission.delete()
         request.user.groups.remove(group.group)
     return HttpResponse("")
 
@@ -331,15 +345,18 @@ def approve_user(request, approve_key):
 
 def set_new_group_manager(request, group_slug, member_pk):
     group = GroupProfile.objects.get(slug=group_slug)
-    member = User.objects.get(pk=member_pk)
+    new_manager = User.objects.get(pk=member_pk)
     try:
         old_manager_permissions = GroupPermission.objects.filter(group=group.group, permission_type=1)[0]
         old_manager_permissions.permission_type = 2
         old_manager_permissions.save()
     except:
         pass
-    new_manager_permissions = GroupPermission.objects.filter(group=group.group, user=member)[0]
+    new_manager_permissions = GroupPermission.objects.filter(group=group.group, user=new_manager)[0]
     new_manager_permissions.permission_type = 1
     new_manager_permissions.save()
+    create_notification_task(text = "You have been choosed to be the manager of the group %s!\n \
+                    You can give this honor to someone else by going to group's settings page. \n \
+                    The link to the group: http://%s/group/%s/" % (group.group.name, get_domain(), group.slug), entity=group, recipient=new_manager)
     return HttpResponse("SUCCESS")
 
