@@ -96,17 +96,18 @@
     <h2>
         {{ group.group.name }}{% trans "'s Home" %}
     </h2>
-    {% ifequal user_permission_type 1 %}
-        <select id="actions" onchange="actions();">
-            <option>Actions</option>
-            <option value="group_settings">
-                {% trans 'Group settings' %}
-            </option>
+
+    <select id="actions" onchange="actions();">
+        <option>Actions</option>
+        <option value="group_settings">
+            {% trans 'Group settings' %}
+        </option>
+        {% ifequal user_permission_type 1 %}
             <option value="delete_group">
                 {% trans 'Delete group' %}
             </option>
-        </select>
-    {% endifequal %}
+        {% endifequal %}
+    </select>
 
     <div>
         <div id="mission_statement_button" {% if user_in_group %}{% ifequal mission_statement "" %}style="display:block"{%else%}style="display:none"{%endifequal%}{%else %}style="display:none"{% endif %}>
