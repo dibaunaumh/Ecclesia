@@ -1,0 +1,63 @@
+{% extends 'admin/base_site.html' %}
+{% load i18n %}
+{% block breadcrumbs %}<div class="breadcrumbs"><a href="/">{% trans 'Home' %}</a> &rsaquo; {{ group.group.name }}{% trans "'s Home" %}</div>{% endblock %}
+{% block userlinks %}<a href="/admin/password_change/">{% trans 'Change password' %}</a> / <a href="/admin/logout/">{% trans 'Log out' %}</a>{% endblock %}
+{% block title %}{{ group.group.name }}{% trans "'s Home" %}{% endblock %}
+{% block coltype %}diagram{% endblock %}
+{% block extrastyle %}
+    <link rel="stylesheet" type="text/css" href="/static/css/group-home.css" />
+{% endblock %}
+{% block extrahead %}
+    <script type="text/javascript" src="/static/js/group_settings.js"></script>
+{% endblock %}
+{% block content %}
+{% if not messages %}
+
+    <h2>
+        {{ group.group.name }}{% trans "'s group settings" %}
+    </h2>
+    <h3>
+        <div id="group_manager_placeholder">
+            {% ifequal user_permission_type 1 %}
+                You are the manager of the group.
+                <div>
+                    <input type="button" value="change group manager" onclick="choose_new_group_manager()"/>
+                </div>
+            {% else %}
+                <div id="current_manager">
+                    {% if group.get_group_manager %}
+                        {% trans "group manager is " %}
+                        <a href="{{ group.get_group_manager.get_absolute_url }}" class="member" title="{{ group.get_group_manager..username }}" alt=""><img src="{{ group.get_group_manager.get_profile.get_picture_abs_url }}" alt=""/></a>
+                    {% else %}
+                        {% trans "There is no group manager for this group." %}
+                    {% endif %}
+                </div>
+            {% endifequal %}
+        </div>
+    </h3>
+
+    <div id="members_container">
+    <h3>{% trans 'Current members' %}</h3>
+        <table border="0">
+            <tr>
+                {% for member in members %}
+                    <td>
+                        <a href="{{ member.get_absolute_url }}" class="member" title="{{ member.username }}" alt=""><img src="{{ member.get_profile.get_picture_abs_url }}" alt=""/></a>
+                    </td>
+                {% endfor %}
+            </tr>
+            <tr>
+                {% for member in members %}
+                    <td>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <input class="manager_checkbox" style="display:none;" type="checkbox" onclick="new_group_manager_selected('{{ group.slug }}', '{{ member.pk }}')"/>
+                    </td>
+                {% endfor %}
+            </tr>
+        </table>
+    </div>
+
+
+{% endif %}
+
+{% endblock content %}
