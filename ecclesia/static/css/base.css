@@ -389,6 +389,33 @@ input[type=text], input[type=password], textarea, select, .vTextField {
     background-position: top;
 }
 
+input[type=button].blue_button, input[type=submit].blue_button {
+    background-image: url('/static/img/big-blue-button.png');
+    font-size: 21px;
+    width: 240px;
+    height: 65px;
+    border: none;
+    color: white;
+}
+
+input[type=button].brown_button, input[type=submit].brown_button {
+    background-image: url('/static/img/big-brown-button.png');
+    font-size: 21px;
+    width: 240px;
+    height: 65px;
+    border: none;
+    color: white;
+}
+
+input[type=button].green_button, input[type=submit].green_button {
+    background-image: url('/static/img/big-green-button.png');
+    font-size: 21px;
+    width: 240px;
+    height: 65px;
+    border: none;
+    color: white;
+}
+
 /* MODULES */
 
 .module {
