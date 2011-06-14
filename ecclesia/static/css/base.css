@@ -396,6 +396,7 @@ input[type=button].blue_button, input[type=submit].blue_button {
     height: 65px;
     border: none;
     color: white;
+    cursor: pointer;
 }
 
 input[type=button].brown_button, input[type=submit].brown_button {
@@ -405,6 +406,7 @@ input[type=button].brown_button, input[type=submit].brown_button {
     height: 65px;
     border: none;
     color: white;
+    cursor: pointer;
 }
 
 input[type=button].green_button, input[type=submit].green_button {
@@ -414,6 +416,7 @@ input[type=button].green_button, input[type=submit].green_button {
     height: 65px;
     border: none;
     color: white;
+    cursor: pointer;
 }
 
 /* MODULES */
