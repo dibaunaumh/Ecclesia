@@ -1153,6 +1153,26 @@ VUController.prototype = {
                 })
             });
         }
+        else{
+            $('#'+o.canvas_id).mousedown(function (e) {
+                            var event = e;
+                            $(this).mouseup(function () {
+                                $(this).unbind('mouseup');
+                                //  if the click property is set then unset it and clear the menu
+                                if(_VUC.click) {
+                                    _VUC.click = null;
+                                    _VUC.menu.close.call(_VUC.menu, e);
+                                } else {
+                                    // if this is a right click > start rolling
+                                    if(event.which == 3) {
+                                        alert("Please, join the group in order to make any changes")
+                                    }
+                                }
+                            })
+                        });
+
+            
+        }
     },
 //    initZoom			: function () {
 //        if($('#vuslider').length == 0) {
