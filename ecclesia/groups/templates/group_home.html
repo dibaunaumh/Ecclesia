@@ -54,10 +54,6 @@
                     }
                 }
             });
-
-            $('#add_mission').click(function() {
-                $('#mission_statement_dialog').dialog('open');
-            })
         });
     });
 
@@ -69,12 +65,22 @@
     }
 
     function actions() {
+        if ($("#actions").val() == "add_mission") {
+            $('#mission_statement_dialog').dialog('open');
+        }
         if ($("#actions").val() == "group_settings") {
             window.location='/group/{{group.slug}}/settings';
+        }
+        if ($("#actions").val() == "discussions_list") {
+            window.location='/discussions_list/{{group.slug}}/';
+        }
+        if ($("#actions").val() == "members_list") {
+            window.location='/members_list/{{group.slug}}/';
         }
         if ($("#actions").val() == "delete_group") {
             if(confirm('{% trans 'Are you sure you want to delete this group?'%}')) {window.location='/group-delete/{{group.pk}}/';} else { return false; }
         }
+        $("#actions").val("actions");
     }
 </script>
 
@@ -88,31 +94,18 @@
 {% endblock %}
 {% block content %}
 {% if not messages %}
-    <div id="buttons_container">
-    <input type="button" class="ui-button ui-state-default ui-corner-all" value="{% trans 'Discussions List' %}" onclick="document.location.href='/discussions_list/{{group.slug}}/'"/>
-    <input type="button" class="ui-button ui-state-default ui-corner-all" value="{% trans 'Create Discussion' %}" onclick="create_discussion()"/>
+    <div id="members_container" style="float:right">
+        <h3>{% trans 'Current members' %}</h3>
+        {% for member in members %}
+            <a href="{{ member.get_absolute_url }}" class="member" title="{{ member.username }}" alt=""><img src="{{ member.get_profile.get_picture_abs_url }}" alt=""/></a>
+        {% endfor %}
     </div>
 
     <h2>
         {{ group.group.name }}{% trans "'s Home" %}
     </h2>
 
-    <select id="actions" onchange="actions();">
-        <option>Actions</option>
-        <option value="group_settings">
-            {% trans 'Group settings' %}
-        </option>
-        {% ifequal user_permission_type 1 %}
-            <option value="delete_group">
-                {% trans 'Delete group' %}
-            </option>
-        {% endifequal %}
-    </select>
-
     <div>
-        <div id="mission_statement_button" {% if user_in_group %}{% ifequal mission_statement "" %}style="display:block"{%else%}style="display:none"{%endifequal%}{%else %}style="display:none"{% endif %}>
-            <input id="add_mission" class="ui-button ui-state-default ui-corner-all" type="button" value="{% trans 'Add Mission Statement' %}"/><br clear="all"/>
-        </div>
         <div id="mission_statement_edit" {% if user_in_group %}{% ifnotequal mission_statement "" %}style="display:block"{%else%}style="display:none"{%endifnotequal%}{%else %}style="display:none"{% endif %}>
             <div class="edit" id="missionstatement_{{ mission_statement.pk }}">{{ mission_statement.mission_statement }}</div>
         </div>
@@ -121,14 +114,43 @@
         </div>
     </div>
 
-    <div id="members_container">
-    <h3>{% trans 'Current members' %}</h3>
-    {% for member in members %}
-        <a href="{{ member.get_absolute_url }}" class="member" title="{{ member.username }}" alt=""><img src="{{ member.get_profile.get_picture_abs_url }}" alt=""/></a>
-    {% endfor %}
-    {% if user_in_group %}
-        <input type="button" value="{% trans 'Members List' %}" onclick="document.location.href='/members_list/{{group.slug}}/'"/>
-    {% endif %}
+    <div>
+        <select id="actions" onchange="actions();">
+            <option value="actions">
+                Actions
+            </option>
+            {% if user_in_group and mission_statement == "" and user_permission_type == 1 %}
+                <option value="add_mission">
+                    {% trans 'Add Mission Statement' %}
+                </option>
+            {% endif %}
+            <option value="group_settings">
+                {% trans 'Group settings' %}
+            </option>
+            <option value="discussions_list">
+                {% trans 'Discussions List' %}
+            </option>
+            {% if user_in_group %}
+                <option value="members_list">
+                    {% trans 'Members List' %}
+                </option>
+            {% endif %}
+            {% ifequal user_permission_type 1 %}
+                <option value="delete_group">
+                    {% trans 'Delete group' %}
+                </option>
+            {% endifequal %}
+        </select>
+    </div>
+
+    <div style="float:left;margin-top:20px;">
+        <div>
+            <input type="button" class="medium_button medium_blue_button" value="{% trans 'Create Discussion' %}" onclick="create_discussion()"/>
+        </div>
+        <div>
+            <div id="join_group" style="display:none"><input type="button" class="medium_button medium_green_button" value="Join Group" onclick="join_group();"/></div>
+            <div id="leave_group" style="display:none"> <input type="button" class="medium_button medium_magenta_button" value="Leave Group" onclick="leave_group();"/></div>
+        </div>
     </div>
 
     <hr/>

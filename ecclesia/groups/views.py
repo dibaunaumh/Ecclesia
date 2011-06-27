@@ -228,6 +228,13 @@ def is_in_group(request):
             return HttpResponse("True")
     return HttpResponse("False")
 
+def is_group_manager(request):
+    if 'group_slug' in request.GET:
+        group = GroupProfile.objects.get(slug=request.GET['group_slug'])
+        if request.user == group.get_group_manager():
+            return HttpResponse("True")
+    return HttpResponse("False")
+
 def get_user_groups_by_im(request, user_im_address=None):
     profile = get_object_or_404(UserProfile, im_address=user_im_address)
     user = profile.user

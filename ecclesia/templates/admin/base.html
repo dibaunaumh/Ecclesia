@@ -23,6 +23,9 @@
 
 <script>
     {% comment %} csrf and ajax {% endcomment %}
+    function getCurrentVuController() {
+        return this.current_vu_controller;
+    }
     $('html').ajaxSend(function(event, xhr, settings) {
         function getCookie(name) {
             var cookieValue = null;
@@ -69,13 +72,13 @@
                  {
                     if (returned_data=="True")
                     {
-                        document.getElementById('join_group').style.display="none";
-                        document.getElementById('leave_group').style.display="block";
+                        $('#join_group').hide();
+                        $('#leave_group').show();
                     }
                     else
                     {
-                        document.getElementById('join_group').style.display="block";
-                        document.getElementById('leave_group').style.display="none";
+                        $('#join_group').show();
+                        $('#leave_group').hide();
                     }
                  });
         }
@@ -92,16 +95,42 @@
 		$.post("/group/join_group/", {group_slug: URL.split("/").reverse()[1]},
 		function(data){
             if (data == "Joined") {
-                document.getElementById('join_group').style.display='none';
-                document.getElementById('leave_group').style.display='block';
-                document.getElementById('mission_statement').style.display='none';
-                {% ifequal mission_statement "" %}
-                    document.getElementById('mission_statement_button').style.display='block';
-                    document.getElementById('mission_statement_edit').style.display='none';
-                {% else %}
-                    document.getElementById('mission_statement_edit').style.display='block';
-                    document.getElementById('mission_statement_button').style.display='none';
-                {% endifequal %}
+                $("#join_group").hide('slow');
+                $("#leave_group").delay(1000).show('slow');
+                $('<option/>', {
+                    value: "members_list",
+                    text: "Members List"
+                }).appendTo('#actions');
+                $.get("/group/is_group_manager/",
+                    {group_slug: URL.split("/").reverse()[1]},
+                        function(returned_data)
+                        {
+                        if (returned_data=="True")
+                        {
+                            {% ifequal mission_statement "" %}
+                                $('<option/>', {
+                                    value: "add_mission",
+                                    text: "Add Mission Statement"
+                                }).appendTo('#actions');
+                                $('#mission_statement_edit').hide();
+                            {% else %}
+                                $('#mission_statement_edit').show();
+                                $("#actions option[value='add_mission']").remove();
+                            {% endifequal %}
+                            $('<option/>', {
+                                value: "delete_group",
+                                text: "Delete group"
+                            }).appendTo('#actions');
+                        }
+                        else
+                        {
+                            $('#mission_statement_edit').hide();
+                            $("#actions option[value='add_mission']").remove();
+                            $("#actions option[value='delete_group']").remove();
+                        }
+                        $('#mission_statement').show();
+                    });
+                getCurrentVuController().init(true);
             }
             else {
                 alert("Your join request has been sent to the manager of the group. You will be notified when he approves it. Thanks you.");
@@ -122,11 +151,14 @@
 				OK : function() {
 					$.post("/group/leave_group/", {group_slug: URL.split("/").reverse()[1]});
 					$(this).dialog('close');
-					document.getElementById('leave_group').style.display='none';
-					document.getElementById('join_group').style.display='block';
-					document.getElementById('mission_statement_button').style.display='none';
-					document.getElementById('mission_statement_edit').style.display='none';
-					document.getElementById('mission_statement').style.display='block';
+                    $("#leave_group").hide('slow');
+                    $("#join_group").delay(1000).show('slow');
+                    $('#mission_statement').show();
+                    $('#mission_statement_edit').hide();
+                    $("#actions option[value='add_mission']").remove();
+                    $("#actions option[value='delete_group']").remove();
+                    $("#actions option[value='members_list']").remove();
+                    getCurrentVuController().init(true);
 				},
                 Cancel: function() {
 					$(this).dialog('close');
@@ -179,16 +211,10 @@
         {% if user.is_authenticated %}
 	        {#<div id="user-tools">{% trans 'Welcome,' %} <strong>{% firstof user.first_name user.username %}</strong>. {% block userlinks %}{% url django-admindocs-docroot as docsroot %}{% if docsroot %}<a href="{{ docsroot }}">{% trans 'Documentation' %}</a> / {% endif %}<a href="/user-profile/">{% trans 'Edit profile' %}</a> / <a href="/admin/password_change/">{% trans 'Change password' %}</a> / <a href="/admin/logout/">{% trans 'Log out' %}</a>{% endblock %}</div>#}
 			<div id="user-tools">{% trans 'Welcome,' %} <strong>{% firstof user.first_name user.username %}</strong>. {% url django-admindocs-docroot as docsroot %}{% if docsroot %}<a href="{{ docsroot }}">{% trans 'Documentation' %}</a> / {% endif %}<a href="/user-profile/">{% trans 'Edit profile' %}</a> / <a href="/admin/password_change/">{% trans 'Change password' %}</a> / <a href="/admin/logout/">{% trans 'Log out' %}</a></div>
-			<div id="join_group" style="display:none"> <input type="button" value="Join Group" onclick="join_group();" /></div>
-			<div id="leave_group" style="display:none"> <input type="button" value="Leave Group" onclick="leave_group();" /></div>
-		{% else %}
-				<div align="right" id="user-tools">
-	        		<form action="/login/">
-			        	<input id="path" type="hidden" name="path"/>
-	                	<input type="submit" value="{% trans 'Login' %}" onmouseover="document.getElementById('path').value=document.URL;"/>
-						<input type="button" value="{% trans 'Sign-up' %}" onclick="document.location='/accounts/register'"/>
-					</form>
-				</div>
+			{% comment %}
+                <div id="join_group" style="display:none"> <input type="button" value="Join Group" onclick="join_group();" /></div>
+                <div id="leave_group" style="display:none"> <input type="button" value="Leave Group" onclick="leave_group();" /></div>
+            {% endcomment %}
 		{% endif %}
         {% block nav-global %}{% endblock %}
     </div>

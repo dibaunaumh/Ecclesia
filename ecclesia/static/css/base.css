@@ -389,7 +389,7 @@ input[type=text], input[type=password], textarea, select, .vTextField {
     background-position: top;
 }
 
-input[type=button].blue_button, input[type=submit].blue_button {
+input[type=button].big_button, input[type=submit].big_button {
     background-image: url('/static/img/big-blue-button.png');
     font-size: 21px;
     width: 240px;
@@ -399,24 +399,34 @@ input[type=button].blue_button, input[type=submit].blue_button {
     cursor: pointer;
 }
 
-input[type=button].brown_button, input[type=submit].brown_button {
-    background-image: url('/static/img/big-brown-button.png');
-    font-size: 21px;
-    width: 240px;
-    height: 65px;
+input[type=button].medium_button, input[type=submit].medium_button {
+    background-image: url('/static/img/big-blue-button.png');
+    font-size: 11px;
+    width: 120px;
+    height: 32.5px;
     border: none;
     color: white;
     cursor: pointer;
 }
 
-input[type=button].green_button, input[type=submit].green_button {
+input[type=button].big_brown_button, input[type=submit].big_brown_button {
+    background-image: url('/static/img/big-brown-button.png');
+}
+
+input[type=button].big_green_button, input[type=submit].big_green_button {
     background-image: url('/static/img/big-green-button.png');
-    font-size: 21px;
-    width: 240px;
-    height: 65px;
-    border: none;
-    color: white;
-    cursor: pointer;
+}
+
+input[type=button].medium_green_button, input[type=submit].medium_green_button {
+    background-image: url('/static/img/medium-green-button.png');
+}
+
+input[type=button].medium_blue_button, input[type=submit].medium_blue_button {
+    background-image: url('/static/img/medium-blue-button.png');
+}
+
+input[type=button].medium_magenta_button, input[type=submit].medium_magenta_button {
+    background-image: url('/static/img/medium-magenta-button.png');
 }
 
 /* MODULES */
@@ -792,7 +802,7 @@ table#change-history tbody th {
 }
 #join_group, #leave_group {
     float: right;
-    margin-top: 27px
+    /*margin-top: 27px*/
 }
 
 #version {
