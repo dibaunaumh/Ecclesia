@@ -19,7 +19,6 @@
 <!--script src="/static/js/jquery/jquery.form.js"></script-->
 <script src="/static/js/jquery/jquery.jeditable.js"></script>
 <script src="/static/js/visualize.js"></script>
-{% block extrahead %}{% endblock %}
 
 <script>
     {% comment %} csrf and ajax {% endcomment %}
@@ -193,6 +192,7 @@
 		})
 	});
 </script>
+{% block extrahead %}{% endblock %}
 </head>
 {% load i18n %}
 <body class="{% if is_popup %}popup {% endif %}{% block bodyclass %}{% endblock %}">
