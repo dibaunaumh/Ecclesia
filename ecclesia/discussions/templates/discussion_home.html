@@ -220,6 +220,12 @@
             }).getCreateStoryForm(null, speech_act_id).dialog('open');
         }
 
+        function actions() {
+            if ($("#actions").val() == "stories_list") {
+                window.location='/stories_list/{{discussion.slug}}/';
+            }
+            $("#actions").val("actions");
+        }
     </script>
 {% endblock %}
 {% block content %}
@@ -242,7 +248,6 @@
         <input type="button" {% if user_follows_discussion %}style="display:none"{% endif %} class="ui-button ui-state-default ui-corner-all" id="follow_button" name="follow" value="{% trans 'Follow' %}" />
         <input type="button" {% if not user_follows_discussion %}style="display:none"{% endif %} class="ui-button ui-state-default ui-corner-all" id="unfollow_button" name="unfollow" value="{% trans 'Unfollow' %}" />
     {% endif %}
-        <input type="button" class="ui-button ui-state-default ui-corner-all" value="{% trans 'Stories List' %}" onclick="document.location.href='/stories_list/{{discussion.slug}}/'" />
     </div>
 
     <h2>
@@ -262,6 +267,32 @@
         {{ discussion.description }}
     </p>
     <div id="hintsContainer"></div>
+
+    <div>
+        <select id="actions" onchange="actions();">
+            <option value="actions">
+                Actions
+            </option>
+            <option value="stories_list">
+                {% trans 'Stories List' %}
+            </option>
+        </select>
+    </div>
+
+    <div style="float:left;margin-top:20px;">
+        <div>
+            <form action="/login/">
+                <input id="path" type="hidden" name="path"/>
+                <input id="login" type="submit" class="medium_button medium_green_button" value="{% trans 'Login' %}" onmouseover="document.getElementById('path').value=document.URL;"/>
+            </form>
+            <!--<input id="create_discussion" type="button" class="medium_button medium_blue_button" value="{% trans 'Create Discussion' %}" onclick="create_discussion()"/>-->
+        </div>
+        <div>
+            <div id="join_group" style="display:none"><input type="button" class="medium_button medium_green_button" value="Join Group" onclick="join_group();"/></div>
+            <div id="leave_group" style="display:none"> <input type="button" class="medium_button medium_magenta_button" value="Leave Group" onclick="leave_group();"/></div>
+        </div>
+    </div>
+
     {% comment %}
     <table width="100%">
     <tr>
