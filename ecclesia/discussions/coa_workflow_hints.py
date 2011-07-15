@@ -66,15 +66,15 @@ WORKFLOW_HINTS = {
         ICON: "",
     },
 
-    ADD_OPINIONS_ON_STORIES: {
-        TEXT: _("Please describe your opinion on each story: Right-click a story and choose 'Add opinion'"),
+    ADD_RELATIONS_FROM_EFFECTS_TO_CONDITIONS: {
+        TEXT: _("Please add relations from Effects to Conditions: right-click the Effect and choose 'Add relation'"),
         HELP_LINK: "",
-        POSITION: "top",
+        POSITION: "effect",
         ICON: "",
     },
 
-    ADD_OPINIONS_ON_RELATIONS: {
-        TEXT: _("Please describe your opinion on each relation: Right-click a relation and choose 'Add opinion'"),
+    ADD_OPINIONS_ON_STORIES: {
+        TEXT: _("Please describe your opinion on each story: Right-click a story and choose 'Add opinion'"),
         HELP_LINK: "",
         POSITION: "top",
         ICON: "",
@@ -86,5 +86,12 @@ WORKFLOW_HINTS = {
         POSITION: "vote",
         ICON: "",
     },
-    
+
+    DONE: {
+        TEXT: _("You're done!"),
+        HELP_LINK: "",
+        POSITION: "top",
+        ICON: "",
+    },
+
 }
