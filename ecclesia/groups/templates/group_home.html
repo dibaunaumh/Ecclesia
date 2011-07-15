@@ -145,7 +145,11 @@
 
     <div style="float:left;margin-top:20px;">
         <div>
-            <input type="button" class="medium_button medium_blue_button" value="{% trans 'Create Discussion' %}" onclick="create_discussion()"/>
+            <form action="/login/">
+                <input id="path" type="hidden" name="path"/>
+                <input id="login" type="submit" class="medium_button medium_green_button" value="{% trans 'Login' %}" onmouseover="document.getElementById('path').value=document.URL;"/>
+            </form>
+            <input id="create_discussion" type="button" class="medium_button medium_blue_button" value="{% trans 'Create Discussion' %}" onclick="create_discussion()"/>
         </div>
         <div>
             <div id="join_group" style="display:none"><input type="button" class="medium_button medium_green_button" value="Join Group" onclick="join_group();"/></div>

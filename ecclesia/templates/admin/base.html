@@ -63,24 +63,30 @@
             document.getElementById('user-tools').style.display="none";
         }
         {% if user.is_authenticated %}
-        if (URL.indexOf('/group') > 0)
-        {
-            $.get("/group/is_in_group/",
-                 {group_slug: URL.split("/").reverse()[1]},
-                 function(returned_data)
-                 {
-                    if (returned_data=="True")
-                    {
-                        $('#join_group').hide();
-                        $('#leave_group').show();
-                    }
-                    else
-                    {
-                        $('#join_group').show();
-                        $('#leave_group').hide();
-                    }
-                 });
-        }
+            if (URL.indexOf('/group') > 0)
+            {
+                $.get("/group/is_in_group/",
+                     {group_slug: URL.split("/").reverse()[1]},
+                     function(returned_data)
+                     {
+                        if (returned_data=="True")
+                        {
+                            $('#join_group').hide();
+                            $('#leave_group').show();
+                            $("#create_discussion").show()
+                        }
+                        else
+                        {
+                            $('#join_group').show();
+                            $('#leave_group').hide();
+                            $("#create_discussion").hide()
+                        }
+                        $("#login").hide()
+                     });
+            }
+        {% else %}
+            $("#create_discussion").hide()
+            $("#login").show()
         {% endif %}
         <!-- Edit inline for -->
         $('.edit').editable('/edit_inline/', {
@@ -96,6 +102,7 @@
             if (data == "Joined") {
                 $("#join_group").hide('slow');
                 $("#leave_group").delay(1000).show('slow');
+                $("#create_discussion").delay(2000).show('slow');
                 $('<option/>', {
                     value: "members_list",
                     text: "Members List"
@@ -151,7 +158,8 @@
 					$.post("/group/leave_group/", {group_slug: URL.split("/").reverse()[1]});
 					$(this).dialog('close');
                     $("#leave_group").hide('slow');
-                    $("#join_group").delay(1000).show('slow');
+                    $("#create_discussion").delay(1000).hide('slow');
+                    $("#join_group").delay(2000).show('slow');
                     $('#mission_statement').show();
                     $('#mission_statement_edit').hide();
                     $("#actions option[value='add_mission']").remove();
