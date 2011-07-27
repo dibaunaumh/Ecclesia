@@ -11,10 +11,9 @@ urlpatterns = patterns('',
 
     # Uncomment the admin/doc line below and add 'django.contrib.admindocs'
     # to INSTALLED_APPS to enable admin documentation:
-    # (r'^admin/doc/', include('django.contrib.admindocs.urls')),
+    (r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
     # Uncomment the next line to enable the admin:
-    #(r'^admin/', include(admin.site.urls)),
     (r'^admin/', include(admin.site.urls)),
 
     (r'^static/(?P<path>.*)$', 'django.views.static.serve', {'document_root': 'static'}), # serve static content. only for development.
@@ -26,8 +25,8 @@ urlpatterns = patterns('',
     (r'^discussions/', include('ecclesia.discussions.urls')),
     (r'^voting/', include('ecclesia.voting.urls')),
     (r'^common/', include('ecclesia.common.urls')),
-    #(r'^accounts/', include('registration.urls')),
-    (r'accounts/', include('registration.urls')),
+    (r'^accounts/', include('registration.urls')),
+    (r'^accounts/', include('socialauth.urls')),
     (r'^feedback/', include('feedback.urls')),
 
     (r'^', include('ecclesia.groups.urls')),

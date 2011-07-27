@@ -1,0 +1,72 @@
+{% extends 'socialauth/base.html' %}
+
+{% block html_declare %}
+    {{ block.super }}
+<html xmlns:fb="http://www.facebook.com/2008/fbml">
+{% endblock %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <!-- Simple OpenID Selector -->
+  <link rel="stylesheet" href="{{ MEDIA_URL }}css/openid.css" />
+  <!--<script src="http://static.ak.connect.facebook.com/js/api_lib/v0.4/FeatureLoader.js.php" type="text/javascript"></script>-->
+  <script type="text/javascript" src="{{ MEDIA_URL }}js/jquery-1.2.6.min.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}js/openid-jquery.js"></script>
+  <script type="text/javascript">
+	$(document).ready(function() {
+	  openid.init('openid_identifier');
+	});
+	function facebook_onlogin(){
+      window.location = "{% url socialauth_facebook_login_done %}"
+	}
+  </script>
+  <!-- /Simple OpenID Selector -->
+{% endblock %}
+
+{% block extra_body %}
+{{ block.super }}
+
+{% endblock %}
+
+{% block main_content %}
+{% if user.is_authenticated %}
+  <p>You are already logged in. <a href="{% url socialauth_social_logout %}">Logout</a>?</p>
+{% else %}
+<div id="login">
+
+<form action="{% url socialauth_openid_login %}" method="get" id="openid_form">
+  <input type="hidden" name="action" value="verify" />
+
+
+	<legend>Sign in using your account with</legend>
+
+	<div id="openid_choice">
+
+	  <div id="openid_btns">
+	    {% if FACEBOOK_APP_ID %}
+		  <div id="facebook">
+			<p><fb:login-button perms="{{ login_button_perms }}"></fb:login-button></p>
+		  </div>
+		{% endif %}
+
+		<div id="linkedin">
+		  <a href="{% url socialauth_linkedin_login %}?next={{ next }}" id="linkedin_login_link" class="openid_large_btn linkedin"></a>
+		</div>
+
+		<div id="twitter">
+		  <a href="{% url socialauth_twitter_login %}?next={{ next }}" id="twitter_login_link" class="openid_large_btn twitter"></a>
+		</div>
+
+	  </div>
+
+	</div>
+
+
+</form>
+    <br />
+    <br />
+    <br />
+
+</div>
+{% endif %}
+{% endblock %}

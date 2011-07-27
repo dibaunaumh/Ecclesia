@@ -10,12 +10,15 @@
 {% block breadcrumbs %}{% endblock %}
 
 {% block content %}
+    {% block social_login %}
+    {% endblock %}
 {% if error_message %}
 <p class="errornote">{{ error_message }}</p>
 
 {% endif %}
 <div id="content-main">
 <form action="{% url django.contrib.auth.views.login %}" method="post" id="login-form">
+  <legend>or login using your account</legend>
   <div class="form-row">
 	{% if form.errors %}
 	  <span style="color:red;">Your username and password didn't match. Please try again.</span>

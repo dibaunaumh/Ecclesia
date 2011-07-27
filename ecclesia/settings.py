@@ -1,6 +1,6 @@
 # Django settings for ecclesia project.
 
-DEBUG = False
+DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
@@ -18,8 +18,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
         'NAME': 'ekkli',                      # Or path to database file if using sqlite3.
         'USER': 'postgres',                      # Not used with sqlite3.
-        'PASSWORD': 'ekkli',                  # Not used with sqlite3.
-        'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
+        'PASSWORD': 'admin',                  # Not used with sqlite3.
+        'HOST': '127.0.0.1',                      # Set to empty string for localhost. Not used with sqlite3.
         'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
     }
 }
@@ -47,12 +47,18 @@ LANGUAGES = (
 DEFAULT_LANGUAGE = 1
 
 TEMPLATE_CONTEXT_PROCESSORS = (
+    'socialauth.context_processors.facebook_api_key',
+    'django.core.context_processors.request',
     'django.contrib.auth.context_processors.auth',
     'django.core.context_processors.debug',
     'django.core.context_processors.i18n',
     'django.contrib.messages.context_processors.messages',
+    'django.core.context_processors.static',
+    'django.core.context_processors.media',
     #'multilingual.context_processors.multilingual',
 )
+
+    #'multilingual.context_processors.multilingual',
 
 SITE_ID = 1
 
@@ -95,6 +101,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.csrf.middleware.CsrfMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'openid_consumer.middleware.OpenIDMiddleware',
 )
 
 ROOT_URLCONF = 'ecclesia.urls'
@@ -126,6 +133,8 @@ INSTALLED_APPS = (
     'rosetta',
     'permissions',
     'djcelery',
+    'socialauth',
+    'openid_consumer',
 #   'privatebeta',
 #   'multilingual'
 )
@@ -135,6 +144,7 @@ ACCOUNT_ACTIVATION_DAYS = 7 # One-week activation window
 EMAIL_HOST = 'localhost'
 DEFAULT_FROM_EMAIL = 'ekkliproject@gmail.com'
 LOGIN_REDIRECT_URL = '/'
+LOGIN_URL='/login'
 PRIVATEBETA_REDIRECT_URL = '/invites'
 
 DEFAULT_DISCUSSION_TYPE = 'course-of-action'
@@ -147,3 +157,8 @@ AMQP_VHOST = "/"
 
 import djcelery
 djcelery.setup_loader()
+
+try:
+    from localsettings import *
+except ImportError:
+    pass
