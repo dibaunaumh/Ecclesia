@@ -1,4 +1,5 @@
 # -*- coding: UTF-8 -*-
+from datetime import datetime
 import hashlib
 from django.db import models
 from django.contrib.contenttypes import generic
@@ -160,3 +161,11 @@ def create_profile(sender, **kw):
         
 #create user profile when user is created
 models.signals.post_save.connect(create_profile, sender=User, dispatch_uid="users-profilecreation-signal")
+
+class LostPassword(models.Model):
+    user    = models.ForeignKey(User)
+    key     = models.CharField(max_length=70, unique=True)
+    created = models.DateTimeField(auto_now_add=True)
+
+    def is_expired(self):
+        return (datetime.today() - self.created).days > 0

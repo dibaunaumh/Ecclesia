@@ -376,6 +376,7 @@ input[type=text], input[type=password], textarea, select, .vTextField {
     color: black;
     border: 1px solid #bbb;
     border-color: #ddd #aaa #aaa #ddd;
+    
 }
 
 .button:active, input[type=submit]:active, input[type=button]:active {
