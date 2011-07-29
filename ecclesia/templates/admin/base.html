@@ -73,17 +73,31 @@
                         $('#join_group').hide();
                         $('#leave_group').show();
                         $("#create_discussion").show();
+                        $("#create_group").show();
+                        {% if has_voting %}
+                            $("#end_vote").show();
+                            $('#vote_progress').show();
+                            $('#voting_progress').show();
+                        {% else %}
+                            $("#start_vote").show();
+                        {% endif %}
                     }
                     else
                     {
                         $('#join_group').show();
                         $('#leave_group').hide();
                         $("#create_discussion").hide();
+                        $("#create_group").hide();
+                        $("#start_vote").hide();
+                        $("#end_vote").hide();
+                        $('#vote_progress').hide();
+                        $('#voting_progress').hide();
                     }
                  });
             $("#login").hide();
         {% else %}
             $("#create_discussion").hide();
+            $("#create_group").hide();
             $("#login").show();
         {% endif %}
         <!-- Edit inline for -->
@@ -137,6 +151,12 @@
                         }
                         $('#mission_statement').show();
                     });
+                {% if has_voting %}
+                    $("#end_vote").delay(2000).show('slow');
+                    window.location.reload();
+                {% else %}
+                    $("#start_vote").delay(2000).show('slow');
+                {% endif %}
                 getCurrentVuController().init(true);
             }
             else {
@@ -161,6 +181,10 @@
                     $("#leave_group").hide('slow');
                     $("#create_discussion").delay(1000).hide('slow');
                     $("#join_group").delay(2000).show('slow');
+                    $("#start_vote").delay(2000).hide('slow');
+                    $("#end_vote").delay(2000).hide('slow');
+                    $('#vote_progress').delay(2000).hide('slow');
+                    $('#voting_progress').delay(2000).hide('slow');
                     $('#mission_statement').show();
                     $('#mission_statement_edit').hide();
                     $("#actions option[value='add_mission']").remove();
@@ -215,7 +239,7 @@
         <div id="branding">
         {% block branding %}{% endblock %}
 		{#{% load version %}#}
-		<div id="version">v0.24</div>
+		<div id="version">v0.25</div>
 		</div>
         {% if user.is_authenticated %}
 	        {#<div id="user-tools">{% trans 'Welcome,' %} <strong>{% firstof user.first_name user.username %}</strong>. {% block userlinks %}{% url django-admindocs-docroot as docsroot %}{% if docsroot %}<a href="{{ docsroot }}">{% trans 'Documentation' %}</a> / {% endif %}<a href="/user-profile/">{% trans 'Edit profile' %}</a> / <a href="/admin/password_change/">{% trans 'Change password' %}</a> / <a href="/admin/logout/">{% trans 'Log out' %}</a>{% endblock %}</div>#}

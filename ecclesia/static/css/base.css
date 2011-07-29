@@ -432,6 +432,10 @@ input[type=button].medium_blue_button, input[type=submit].medium_blue_button {
     background-image: url('/static/img/medium-blue-button.png');
 }
 
+input[type=button].medium_brown_button, input[type=submit].medium_brown_button {
+    background-image: url('/static/img/medium-brown-button.png');
+}
+
 input[type=button].medium_magenta_button, input[type=submit].medium_magenta_button {
     background-image: url('/static/img/medium-magenta-button.png');
 }
