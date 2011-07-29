@@ -37,10 +37,10 @@
             function close_vote() {
                 has_voting = false;
                 DC.init.call(DC, true);
-                $('#end_vote').hide();
-                $('#vote_progress').hide();
-                $('#voting_progress').hide();
-                $('#start_vote').show();
+                $('#end_vote').hide('slow');
+                $('#vote_progress').delay(1000).hide('slow');
+                $('#voting_progress').delay(1000).hide('slow');
+                $('#start_vote').delay(1000).show('slow');
                 $('.story_icons').removeClass('hidden');
             }
 
@@ -54,7 +54,7 @@
             );
 
             function follow($this) {
-                var action = $this.attr('name');
+                var action = $this.children().attr('name');
                 if (action == "follow") {
                     var url = '{% url discussion_follow discussion.slug %}';
                 }
@@ -68,10 +68,10 @@
                     success: function (response) {
                         if (response && response === 'success') {
                             if (action == "follow") {
-                                $this.hide();
+                                $this.hide('slow');
                             }
                             else {
-                                $this.hide();
+                                $this.hide('slow');
                             }
                         } else {
                             alert("{% trans "Didn't work" %}");
@@ -85,12 +85,12 @@
             $('#unfollow_button').click(function () {
                 var $this = $(this);
                 follow($this);
-                $('#follow_button').show();
+                $('#follow_button').delay(1000).show('slow');
             });
             $('#follow_button').click(function () {
                 var $this = $(this);
                 follow($this);
-                $('#unfollow_button').show();
+                $('#unfollow_button').delay(1000).show('slow');
             });
 			<!-- Create new dialog -->
 			(function() {
@@ -117,14 +117,14 @@
                                         ballots, time;
                                     closeDialog();
                                     has_voting = true;
-									$('#start_vote').hide();
-									$('#end_vote').show();
-                                    $('#vote_progress').show();
+									$('#start_vote').hide('slow');
+									$('#end_vote').show('slow');
+                                    $('#vote_progress').show('slow');
                                     $('.story_icons').addClass('hidden');
                                     ballots = response && response.ballots;
                                     time = response && response.time_left;
                                     if (time && (ballots || ballots === 0)) {
-                                        $progress.show();
+                                        $progress.show('slow');
                                         $progress.children('#voting_ballots').text(ballots);
                                         $voting_time_left.text(time);
                                     }
@@ -136,6 +136,7 @@
 						},
 						'Cancel': function() {
 							closeDialog();
+                            $('#start_vote').delay(1000).show('slow');
 						}
 					}
 				});
@@ -143,6 +144,7 @@
                     $.ajax({
                         url     : '{% url get_voting_form discussion.pk %}',
                         success : function (html) {
+                            $('#start_vote').hide('slow');
                             $voting_form.html(html);
                         },
                         error   : function (xhr, textStatus, errorThrown) {
@@ -234,19 +236,17 @@
     {% if user.is_authenticated %}
         <form method="post" class="hidden" action="{% url start_voting discussion.pk %}" id="voting_form"><p>{% trans 'Loading form...' %}</p></form>
         {% if user_in_group %}
-            <input type="button" class="{% if has_voting %}hidden {% endif %}ui-button ui-state-default ui-corner-all" id="start_vote" value="{% trans 'Start Vote' %}" />
+            {% comment %}<input type="button" class="{% if has_voting %}hidden {% endif %}ui-button ui-state-default ui-corner-all" id="start_vote" value="{% trans 'Start Vote' %}" />{% endcomment %}
             <div id="voting_progress" {% if not has_voting %}class="hidden"{% endif %}>
                 {% trans 'Your ballots:' %} <span id="voting_ballots">{{ voting_data.ballots_left }}</span>
                 {% trans 'Time left:' %} <span id="voting_time_left">{{ voting_data.voting_time_left }}</span>
+                <input type="button" class="{% if not has_voting %}hidden {% endif %}medium_button medium_brown_button" id="vote_progress" value="{% trans 'Vote progress' %}"/>
             </div>
-            <input type="button" class="{% if not has_voting %}hidden {% endif %}ui-button ui-state-default ui-corner-all" id="vote_progress" value="{% trans 'Vote progress' %}"/>
             <div id="vote_progress_container">
                 <div id="progressbar" class="hidden"></div>
             </div>
-            <input type="button" class="{% if not has_voting %}hidden {% endif %}ui-button ui-state-default ui-corner-all" id="end_vote" value="{% trans 'End Vote' %}" />
+            {% comment %}<input type="button" class="{% if not has_voting %}hidden {% endif %}ui-button ui-state-default ui-corner-all" id="end_vote" value="{% trans 'End Vote' %}" />{% endcomment %}
         {% endif %}
-        <input type="button" {% if user_follows_discussion %}style="display:none"{% endif %} class="ui-button ui-state-default ui-corner-all" id="follow_button" name="follow" value="{% trans 'Follow' %}" />
-        <input type="button" {% if not user_follows_discussion %}style="display:none"{% endif %} class="ui-button ui-state-default ui-corner-all" id="unfollow_button" name="unfollow" value="{% trans 'Unfollow' %}" />
     {% endif %}
     </div>
 
@@ -286,6 +286,14 @@
                 <input id="login" type="submit" class="medium_button medium_green_button" value="{% trans 'Login' %}" onmouseover="document.getElementById('path').value=document.URL;"/>
             </form>
             <!--<input id="create_discussion" type="button" class="medium_button medium_blue_button" value="{% trans 'Create Discussion' %}" onclick="create_discussion()"/>-->
+        </div>
+        <div>
+            <div id="follow_button" {% if user_follows_discussion or not user.is_authenticated %}style="display:none"{% endif %}><input type="button" class="medium_button medium_blue_button" name="follow" value="{% trans 'Follow' %}" /></div>
+            <div id="unfollow_button" {% if not user_follows_discussion or not user.is_authenticated %}style="display:none"{% endif %}><input type="button" class="medium_button medium_blue_button" name="unfollow" value="{% trans 'Unfollow' %}" /></div>
+        </div>
+        <div>
+            <div id="start_vote" {% if has_voting or not user.is_authenticated %}style="display:none"{% endif %}><input type="button" class="medium_button medium_brown_button" value="{% trans 'Start Vote' %}" /></div>
+            <div id="end_vote" {% if not has_voting or not user.is_authenticated %}style="display:none"{% endif %}><input type="button" class="medium_button medium_brown_button" value="{% trans 'End Vote' %}" /></div>
         </div>
         <div>
             <div id="join_group" style="display:none"><input type="button" class="medium_button medium_green_button" value="Join Group" onclick="join_group();"/></div>

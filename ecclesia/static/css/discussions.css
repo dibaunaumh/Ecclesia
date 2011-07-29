@@ -48,7 +48,7 @@ fieldset{margin-bottom:10px;paddin:2px;border:none}
 #story_input-types{}
 
 /* Voting Progress */
-#progressbar {position:absolute;left:-100px;bottom:-35px;z-index:1000;width:200px;padding:1px;padding-right:3px;border:1px solid #002039;background:#fff;}
+#progressbar {position:absolute;left:200px;bottom:-35px;z-index:1000;width:200px;padding:1px;padding-right:3px;border:1px solid #002039;background:#fff;}
 #vote_progress_container {position:relative;display:inline-block;}
 
 /* jQuery UI Hacking */
