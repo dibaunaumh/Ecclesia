@@ -19,6 +19,13 @@
                 user_permissions: '{{ user_permissions }}'
             }).getCreateGroupForm(event).dialog('open');
     }
+
+    function actions() {
+        if ($("#actions").val() == "groups_list") {
+            window.location='/groups_list/';
+        }
+        $("#actions").val("actions");
+    }
 </script>
 {% endblock %}
 {% block content %}
@@ -33,9 +40,29 @@
 {% endblocktrans %}
 </p>
 
-<div id="buttons_container">
-	<input type="button" class="ui-button ui-state-default ui-corner-all" value="{% trans 'Groups List' %}" onclick="document.location.href='/groups_list/'"/>
-	<input type="button" class="ui-button ui-state-default ui-corner-all" value="{% trans 'Create Group' %}" onclick="create_group()"/>
+<div>
+    <select id="actions" onchange="actions();">
+        <option value="actions">
+            Actions
+        </option>
+        <option value="groups_list">
+            {% trans 'Groups List' %}
+        </option>
+    </select>
+</div>
+
+<div style="float:left;margin-top:20px;">
+    <div>
+        <form action="/login/">
+            <input id="path" type="hidden" name="path"/>
+            <input id="login" type="submit" class="medium_button medium_green_button" value="{% trans 'Login' %}" onmouseover="document.getElementById('path').value=document.URL;"/>
+        </form>
+        <input id="create_group" type="button" class="medium_button medium_blue_button" value="{% trans 'Create Group' %}" onclick="create_group()"/>
+    </div>
+    <div>
+        <div id="join_group" style="display:none"><input type="button" class="medium_button medium_green_button" value="Join Group" onclick="join_group();"/></div>
+        <div id="leave_group" style="display:none"> <input type="button" class="medium_button medium_magenta_button" value="Leave Group" onclick="leave_group();"/></div>
+    </div>
 </div>
 
 <hr/>

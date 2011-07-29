@@ -73,6 +73,7 @@
                         $('#join_group').hide();
                         $('#leave_group').show();
                         $("#create_discussion").show();
+                        $("#create_group").show();
                         {% if has_voting %}
                             $("#end_vote").show();
                             $('#vote_progress').show();
@@ -86,6 +87,7 @@
                         $('#join_group').show();
                         $('#leave_group').hide();
                         $("#create_discussion").hide();
+                        $("#create_group").hide();
                         $("#start_vote").hide();
                         $("#end_vote").hide();
                         $('#vote_progress').hide();
@@ -95,6 +97,7 @@
             $("#login").hide();
         {% else %}
             $("#create_discussion").hide();
+            $("#create_group").hide();
             $("#login").show();
         {% endif %}
         <!-- Edit inline for -->
