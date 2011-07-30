@@ -40,22 +40,22 @@
 	
 	<div id="openid_choice">
 	  <p>Please click your account provider:</p>
-	
+
 	  <div id="openid_btns">
 	    {% if FACEBOOK_APP_ID %}
 		  <div id="facebook">
 			<p><fb:login-button perms="{{ login_button_perms }}"></fb:login-button></p>
 		  </div>	  
 		{% endif %}
-		
+
 		<div id="linkedin">
 		  <a href="{% url socialauth_linkedin_login %}?next={{ next }}" id="linkedin_login_link" class="openid_large_btn linkedin"></a>
 		</div>
-	  
+
 		<div id="twitter">
 		  <a href="{% url socialauth_twitter_login %}?next={{ next }}" id="twitter_login_link" class="openid_large_btn twitter"></a>
 		</div>
-	  
+
 		<!--<div id="yahoo">
 		  <a href="{% url socialauth_yahoo_login %}" id="yahoo_login_link" class="openid_large_btn yahoo"></a>
 		</div>-->
