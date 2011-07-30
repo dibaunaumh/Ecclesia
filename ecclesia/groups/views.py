@@ -391,7 +391,7 @@ def lost_password(request):
                 reverse('change_password',kwargs={'key':lostpassword.key}))
 
             send_mail(settings.DEFAULT_FROM_EMAIL, user.email, 'your ekkli password', message)
-            return HttpResponseRedirect('/')
+            return HttpResponseRedirect('/login')
         except User.DoesNotExist:
             message = 'Unknown user'
 
