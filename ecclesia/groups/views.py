@@ -1,3 +1,4 @@
+import logging
 import sys
 import base64
 from django.contrib.auth.forms import SetPasswordForm
@@ -10,7 +11,7 @@ from django.template import RequestContext
 from django.template.defaultfilters import slugify
 from django.contrib.auth.models import User
 from django.utils import simplejson
-from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.csrf import csrf_protect, csrf_exempt
 from common.send_mail import send_mail
 
 from groups.models import *
@@ -22,17 +23,22 @@ from forms import *
 from services.search_filter_pagination import search_filter_paginate
 from services.utils import get_user_permissions
 from common.utils import is_heb, get_domain
+from django.views.decorators.csrf import csrf_exempt
 
+@csrf_exempt
 def home(request):
     """
     Renders the application home page
     """
+    logging.info(request.POST)
+
     user = request.user
     user_permissions = 'allowed' if user.is_authenticated() else ''
     if not user_permissions:
         return render_to_response('intro.html', locals(), context_instance=RequestContext(request))
     return HttpResponseRedirect("/groups/")
 
+@csrf_exempt
 def groups(request):
     """
     Renders the groups home
