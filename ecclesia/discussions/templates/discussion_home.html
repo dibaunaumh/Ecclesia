@@ -287,15 +287,15 @@
             </form>
             <!--<input id="create_discussion" type="button" class="medium_button medium_blue_button" value="{% trans 'Create Discussion' %}" onclick="create_discussion()"/>-->
         </div>
-        <div>
+        <div style="float:left;margin-right: 10px">
             <div id="follow_button" {% if user_follows_discussion or not user.is_authenticated %}style="display:none"{% endif %}><input type="button" class="medium_button medium_blue_button" name="follow" value="{% trans 'Follow' %}" /></div>
             <div id="unfollow_button" {% if not user_follows_discussion or not user.is_authenticated %}style="display:none"{% endif %}><input type="button" class="medium_button medium_blue_button" name="unfollow" value="{% trans 'Unfollow' %}" /></div>
         </div>
-        <div>
+        <div style="float:left;margin-right: 10px">
             <div id="start_vote" {% if has_voting or not user.is_authenticated %}style="display:none"{% endif %}><input type="button" class="medium_button medium_brown_button" value="{% trans 'Start Vote' %}" /></div>
             <div id="end_vote" {% if not has_voting or not user.is_authenticated %}style="display:none"{% endif %}><input type="button" class="medium_button medium_brown_button" value="{% trans 'End Vote' %}" /></div>
         </div>
-        <div>
+        <div style="float:left;margin-right: 10px">
             <div id="join_group" style="display:none"><input type="button" class="medium_button medium_green_button" value="Join Group" onclick="join_group();"/></div>
             <div id="leave_group" style="display:none"> <input type="button" class="medium_button medium_magenta_button" value="Leave Group" onclick="leave_group();"/></div>
         </div>

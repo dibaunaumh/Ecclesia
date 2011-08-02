@@ -144,14 +144,14 @@
     </div>
 
     <div style="float:left;margin-top:20px;">
-        <div>
+        <div style="float:left;margin-right: 10px">
             <form action="/login/">
                 <input id="path" type="hidden" name="path"/>
                 <input id="login" type="submit" class="medium_button medium_green_button" value="{% trans 'Login' %}" onmouseover="document.getElementById('path').value=document.URL;"/>
             </form>
             <input id="create_discussion" type="button" class="medium_button medium_blue_button" value="{% trans 'Create Discussion' %}" onclick="create_discussion()"/>
         </div>
-        <div>
+        <div style="float:left;margin-right: 10px">
             <div id="join_group" style="display:none"><input type="button" class="medium_button medium_green_button" value="Join Group" onclick="join_group();"/></div>
             <div id="leave_group" style="display:none"> <input type="button" class="medium_button medium_magenta_button" value="Leave Group" onclick="leave_group();"/></div>
         </div>
