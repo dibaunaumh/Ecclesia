@@ -1,4 +1,5 @@
 import sys
+import base64
 from django.contrib.auth.models import Group
 
 from django.shortcuts import render_to_response, get_object_or_404
@@ -536,3 +537,17 @@ def unfollow(request, discussion_slug):
 def get_hints_metadata(discussion):
     metadata = get_workflow_hints(discussion)
     return simplejson.dumps(metadata)
+
+#Saving image of the discussion's story
+def save_view(request):
+    if request.method == "POST":
+        try:
+            if 'slug' in request.POST:
+                discussion = Discussion.objects.get(slug=request.POST['slug'])
+            if 'image_data' in request.POST:
+                image = base64.b64decode(request.POST['image_data'])
+                discussion.thumbnail.save('%s_canvas.png' % discussion.slug, image, True)
+        except:
+            return HttpResponse("FAIL")
+    return HttpResponse("SUCCESS")
+

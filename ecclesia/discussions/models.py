@@ -34,6 +34,7 @@ class Discussion(Presentable):
 	#parent = models.ForeignKey('self', verbose_name=_('parent'), related_name='children', null=True, blank=True, help_text=_('The parent discussion containing this discussion.'))
     # keeping it simple...
     #forked_from = models.ForeignKey('self', verbose_name=_('forked from'), related_name='forks', null=True, blank=True, help_text=_('The discussion from which this discussion forked.'))
+    thumbnail = models.FileField(upload_to="/static/img/discussions", null=True, blank=True)
     workflow_status = models.IntegerField(_("workflow status"), default=0, blank=True, null=True)
     created_by = models.ForeignKey(User, editable=False, verbose_name=_('created by'), null=True, blank=True, help_text=_('The user that created the discussion.'))
     created_at = models.DateTimeField(_('created at'), auto_now_add=True, help_text=_('When was the discussion created.'))
@@ -47,6 +48,9 @@ class Discussion(Presentable):
 
     def get_absolute_url(self):
         return "http://%s/discussions/discussion/%s/" % (get_domain(), self.slug)
+
+    def get_thumbnail_url(self):
+        return "http://%s/static/img/discussions/%s" % (get_domain(), self.thumbnail) or None
 
     def get_visual_container(self):
         return self.group

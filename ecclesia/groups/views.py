@@ -69,8 +69,8 @@ def get_discussions_view_json(request, group_slug):
         discussions = discussions.filter(is_private=False)
     json = ','
     for discussion in discussions:
-        json = '%s{"discussion":{"id":%s,"url":"%s","name":"%s","dimensions":{"x":%s,"y":%s,"w":%s,"h":%s}}},' % (
-        json, discussion.id, discussion.get_absolute_url(), discussion.name, discussion.x, discussion.y, discussion.w,
+        json = '%s{"discussion":{"id":%s,"url":"%s","name":"%s","thumbnail":"%s","dimensions":{"x":%s,"y":%s,"w":%s,"h":%s}}},' % (
+        json, discussion.id, discussion.get_absolute_url(), discussion.name, discussion.get_thumbnail_url(), discussion.x, discussion.y, discussion.w,
         discussion.h)
     #json_serializer = serializers.get_serializer("json")()
     #json_serializer.serialize(groups, ensure_ascii=False, stream=response, fields=('x', 'y', 'w', 'h'))
