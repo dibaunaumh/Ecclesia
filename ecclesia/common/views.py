@@ -1,9 +1,15 @@
+from django.contrib.auth.forms import SetPasswordForm
+from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponse, Http404
-from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import render_to_response, get_object_or_404
+from django.views.decorators.csrf import csrf_exempt, csrf_protect
+from common.send_mail import send_mail
+from groups.models import LostPassword
 from models import *
 from ecclesia.discussions.models import Story, Discussion
 from ecclesia.groups.models import GroupProfile
 import datetime
+import settings
 
 @csrf_exempt
 def update_presentation(request):
@@ -85,3 +91,72 @@ def _unfollow(user, followed_object):
         return HttpResponse('success')
     else:
         return HttpResponse('error')
+
+def new_key():
+    while True:
+        key = User.objects.make_random_password(70)
+        try:
+            LostPassword.objects.get(key=key)
+        except LostPassword.DoesNotExist:
+            return key
+
+@csrf_protect
+def lost_password(request):
+    if request.method == 'POST':
+        try:
+            user = User.objects.get(username=request.POST['username'])
+            lostpassword = LostPassword.objects.create(user=user,
+                                                       key=new_key())
+            message = 'To change your password, click on the following link:\n http://%s:%s%s' % (
+                request.META['REMOTE_ADDR'],
+                request.META['SERVER_PORT'],
+                reverse('change_password',kwargs={'key':lostpassword.key}))
+
+            send_mail(settings.DEFAULT_FROM_EMAIL, user.email, 'your ekkli password', message)
+            return HttpResponseRedirect('/login')
+        except User.DoesNotExist:
+            message = 'Unknown user'
+
+    else:
+        message = ''
+
+    return render_to_response('lost_password.html',
+                              {'message': message})
+
+
+@csrf_protect
+def change_password(request, key,
+                    template_name='registration/password_change_form.html',
+                    post_change_redirect=None,
+                    password_change_form=SetPasswordForm,):
+    lostpassword = get_object_or_404(LostPassword, key=key)
+    if lostpassword.is_expired():
+        lostpassword.delete()
+        message = 'Page expired'
+        context = {
+            'form': {},
+            'message': message
+        }
+        return render_to_response(template_name, context)
+    else:
+        message=''
+        if post_change_redirect is None:
+            post_change_redirect = reverse('django.contrib.auth.views.password_change_done')
+
+
+        if request.method == "POST":
+
+            form = password_change_form(user=lostpassword.user, data=request.POST)
+            if form.is_valid():
+                form.save()
+                return HttpResponseRedirect(post_change_redirect)
+            else:
+                message = 'You typed two different passwords'
+
+        form = password_change_form(user=request.user)
+        context = {
+            'form': form,
+            'message': message
+        }
+        return render_to_response(template_name, context)
+

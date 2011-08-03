@@ -33,6 +33,5 @@ urlpatterns = patterns('',
     (r'^im_api/get_user_groups/(?P<user_im_address>.*)/$', 'groups.views.get_user_groups_by_im'),
     (r'^im_api/get_group_members/(?P<group_pk>.*)/', 'groups.views.get_group_members'),
 
-    url(r'^lost_password', 'groups.views.lost_password', name = 'lost_password'),
-    url(r'^change_password/(?P<key>.{70})/$', 'groups.views.change_password',name = 'change_password'),
+
 )
