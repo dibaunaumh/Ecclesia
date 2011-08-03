@@ -20,6 +20,11 @@ class DiscussionType(models.Model):
     def __unicode__(self):
         return u'%s' % self.name
 
+def get_default_discussion_type():
+    try:
+        return DiscussionType.objects.get(name="course-of-action")
+    except:
+        return None
 
 class Discussion(Presentable):
     """
@@ -28,7 +33,7 @@ class Discussion(Presentable):
     group = models.ForeignKey(Group, editable=False, verbose_name=_('group'), related_name='discussions', help_text=_("The group profile containing this discussion."))
     name = models.CharField(_('name'), max_length=50, help_text=_('The name of the discussion.'))
     slug = models.SlugField(_('slug'), max_length=500, unique=True, blank=False, help_text=_("The url representation of the discussion's name. No whitespaces allowed - use hyphen/underscore to separate words"))
-    type = models.ForeignKey(DiscussionType, verbose_name=_('discussion type'), related_name='discussions', help_text=_("The discussion's type."))
+    type = models.ForeignKey(DiscussionType, default=get_default_discussion_type, verbose_name=_('discussion type'), related_name='discussions', help_text=_("The discussion's type."))
     description = models.TextField(_('short description'), max_length=500, null=True, blank=True, help_text=_('A short description of the discussion.'))
     # no nesting on this release...
 	#parent = models.ForeignKey('self', verbose_name=_('parent'), related_name='children', null=True, blank=True, help_text=_('The parent discussion containing this discussion.'))
