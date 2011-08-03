@@ -4,6 +4,7 @@ from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.shortcuts import render_to_response, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from common.send_mail import send_mail
+from django.contrib.sites.models import get_current_site
 from groups.models import LostPassword
 from models import *
 from ecclesia.discussions.models import Story, Discussion
@@ -107,9 +108,7 @@ def lost_password(request):
             user = User.objects.get(username=request.POST['username'])
             lostpassword = LostPassword.objects.create(user=user,
                                                        key=new_key())
-            message = 'To change your password, click on the following link:\n http://%s:%s%s' % (
-                request.META['REMOTE_ADDR'],
-                request.META['SERVER_PORT'],
+            message = 'To change your password, click on the following link:\n http://%s%s' % (get_current_site(request),
                 reverse('change_password',kwargs={'key':lostpassword.key}))
 
             send_mail(settings.DEFAULT_FROM_EMAIL, user.email, 'your ekkli password', message)
