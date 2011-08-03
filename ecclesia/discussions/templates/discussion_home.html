@@ -133,12 +133,11 @@
                                     $voting_form.html(response);
                                 }
 							});
-						},
-						'Cancel': function() {
-							closeDialog();
-                            $('#start_vote').delay(1000).show('slow');
 						}
-					}
+					},
+                    close: function(event, ui) {
+                        $('#start_vote').delay(1000).show('slow');
+                    }
 				});
 				$('#start_vote').click(function() {
                     $.ajax({
@@ -285,7 +284,6 @@
                 <input id="path" type="hidden" name="path"/>
                 <input id="login" type="submit" class="medium_button medium_green_button" value="{% trans 'Login' %}" onmouseover="document.getElementById('path').value=document.URL;"/>
             </form>
-            <!--<input id="create_discussion" type="button" class="medium_button medium_blue_button" value="{% trans 'Create Discussion' %}" onclick="create_discussion()"/>-->
         </div>
         <div style="float:left;margin-right: 10px">
             <div id="follow_button" {% if user_follows_discussion or not user.is_authenticated %}style="display:none"{% endif %}><input type="button" class="medium_button medium_blue_button" name="follow" value="{% trans 'Follow' %}" /></div>

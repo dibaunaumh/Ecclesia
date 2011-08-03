@@ -191,9 +191,6 @@
                     $("#actions option[value='delete_group']").remove();
                     $("#actions option[value='members_list']").remove();
                     getCurrentVuController().init(true);
-				},
-                Cancel: function() {
-					$(this).dialog('close');
 				}
 			}
 		});
@@ -210,10 +207,6 @@
 			buttons: {
 				'Create': function() {
 					$("#create_form").submit();
-				},
-
-				Cancel: function() {
-					$(this).dialog('close');
 				}
 			},
 			close: function() {

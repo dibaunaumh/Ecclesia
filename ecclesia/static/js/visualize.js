@@ -473,9 +473,6 @@ Story.prototype = {
             buttons: {
                 'Create': function() {
                     return submit_f.call(this);
-                },
-                'Cancel': function() {
-                    $(this).dialog('close');
                 }
             }
         };
@@ -517,9 +514,6 @@ Story.prototype = {
                 buttons: {
                     'Create': function() {
                         return submit_f.call(this);
-                    },
-                    'Cancel': function() {
-                        $(this).dialog('close');
                     }
                 }
             };
@@ -703,9 +697,6 @@ Relation.prototype = {
                 buttons: {
                     'Create': function() {
                         return submit_f.call($form[0]);
-                    },
-                    'Cancel': function() {
-                        $(this).dialog('close');
                     }
                 }
             };
@@ -1210,9 +1201,6 @@ VUController.prototype = {
                 buttons: {
                     'Create': function () {
                         return submit_f();
-                    },
-                    'Cancel': function() {
-                        $dialog.dialog('close');
                     }
                 }
             });
@@ -1805,9 +1793,6 @@ DiscussionController.prototype = {
                 buttons: {
                     'Create': function() {
                         return submit_f();
-                    },
-                    'Cancel': function() {
-                        $(this).dialog('close');
                     }
                 }
             },
