@@ -12,8 +12,9 @@ from django.template.defaultfilters import slugify
 from django.contrib.auth.models import User
 from django.utils import simplejson
 from django.views.decorators.csrf import csrf_protect, csrf_exempt
-from common.send_mail import send_mail
+from django.contrib.sites.models import get_current_site
 
+from common.send_mail import send_mail
 from groups.models import *
 from discussions.models import *
 from discussions.forms import DiscussionForm
@@ -391,9 +392,8 @@ def lost_password(request):
             user = User.objects.get(username=request.POST['username'])
             lostpassword = LostPassword.objects.create(user=user,
                                                        key=new_key())
-            message = 'To change your password, click on the following link:\n http://%s:%s%s' % (
-                request.META['REMOTE_ADDR'],
-                request.META['SERVER_PORT'],
+            message = 'To change your password, click on the following link:\n http://%s%s' % (
+                get_current_site(request),
                 reverse('change_password',kwargs={'key':lostpassword.key}))
 
             send_mail(settings.DEFAULT_FROM_EMAIL, user.email, 'your ekkli password', message)
