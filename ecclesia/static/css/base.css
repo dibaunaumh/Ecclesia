@@ -561,7 +561,7 @@ div.system-message p.system-message-title {
 /* BREADCRUMBS */
 
 div.breadcrumbs {
-    background: white url(../img/admin/nav-bg-reverse.gif) 0 -10px repeat-x;
+    background: url("../img/background_tile.jpg") repeat scroll 0 0 #F7F2DD;
     padding: 2px 8px 3px 8px;
     font-size: 11px;
     color: #999;
@@ -673,10 +673,11 @@ table#change-history tbody th {
 /* PAGE STRUCTURE */
 
 #container {
-    position: relative;
-    width: 100%;
-    min-width: 760px;
-    padding: 0;
+    background: url("../img/background_tile.jpg") repeat scroll 0 0 #F7F2DD;
+    min-width: 980px;
+    min-height: 800px;
+    overflow: hidden;
+    /*text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);*/
 }
 
 #content {
@@ -741,8 +742,7 @@ table#change-history tbody th {
 /* HEADER */
 
 #header {
-    background: #002039;
-    color: #8181C7;
+    background: url("../img/bg-top.jpg") repeat-x scroll 50% 0 #FAFAF5;
     overflow: hidden;
 }
 
